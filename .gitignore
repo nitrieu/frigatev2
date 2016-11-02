@@ -1,0 +1,13 @@
+tests
+src/tests
+*.DS_Store
+*.out
+*.o
+*.a
+*.deb
+*.gate
+*~
+*.tmp
+src/gcc_Debug.h 
+src/gcc_Release.h 
+src/out
