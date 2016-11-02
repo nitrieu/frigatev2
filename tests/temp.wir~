@@ -1,0 +1,26 @@
+#define wiresize 2
+
+#parties 2
+
+typedef int_t wiresize int
+
+
+
+
+#input 1 int
+#input 2 int
+#output 1 int
+
+
+
+
+function int getAND(int param, int par)
+{
+    return param&par;
+}
+
+
+function void main()
+{
+output1=input1&input2;
+}
