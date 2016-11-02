@@ -1,5 +1,5 @@
 tests
-src/tests
+tests
 *.DS_Store
 *.out
 *.o
@@ -8,6 +8,6 @@ src/tests
 *.gate
 *~
 *.tmp
-src/gcc_Debug.h 
-src/gcc_Release.h 
-src/out
+gcc_Debug.h 
+gcc_Release.h 
+out
