@@ -20,7 +20,7 @@
 using namespace std;
 
 
-
+void printDuploGC(bool value);
 void messyUnlock(Variable * cvar);
 void outputEquals(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv);
 void outputLessThanSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv);

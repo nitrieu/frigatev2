@@ -39,6 +39,7 @@ bool printInterpreterHeader = false;
 bool useInterpreterValidationOption = false;
 bool printFullGateList = false;
 string gatelistfilename;
+bool dpIO = false;
 
 void processArgs(int argc, char *argv[])
 {
@@ -88,6 +89,13 @@ void processArgs(int argc, char *argv[])
             
             gatelistfilename = argv[i];
         }
+	    //Duplo
+	    else if(s == "-dpIO")
+	    {
+		    runInterpreter = true;
+		    printInterpreterIO = true;               
+		    dpIO = true;     
+	    }
         else
         {
             cout << "Undefined Arguement \""<< s <<"\"\n";
@@ -105,7 +113,7 @@ int main(int argc, char *argv[])
     
     
     {
-        Interpreter interpret(printInterpreterGates,printInterpreterIO,printInterpreterHeader,printInterpreterStats,useInterpreterValidationOption,printFullGateList,gatelistfilename);
+        Interpreter interpret(printInterpreterGates,printInterpreterIO,printInterpreterHeader,printInterpreterStats,useInterpreterValidationOption,printFullGateList,gatelistfilename,dpIO);
         interpret.readyProgram(file);
         interpret.runprogram();
     }

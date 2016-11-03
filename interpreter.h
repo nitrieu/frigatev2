@@ -89,10 +89,14 @@ public:
     
     vector<string > inputs;
     vector<int> inputscount;
+	
+	//duplo
+	bool printDuploIO;
+	ofstream fDuploIO;
     
 public:
     
-    Interpreter(bool plots,bool pIO, bool pheader, bool pstats, bool validation_in, bool outputgatelist_in, string gatelistfile)
+    Interpreter(bool plots,bool pIO, bool pheader, bool pstats, bool validation_in, bool outputgatelist_in, string gatelistfile, bool dpIO)
     {
         //freadcount=0;
         //totalcount=0;
@@ -113,13 +117,17 @@ public:
         {
             fgatelistfile.open(gatelistfile);
         }
+	    printDuploIO = dpIO;
     }
     
     void readyProgram(string s)
     {
-        gettimeofday(&t0, 0);
-     
   
+	    if(printDuploIO)
+		    fDuploIO.open(s + ".dpIO"); //to save a real input value + output value
+	    
+	    
+	    gettimeofday(&t0, 0);   
         
         
         stacksize=0;
@@ -367,6 +375,7 @@ public:
     void closeProgram()
     {
         culfile.close();
+	    fDuploIO.close();
         
         for(int i=0;i<numfunctions;i++)
         {
@@ -1052,6 +1061,8 @@ begin:
         
         
         bool foundzero=false, foundone =false;
+	    
+	    string realInp[2], realOut[2];
         
         while(currentFilemm != 0)
         {
@@ -1142,7 +1153,10 @@ begin:
                     
                     if(printIO) cout << "input "<<data[g->dest] <<" "<<g->dest <<" "<<g->x<<"\n";
                     
-                    
+					if (printDuploIO)
+					{
+						realInp[g->x - 1].append(to_string(data[g->dest]));
+					}
                     if(outputgatelist)
                     {
                         fgatelistfile << "IN "<< g->dest  <<" "<<g->x<<"\n";
@@ -1164,6 +1178,11 @@ begin:
                         validationsuccesscount++;
                     }
                     if(printIO && (!validation)) cout << "output "<<data[g->dest] <<" "<<g->dest <<" "<<g->x<<"\n";
+	            
+					if (printDuploIO&& (!validation))
+					{
+						realOut[g->x - 1].append(to_string(data[g->dest]));
+					}
                     
                     if(outputgatelist)
                     {
@@ -1209,8 +1228,10 @@ begin:
         }
         
         
-        
-        
+	    fDuploIO << realInp[0] << "\n";
+        fDuploIO << realInp[1] << "\n";
+	    fDuploIO << realOut[0] << "\n";
+	    fDuploIO << realOut[1] << "\n";
         //endTimeb = RDTSC;
         
         //totalcount += endTimeb - startTimeb;

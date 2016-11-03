@@ -7,10 +7,10 @@ GPP = g++
 all: $(COMPILERO)
 	$(GPP)  $(OP) -o frigate main.cpp $(COMPILERO)
 #	make interp
-	./frigate ./tests/validationtest.wir -i -i_validation -nowarn    
+#	./frigate ./tests/validationtest.wir -i -i_validation -nowarn    
 #	./battleship ./tests/validationtest.wir -i_validation
 #	./frigate ~/Desktop/temp.wir
-#	./frigate ./tests/temp.wir -i -sco -tiny    
+	./frigate ./tests/temp.wir -i -i_io    
 
 interp: $(COMPILERO)
 	$(GPP)  $(OP) -o battleship interpretermain.cpp $(COMPILERO)

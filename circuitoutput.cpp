@@ -12,7 +12,15 @@ using namespace std;
 
 bool useTinyOutput = false;
 
+//duplo
+bool isPrintDuploGC = false;
+string strDuploGC;
+ofstream fDuploGC;
 
+void printDuploGC(bool value)
+{
+	isPrintDuploGC = value;
+}
 void setTinyFiles(bool in)
 {
     useTinyOutput = in;
@@ -4129,6 +4137,8 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
     //output header file
     ofstream mos;
     mos.open(odir+"_cul.mfrig", ios::out|ios::binary);
+	if(isPrintDuploGC)
+		fDuploGC.open(odir + ".dpGC");
     
     
     uint32_t ibuffer[50];

@@ -47,6 +47,8 @@ bool printFullGateList = false;
 bool useTinyInstructions = false;
 string gatelistfilename;
 
+//duplo
+bool dpIO = false;
 void processArgs(int argc, char *argv[])
 {
     for(int i=2;i<argc;i++)
@@ -118,6 +120,18 @@ void processArgs(int argc, char *argv[])
         {
             setTinyFiles(true);
         }
+	    //Duplo
+	    else if(s == "-dpIO")
+	    {
+		    runInterpreter = true;
+		    printInterpreterIO = true;  
+		    dpIO = true;     
+	    }
+	    else if(s == "-dp")
+	    {
+	        //see output
+		    printDuploGC(true);
+	    }
         else
         {
             cout << "Undefined Arguement \""<< s <<"\"\n";
@@ -183,7 +197,7 @@ int main(int argc, char *argv[])
     
     if(runInterpreter)
     {
-        Interpreter interpret(printInterpreterGates,printInterpreterIO,printInterpreterHeader,printInterpreterStats,useInterpreterValidationOption,printFullGateList,gatelistfilename);
+        Interpreter interpret(printInterpreterGates,printInterpreterIO,printInterpreterHeader,printInterpreterStats,useInterpreterValidationOption,printFullGateList,gatelistfilename,dpIO);
         interpret.readyProgram(file);
         interpret.runprogram();
     }
