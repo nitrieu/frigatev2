@@ -87,6 +87,9 @@ public:
 };
 
 
+//duplo
+string toStrGate(short table);
+
 
 void printWire(Wire * a);
 

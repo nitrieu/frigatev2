@@ -1,11 +1,8 @@
 #define wiresize 2
-
 #parties 2
 
-typedef int_t wiresize int
-
-
-
+typedef uint_t wiresize int
+typedef uint_t wiresize*2 int2x
 
 #input 1 int
 #input 2 int
@@ -13,14 +10,32 @@ typedef int_t wiresize int
 
 
 
-
-function int getAND(int param, int par)
+function int[4] init(int a, int b)
 {
-    return param&par;
+  int mod = a ^ b;
+  int rs[4]={1,a,b,mod};
+  return rs;
 }
 
+function int[4] fLoop(int x[4])
+{
+
+   
+         x[0]=x[0]&x[1];
+   
+   x[2] = x[2]>>1;
+   x[1]=x[1]&x[2];
+return x;
+}
 
 function void main()
 {
-output1=input1&input2;
+   int c[4];
+   c=init(input1, input2);
+
+    for(int i=0;i<wiresize;i++)
+    {
+        c=fLoop(c);
+    }
+    output1 = c[0];
 }

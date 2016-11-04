@@ -431,6 +431,7 @@ begin:
         theGate.options = (memblockmm[1]>>8)&0xFFFF;
         currentFilemm+=16;
         
+	   // cout << "+" << theGate.table << "+";
         
         cfileplace+=16;
         
@@ -470,6 +471,7 @@ begin:
             in_complex_op=true;
             
             //cout <<"complex op: \nx:"<< tiny_addr1<<"\ny:"<<tiny_addr2<<"\ndest"<<tiny_addrdest<<"\nlength: "<<tiny_numLeft<<"\ntype: "<<optype<<"\n";
+	        cout << "-" << theGate.table << "-";
             
             goto complexop;
         }
@@ -536,6 +538,7 @@ begin:
      */
      
     complexop:
+	    cout << "comp" << endl;
         switch(optype)
         {
             case 0: // adder
@@ -1073,6 +1076,7 @@ begin:
             {
                     //gate
                 case 0:
+	            
                     if(printLots)cout << printindent() << g->dest <<" "<<to_string(static_cast<long long>(g->table))<<" "<<g->x<<" "<<g->y<<"\n";
                     
                      entry = (data[g->x] << 1) | data[g->y];

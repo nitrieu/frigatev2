@@ -1,4 +1,4 @@
-#define wiresize 1024
+#define wiresize 4
 #parties 2
 
 typedef uint_t wiresize int

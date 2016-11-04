@@ -16,6 +16,7 @@ bool useTinyOutput = false;
 bool isPrintDuploGC = false;
 string strDuploGC;
 ofstream fDuploGC;
+string strDuploZeroOne;
 
 void printDuploGC(bool value)
 {
@@ -3702,6 +3703,13 @@ void writeComplexGate(ostream & mos,short op, int dest, int x, int y, int length
     mos.write((char *)(&outbuffer[0]),16);
     
     if(seeoutput) cout <<os<< " Complex op: "<<op <<" "<<dest<<" "<<x<<" "<<y<<" "<<length<<" "<<"\n";
+	
+	//duplo
+	if (isPrintDuploGC) 
+	{
+		strDuploGC.append(" Complex op: " + to_string(x) + " " + to_string(y) + " " + to_string(dest) + " " + to_string(op) + " " + to_string(length) + "\n");
+		strDuploGC.append("todo\n");
+	}  
 }
 
 void writeComplexGate(short op, int dest, int x, int y, int length, int carryadd, int isend)
@@ -3719,7 +3727,8 @@ void writeComplexGate(short op, int dest, int x, int y, int length, int carryadd
     os->write((char *)(&outbuffer[0]),16);
     
     if(seeoutput) cout <<os<< " Complex op: "<<op <<" "<<dest<<" "<<x<<" "<<y<<" "<<length<<" "<<"\n";
-    
+	
+	 
     if(op == 4)
     {
         co_xorgates+=length;
@@ -3766,6 +3775,13 @@ void writeComplexGate(short op, int dest, int x, int y, int length, int carryadd
         co_nonxorgates++;
         co_xorgates++;
     }
+	
+	//duplo
+	if (isPrintDuploGC) 
+	{
+		strDuploGC.append(" Complex op: " + to_string(x) + " " + to_string(y) + " " + to_string(dest) + " " + to_string(op) + " " + to_string(length) + "\n");
+		strDuploGC.append("todo\n");
+	}  
 }
 
 void writeGate(short table, int d, int x, int y)
@@ -3777,6 +3793,7 @@ void writeGate(short table, int d, int x, int y)
     outbuffer[3] = y;
     os->write((char *)(&outbuffer[0]),16);
     if(seeoutput) cout <<os<< " "<< d <<" "<<table<<" "<<x << " "<<y<<"\n";
+	
     if(table == 6)
     {
         co_xorgates++;
@@ -3785,6 +3802,24 @@ void writeGate(short table, int d, int x, int y)
     {
         co_nonxorgates++;
     }
+	
+	if (isPrintDuploGC) 
+		if (table == 3)//(invert passthrough a)
+			strDuploGC.append("1 1 " + to_string(x) + " " + to_string(d) + " " + toStrGate(table) + "\n");
+		else if (table == 5)//(invert passthrough b)
+			strDuploGC.append("1 1 " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
+		else if (table == 0)
+		{
+			strDuploZeroOne.append("2 1 0 0 " + to_string(d) + " XOR\n");
+		}
+		else if(table == 15)
+		{
+			strDuploZeroOne.append("2 1 0 0 " + to_string(d) + " NXOR\n");
+		}
+		//else if(table==4)
+			
+		else
+			strDuploGC.append("2 1 " + to_string(x) + " " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
 }
 
 
@@ -3806,6 +3841,22 @@ void writeGate(short table, int d, int x, int y, ostream * os)
     {
         co_nonxorgates++;
     }
+	
+	if (isPrintDuploGC) 
+		if (table == 3)//(invert passthrough a)
+			strDuploGC.append("1 1 " + to_string(x) + " " + to_string(d) + " " + toStrGate(table) + "\n");
+		else if (table == 5)//(invert passthrough b)
+			strDuploGC.append("1 1 " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
+		else if (table == 0)
+		{
+			strDuploZeroOne.append("2 1 0 0 " + to_string(d) + " XOR\n");
+		}
+		else if(table == 15)
+		{
+			strDuploZeroOne.append("2 1 0 0 " + to_string(d) + " NXOR\n");
+		}
+		else
+			strDuploGC.append("2 1 " + to_string(x) + " " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
 }
 
 void writeCopy(int to, int from)
@@ -3817,6 +3868,12 @@ void writeCopy(int to, int from)
     os->write((char *)(&outbuffer[0]),16);
     if(seeoutput) cout <<os<< " CP " <<to << " "<<from<<"\n";
     co_xorgates++;
+	
+	//duplo
+	if(isPrintDuploGC)
+		strDuploGC.append("CP " + to_string(from) + " " + to_string(to) + "\n");
+	
+	
 }
 
 void writeFunctionCall(int function, ostream * os)
@@ -3828,6 +3885,13 @@ void writeFunctionCall(int function, ostream * os)
     os->write((char *)(&outbuffer[0]),16);
     if(seeoutput) cout << os<< " FN "<<function<<"\n";
     co_xorgates++;
+	
+//duplo
+	if (isPrintDuploGC)
+		strDuploGC.append("FN " + to_string(function) + "\n");
+
+	
+	
 }
 
 
@@ -4292,6 +4356,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
     }
     makeONEandZERO(mos);
     FunctionVariable * vf = (FunctionVariable *) ((*vc)["FUNC_VAR_$$_main"]);
+	//don't call main function at the first time 
     writeFunctionCall(vf->functionNumber,&mos);
 
     for(int i=0;i<pln->nodeList.size();i++)
@@ -4485,10 +4550,14 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
     
     functionprefix = odir+"_f";
     
+	//duplo	
+	Node * selectedNode;
     //output each function
     for(int I=0;I<premfunctions;I++)
     {
-        Node * selectedNode = functions_in_order[I];
+       selectedNode = functions_in_order[I];
+	    
+	   
         
         if(isFunctionDeclarationNode(selectedNode))
         {
@@ -4502,6 +4571,31 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
             
             if(selectedNode->getNodeType() == FunctionDeclarationNode_t && isTermNode(isFunctionDeclarationNode(selectedNode)->name)->var != "main")
             {
+	            
+	            //duplo
+	            int startInpWire = -1;
+	            int startOutWire = -1;
+	            if (v->sizereturn() != 0)
+		            startOutWire = getWire(0, v->returnv->wv)->wireNumber;
+
+	            if (v->sizeparam() != 0)
+		            startInpWire = getWire(0, v->argsv[0]->wv)->wireNumber;
+	            
+		          
+	            int cur = pool.largestsize;
+	            if (isPrintDuploGC) {
+		            strDuploGC.append("\nFN " + to_string(I) +  " " + 
+															   to_string(v->sizeparam()) + " " +
+															   to_string(startInpWire) + " " +
+	            											to_string(v->sizereturn()) + " " +
+															to_string(startOutWire) + " ");		            
+	            }
+	            
+
+	            uint32_t posforNumWire = strDuploGC.length();
+	            //end-duplo
+	            
+	            
                 VariableContext * vct = new VariableContext();
                 
                 for ( std::unordered_map<string,Variable *>::iterator it = (*vc).begin(); it!= (*vc).end(); ++it )
@@ -4513,12 +4607,34 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
                 }
                 
                 selectedNode->circuitOutput(vct,tm);
+	            
+	             //duplo
+	            if (isPrintDuploGC) {
+		            
+	            
+		            if (premfunctions != 0 && I == 0)
+		            {
+			            strDuploGC.insert(posforNumWire, to_string(pool.largestsize - cur + v->sizeparam() + v->sizereturn()) + "\n" + strDuploZeroOne + "\n");
+			        }
+		            else
+			            strDuploGC.insert(posforNumWire, to_string(pool.largestsize - cur + v->sizeparam() + v->sizereturn()) + "\n");
+	            
+		            strDuploGC.append("--end FN " + to_string(I) + "--\n");
+	            }
+	            //end-duplo
                 
                 delete vct;
             }
             else
             {
-                
+	            if (isPrintDuploGC) {
+		            strDuploGC.append("\nFN " + to_string(I) +  "\n");
+		            if (premfunctions == 0)
+		            {
+			            strDuploGC.append(strDuploZeroOne + "\n");
+		            }		           
+	            }
+	            
                 selectedNode->circuitOutput(vc,tm);
                 if(seeoutput) cout << "printing output\n";
                 
@@ -4602,6 +4718,38 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
     }
     
     
+	//duplo
+	if (isPrintDuploGC)
+	{			
+		fDuploGC << selectedNode->gatesFromNode  << " " << vf->functionNumber << " " << prevlargest << "\n";
+		for (int sp = 0; sp < parties; sp++)
+		{
+			string s = "input" + to_string(sp + 1);
+			Variable * v = (*vc)[s];
+			if (v != 0)
+			{
+				//cout << "v->size()in" << v->size() << "\n";
+				fDuploGC << v->size() << " ";
+			}
+		}
+
+		for (int sp = 0; sp < parties; sp++)
+		{
+			string s = "output" + to_string(sp + 1);
+			Variable * v = (*vc)[s];
+			if (v != 0)
+			{
+				//cout << "v->size()out" << v->size() << "\n";
+				fDuploGC << v->size() << " ";
+			}
+		}
+		fDuploGC << "\n\n";	
+		
+		fDuploGC << strDuploGC;
+		fDuploGC.close();
+	}
+    
+	
     //this code is for validating shortCircuit (must be done by own eyes)
     vector<Wire> temp;
     

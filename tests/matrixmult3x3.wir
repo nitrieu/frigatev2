@@ -1,13 +1,13 @@
-#define MATRIXSIZE 3
-#define ENTRYSIZE 32
+#define MATRIXSIZE 2
+#define ENTRYSIZE 2
 #parties 2
 
 typedef int_t ENTRYSIZE matrix_entry
 typedef int_t MATRIXSIZE*ENTRYSIZE*MATRIXSIZE matrix
 
-typedef int_t 32 int
+typedef int_t 2 int
 
-typedef uint_t 6 sint
+typedef uint_t 2 sint
 
 typedef struct_t mdata
 {
