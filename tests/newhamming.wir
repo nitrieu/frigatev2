@@ -14,12 +14,6 @@ typedef uint_t 32 int32
 #output 2 counter_int
 
 
-typedef struct_t 
-{
-	
-}
-
-
 
 
 function int32 popcount32(int32 y) {

@@ -1,0 +1,48 @@
+#define wiresize 2
+#parties 2
+
+typedef uint_t wiresize int
+typedef uint_t wiresize*2 int2x
+
+#input 1 int
+#input 2 int
+#output 1 int
+
+
+
+function int[4] init(int a, int b)
+{
+  int mod = a ^ b;
+  int rs[4]={1,a,b,mod};
+  return rs;
+}
+
+function int[2] fLoop(int x[2])
+{   
+   x[0]=x[0]&x[1];   
+   x[1]=x[1]|x[0];
+return x;
+}
+
+function int[2] fLoop1(int x[2])
+{   
+   x[1] = x[0]|x[1];
+   x[0]=x[1]^x[0];
+return x;
+}
+
+function void main()
+{
+   int c[2];
+   int d[2];
+
+    for(int2x i=0;i<2;i++)
+    {
+	d=fLoop1(c);
+	for(int2x j=0;j<2;j++)
+    	{
+        	c=fLoop(d);
+    	}
+    }
+    output1 = c[0];
+}

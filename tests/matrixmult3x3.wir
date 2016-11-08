@@ -1,13 +1,9 @@
 #define MATRIXSIZE 2
-#define ENTRYSIZE 2
 #parties 2
-
-typedef int_t ENTRYSIZE matrix_entry
-typedef int_t MATRIXSIZE*ENTRYSIZE*MATRIXSIZE matrix
 
 typedef int_t 2 int
 
-typedef uint_t 2 sint
+typedef uint_t MATRIXSIZE sint
 
 typedef struct_t mdata
 {
@@ -15,8 +11,8 @@ int data[MATRIXSIZE][MATRIXSIZE];
 }
 
 #input 1 mdata
-#output 1 mdata
 #input 2 mdata
+#output 1 mdata
 #output 2 mdata
 
 function int addAndmult(int a, int x, int y)

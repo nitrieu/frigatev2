@@ -4419,17 +4419,18 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
         if(isFunctionDeclarationNode(pln->nodeList[i]))
         {
             FunctionVariable * v = (FunctionVariable *) ((*vc)["FUNC_VAR_$$_"+isTermNode(isFunctionDeclarationNode(pln->nodeList[i])->name)->var]);
-            if(v->args != 0)
-            {
-                currentbasewire = v->assignPermWires(currentbasewire);
-                setSizes(v->args,0);
-            }
+           
 
             if(v->return_var != 0)
             {
                 currentbasewire = v->assignPermWires(currentbasewire);
                 setSizes(v->return_var,0);
             }
+	        if (v->args != 0)
+	        {
+		        currentbasewire = v->assignPermWires(currentbasewire);
+		        setSizes(v->args, 0);
+	        }
         }
     }
     

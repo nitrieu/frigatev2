@@ -1,5 +1,5 @@
-#define wiresize 96
-#define countersize 14 /* enough to count up to wiresize, unsigned*/
+#define wiresize 64
+#define countersize 7 /* enough to count up to wiresize, unsigned*/
 #define iterations wiresize/32##countersize
 
 #parties 2

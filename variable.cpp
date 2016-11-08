@@ -452,14 +452,15 @@ long FunctionVariable::assignPermWires(long l)
 {
     
     wirebase = l;
-    if(returnv != 0)
-    {
-        l = returnv->assignPermWires(l);
-    }
+    
     for(int i=0;i<argsv.size();i++)
     {
         l = argsv[i]->assignPermWires(l);
     }
+	if (returnv != 0)
+	{
+		l = returnv->assignPermWires(l);
+	}
     return l;
 }
 
