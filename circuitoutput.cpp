@@ -15,6 +15,8 @@ bool useTinyOutput = false;
 //duplo
 bool isPrintDuploGC = false;
 string strDuploGC;
+string strDpInFunc;
+string strDpOutFunc;
 ofstream fDuploGC;
 string strDuploZeroOne;
 
@@ -22,6 +24,14 @@ void printDuploGC(bool value)
 {
 	isPrintDuploGC = value;
 }
+
+void appendDuploGC(string str)
+{
+	if(isPrintDuploGC)
+		strDuploGC.append(str);
+}
+
+
 void setTinyFiles(bool in)
 {
     useTinyOutput = in;
@@ -314,7 +324,7 @@ void messyUnlock(Variable * cvar)
     }
 }
 
-void messyAssignAndCopy(Variable * cvar, Variable * pattern)
+void messyAssignAndCopy(Variable * cvar, Variable * pattern, bool isFnInp, bool isFnOut)
 {
     if(cvar->v_enum == Intv)
     {
@@ -328,7 +338,7 @@ void messyAssignAndCopy(Variable * cvar, Variable * pattern)
             if(i < intvsize)
             {
                 assignWire(dest->wires[i],intv->wires[i]);
-                makeWireContainValueNoONEZEROcopy(dest->wires[i]);
+	            makeWireContainValueNoONEZEROcopy(dest->wires[i],isFnInp, isFnOut);
             }
             else
             {
@@ -343,7 +353,7 @@ void messyAssignAndCopy(Variable * cvar, Variable * pattern)
         
         for(int i=0;i<dest->av.size();i++)
         {
-            messyAssignAndCopy(arrayv->av[i],dest->av[i]);
+	        messyAssignAndCopy(arrayv->av[i], dest->av[i], isFnInp, isFnOut);
         }
     }
     else if(cvar->v_enum == Structv)
@@ -354,7 +364,7 @@ void messyAssignAndCopy(Variable * cvar, Variable * pattern)
         for (std::unordered_map<string,Variable *>::iterator it = structv->map.begin(); it!= structv->map.end(); ++it )
         {
             Variable * v =  (Variable *)(it->second);
-            messyAssignAndCopy(v,dest->map[(string)(it->first)]);
+	        messyAssignAndCopy(v, dest->map[(string)(it->first)], isFnInp, isFnOut);
         }
     }
     else
@@ -447,6 +457,7 @@ void putVariableToVector(CORV & c)
     c.vec.resize(c.var->size());
     
     int startplace = c.var->wv->startwirenum;
+	
     
     for(int i=0;i<c.var->size();i++)
     {
@@ -3245,7 +3256,7 @@ void makeONEandZERO(ostream & mos)
     ZERO_WIRE->wireNumber = zero_wire_l;
 }
 
-void makeWireContainValueNoONEZEROcopy(Wire * w)
+void makeWireContainValueNoONEZEROcopy(Wire * w, bool isFnInp, bool isFnOut)
 {
 
     
@@ -3261,7 +3272,7 @@ void makeWireContainValueNoONEZEROcopy(Wire * w)
         return;
     }
     
-    writeCopy(w->wireNumber,w->other->wireNumber);
+	writeCopy(w->wireNumber, w->other->wireNumber, isFnInp, isFnOut);
     
     //if(seeoutput) cout << "CP MWCOa "<< w->wireNumber<<" "<<w->other->wireNumber<<"\n";
     
@@ -3296,7 +3307,7 @@ int MWCV_lastnum_dest;
 int MWCV_lastnum_from;
 bool MWCV_isFirstLine;
 
-void makeWireContainValueNoONEZEROcopyTiny(Wire * w)
+void makeWireContainValueNoONEZEROcopyTiny(Wire * w, bool isFnInp, bool isFnOut)
 {
     if(w->other == 0 || w->state == UNKNOWN)
     {
@@ -3409,15 +3420,15 @@ Wire * clearWireForReuse(Wire * w)
     return w;
 }
 
-void makeWireContainValue(Wire * w)
+void makeWireContainValue(Wire * w,bool isFnInp, bool isFnOut)
 {
     if(w->state == ONE)
     {
-        writeCopy(w->wireNumber,one_wire_l);
+	    writeCopy(w->wireNumber, one_wire_l, isFnInp, isFnOut);
     }
     if(w->state == ZERO)
     {
-        writeCopy(w->wireNumber,zero_wire_l);
+	    writeCopy(w->wireNumber, zero_wire_l, isFnInp, isFnOut);
     }
     
     
@@ -3426,7 +3437,7 @@ void makeWireContainValue(Wire * w)
         return;
     }
     
-    writeCopy(w->wireNumber,w->other->wireNumber);
+	writeCopy(w->wireNumber, w->other->wireNumber, isFnInp, isFnOut);
     //if(seeoutput) cout << "CP MWCOb "<< w->wireNumber<<" "<<w->other->wireNumber<<"\n";
     
     if(w->state == UNKNOWN_INVERT_OTHER_WIRE)
@@ -3565,8 +3576,23 @@ void outputGateNoInvertOutput(short table, Wire * a, Wire * b, Wire * dest)
 
 void outputFunctionCall(int num)
 {
-    writeFunctionCall(num, os);
+	writeFunctionCall(num, os);	
+
 }
+
+
+void outputFunctionCallDP(int num){
+	
+	//duplo
+	if (isPrintDuploGC)
+	{
+		strDuploGC.append("IN: " + strDpInFunc + "\n");
+		strDuploGC.append("FN " + to_string(num) + "\n");
+		strDuploGC.append("OUT: ");
+		strDpInFunc = "";
+	}
+}
+
 
 long co_nonxorgates=0;
 long co_xorgates=0;
@@ -3859,7 +3885,7 @@ void writeGate(short table, int d, int x, int y, ostream * os)
 			strDuploGC.append("2 1 " + to_string(x) + " " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
 }
 
-void writeCopy(int to, int from)
+void writeCopy(int to, int from, bool isFNInp, bool isFNOut)
 {
     outbuffer[0] = 0;
     outbuffer[1] = 0x300;
@@ -3870,10 +3896,14 @@ void writeCopy(int to, int from)
     co_xorgates++;
 	
 	//duplo
-	if(isPrintDuploGC)
-		strDuploGC.append("CP " + to_string(from) + " " + to_string(to) + "\n");
+	if (isPrintDuploGC && !isFNInp && !isFNOut)
+		strDuploGC.append("2 1 " + to_string(from) + " " + to_string(zero_wire_l) + " " + to_string(to) + " XOR\n");
 	
+	if (isPrintDuploGC && isFNInp && !isFNOut)
+		strDpInFunc.append(to_string(from) + " ");
 	
+	if (isPrintDuploGC && !isFNInp && isFNOut)
+		strDuploGC.append(to_string(to) + " ");
 }
 
 void writeFunctionCall(int function, ostream * os)
@@ -3886,11 +3916,7 @@ void writeFunctionCall(int function, ostream * os)
     if(seeoutput) cout << os<< " FN "<<function<<"\n";
     co_xorgates++;
 	
-//duplo
-	if (isPrintDuploGC)
-		strDuploGC.append("FN " + to_string(function) + "\n");
 
-	
 	
 }
 

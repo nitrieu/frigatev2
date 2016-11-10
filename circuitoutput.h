@@ -21,6 +21,7 @@ using namespace std;
 
 
 void printDuploGC(bool value);
+void appendDuploGC(string str);
 void messyUnlock(Variable * cvar);
 void outputEquals(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv);
 void outputLessThanSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv);
@@ -52,6 +53,7 @@ void clearReffedWire(Wire * w);
 Wire * clearWireForReuse(Wire * w);
 
 void outputFunctionCall(int num);
+void outputFunctionCallDP(int num);
 
 void openOutputFile(string s);
 void closeOutputFile();
@@ -72,7 +74,7 @@ void addComplexOpSingleDestBit(short op, int length, int starta, int startb, int
 void writeComplexGate(short op, int dest, int x, int y, int length, int carryadd, int isend);
 void writeGate(short table, int d, int x, int y,ostream * os);
 void writeGate(short table, int d, int x, int y);
-void writeCopy(int to, int from);
+void writeCopy(int to, int from, bool isFnInp = false,bool isFnOut = false);
 void writeFunctionCall(int function, ostream * os);
 
 long getNonXorGates();
@@ -85,7 +87,7 @@ string getFunctionPrefix();
 
 //messyAssign assings from c to pattern
 void messyAssignAndCopy(CORV & c, Variable * pattern);
-void messyAssignAndCopy(Variable * cvar, Variable * pattern);
+void messyAssignAndCopy(Variable * cvar, Variable * pattern, bool isFnInp = false, bool isFnOut = false);
 void messyMakeWireContainValueNoONEZEROcopy(Variable * pattern);
 
 Wire * invertWireNoInvertOutput(Wire * w2);
@@ -102,10 +104,10 @@ void outputGateNoInvertOutput(short table, Wire * a, Wire * b,Wire * dest);
 //party is party
 Wire * outputGate(bool inOut, int party);
 void makeWireNotOther(Wire * w);
-void makeWireContainValueNoONEZEROcopy(Wire * w);
-void makeWireContainValue(Wire * w);
+void makeWireContainValueNoONEZEROcopy(Wire * w, bool isFnInp = false, bool isFnOut = false);
+void makeWireContainValue(Wire * w, bool isFnInp = false, bool isFnOut = false);
 
-void makeWireContainValueNoONEZEROcopyTiny(Wire * w);
+void makeWireContainValueNoONEZEROcopyTiny(Wire * w, bool isFnInp = false, bool isFnOut = false);
 
 void makeWireContainValueNoONEZEROcopyTinyEnd();
 

@@ -10,33 +10,29 @@ typedef uint_t wiresize*2 int2x
 
 
 
-function int[4] init(int a, int b)
+function int f1(int a, int b)
 {
-  int mod = a ^ b;
-  int rs[4]={1,a,b,mod};
-  return rs;
+  
+  return a&b;
+}
+function int f2(int a, int b)
+{
+  
+  return a^b;
 }
 
-
-function int[4] fLoop(int x[4])
+function int f3(int a, int b)
 {
-
-   
-         x[0]=x[0]&x[1];
-   
-   x[2] = x[2]>>1;
-   x[1]=x[1]&x[2];
-return x;
+  
+  return a|b;
 }
+
 
 function void main()
 {
-   int c[4];
-   c=init(input1, input2);
-
-    for(int i=0;i<wiresize;i++)
-    {
-        c=fLoop(c);
-    }
-    output1 = c[0];
+   int c;
+int d;
+c=f1(input1, input2);
+d=f2(input1, input2);
+output1=f3(c,d);
 }

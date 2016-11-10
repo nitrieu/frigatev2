@@ -2423,6 +2423,7 @@ CORV  AssignNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             if(leftcorv.var != 0)
             {
                 w1 = getWire(i,leftcorv.var->wv);
+	           
             }
             else
             {
@@ -2440,7 +2441,7 @@ CORV  AssignNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             
             if(!getIsTiny())
             {
-                makeWireContainValueNoONEZEROcopy(w1);
+                makeWireContainValueNoONEZEROcopy(w1,false,true);
             }
             else
             {
@@ -2451,6 +2452,7 @@ CORV  AssignNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         {
             makeWireContainValueNoONEZEROcopyTinyEnd();
         }
+	   
     }
     else
     {
@@ -2489,16 +2491,17 @@ CORV  AssignNode::circuitOutput(VariableContext * vc, TypeMap * tm)
                 makeWireContainValueNoONEZEROcopyTiny(w1);
             }*/
             
-            makeWireContainValueNoONEZEROcopy(w1);
+            makeWireContainValueNoONEZEROcopy(w1, false,true);
         }
         /*if(getIsTiny())
         {
             makeWireContainValueNoONEZEROcopyTinyEnd();
         }*/
+	   
     }
 
-    
-    
+	appendDuploGC("\n\n"); //end of function
+	
     unlockCORV(rightcorv);
     
     getPool()->freeIfNoRefs();
@@ -3778,6 +3781,8 @@ CORV  FunctionCallNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     vector<CORV> param;
     
     param.resize(funcvar->argsv.size());
+	
+	
     
     if(args != 0)
     {
@@ -3803,13 +3808,13 @@ CORV  FunctionCallNode::circuitOutput(VariableContext * vc, TypeMap * tm)
                 {
                     Wire * w = ((IntVariable *)paramvar)->wires[j];
                     assignWire(w,c->vec[j]);
-                    makeWireContainValue(w);
+	                makeWireContainValue(w, true,false);
                 }
                 for(;j<paramvar->size();j++)
                 {
                     Wire * w = ((IntVariable *)paramvar)->wires[j];
                     assignWire(w,get_ZERO_WIRE());
-                    makeWireContainValue(w);
+	                makeWireContainValue(w, true,false);
                 }
             }
             else
@@ -3823,13 +3828,13 @@ CORV  FunctionCallNode::circuitOutput(VariableContext * vc, TypeMap * tm)
                     {
                         Wire * w = ((IntVariable *)paramvar)->wires[j];
                         assignWire(w,ivar->wires[j]);
-                        makeWireContainValue(w);
+	                    makeWireContainValue(w, true,false);
                     }
                     for(;j<paramvar->size();j++)
                     {
                         Wire * w = ((IntVariable *)paramvar)->wires[j];
                         assignWire(w,get_ZERO_WIRE());
-                        makeWireContainValue(w);
+	                    makeWireContainValue(w, true,false);
                     }
                 }
                 else
@@ -3843,7 +3848,7 @@ CORV  FunctionCallNode::circuitOutput(VariableContext * vc, TypeMap * tm)
                     {
                         Wire * w = getWire(j+startparam,paramvar->wv);
                         assignWire(w,getWire(j+startanyvar,anyvar->wv));
-                        makeWireContainValue(w);
+	                    makeWireContainValue(w, true,false);
                     }
                 }
             }
@@ -3857,6 +3862,7 @@ CORV  FunctionCallNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     if(funcvar->functionNode->gatesFromNode != 0 || funcvar->functionNode->gatesFromNodeXor != 0)
     {
         outputFunctionCall(funcvar->functionNumber);
+	    outputFunctionCallDP(funcvar->functionNumber);
     }
     
     
@@ -3929,7 +3935,7 @@ CORV  FunctionCallNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             counter++;
         }
         
-        messyAssignAndCopy(funcvar->returnv,rvar);
+        messyAssignAndCopy(funcvar->returnv,rvar,true,true);
         
         v.var = rvar;
     }
