@@ -25,6 +25,7 @@ public:
     State_Enum state;
     Wire_Type_Enum type;
     long wireNumber;
+	long prevWireNumber[2] = { -1, 1 };
     Wire * other;
     int otherRefArrayNumber;
     int refs;
