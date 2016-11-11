@@ -21,6 +21,8 @@ using namespace std;
 
 
 void printDuploGC(bool value);
+void appendDuploGC(string value, bool cond);
+bool isMainFunction();
 void messyUnlock(Variable * cvar);
 void outputEquals(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv);
 void outputLessThanSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv);
@@ -52,6 +54,7 @@ void clearReffedWire(Wire * w);
 Wire * clearWireForReuse(Wire * w);
 
 void outputFunctionCall(int num);
+void outputFunctionCallDP(int num, string localInp, string globalInp);
 
 void openOutputFile(string s);
 void closeOutputFile();

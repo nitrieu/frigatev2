@@ -23,6 +23,18 @@ void printDuploGC(bool value)
 {
 	isPrintDuploGC = value;
 }
+
+void appendDuploGC(string value, bool cond)
+{
+	if(isPrintDuploGC && cond)
+		strDuploGC.append(value);
+	
+}
+
+bool isMainFunction()
+{
+	return isMainFunc;
+}
 void setTinyFiles(bool in)
 {
     useTinyOutput = in;
@@ -3605,6 +3617,17 @@ void outputFunctionCall(int num)
     writeFunctionCall(num, os);
 }
 
+void outputFunctionCallDP(int num, string localInp, string globalInp)
+{
+	//duplo
+	if (isPrintDuploGC && isMainFunc)
+	{
+		strDuploGC.append("Local Inp: " + localInp + "\n");			
+		strDuploGC.append("Global Inp: " + globalInp + "\n");	
+		strDuploGC.append("FN " + to_string(num) + "\n");	
+	}
+}
+
 long co_nonxorgates=0;
 long co_xorgates=0;
 
@@ -3910,8 +3933,8 @@ void writeCopy(int to, int from)
 	if(isPrintDuploGC && !isMainFunc)
 		strDuploGC.append("2 1 " + to_string(from) + " " + to_string(zero_wire_l) + " " + to_string(to) + " XOR \n");
 	
-	if (isPrintDuploGC && isMainFunc)
-		strDuploGC.append("CP " + to_string(from) + " " + to_string(to) + "\n");
+	//if (isPrintDuploGC && isMainFunc)
+	//	strDuploGC.append("CP " + to_string(from) + " " + to_string(to) + "\n");
 	
 	
 }
@@ -3927,10 +3950,8 @@ void writeFunctionCall(int function, ostream * os)
     co_xorgates++;
 	
 //duplo
-	if (isPrintDuploGC)
-		strDuploGC.append("FN " + to_string(function) + "\n");
-
-	
+	if (isPrintDuploGC && !isMainFunc)
+		strDuploGC.append("FN " + to_string(function) + "\n");	
 	
 }
 
