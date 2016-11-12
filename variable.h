@@ -129,7 +129,7 @@ public:
         
     }
     
-    virtual long FillInWires(WireSet * ws, long wirestarplace)
+    virtual long FillInWires(WireSet * ws, long wirestarplace, int idx)
     {
         return 0;
     }
@@ -186,7 +186,7 @@ public:
     }
     
     virtual void FillInType(bool usePool);
-    virtual long FillInWires(WireSet * ws, long wirestarplace);
+	virtual long FillInWires(WireSet * ws, long wirestarplace, int idx);
     
     long assignPermWires(long l);
     
@@ -242,7 +242,7 @@ public:
     
     virtual void FillInType(bool usePool);
     
-    virtual long FillInWires(WireSet * ws, long wirestarplace);
+	virtual long FillInWires(WireSet * ws, long wirestarplace, int idx);
     
     virtual ~ArrayVariable()
     {
@@ -344,7 +344,7 @@ public:
     }
     
     virtual void FillInType(bool usePool);
-    virtual long FillInWires(WireSet * ws, long wirestarplace);
+	virtual long FillInWires(WireSet * ws, long wirestarplace, int idx);
     
     virtual ~StructVariable()
     {
@@ -534,7 +534,7 @@ public:
     long assignPermWires(long l);
     
     virtual void FillInType(bool usePool);
-    virtual long FillInWires(WireSet * ws, long wirestarplace);
+	virtual long FillInWires(WireSet * ws, long wirestarplace, int idx);
     
     virtual ~FunctionVariable()
     {

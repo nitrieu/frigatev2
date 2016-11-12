@@ -205,7 +205,7 @@ public:
         nodeLocation = AstLocation::Duplicate(newloc);
     }
     
-    virtual CORV  circuitOutput(VariableContext *, TypeMap *)=0;
+    virtual CORV  circuitOutput(VariableContext *, TypeMap *, int )=0;
 
 };
 
@@ -345,7 +345,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -446,7 +446,7 @@ public:
         return t;
     }
 
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class BitwiseXORNode : public Node
@@ -547,7 +547,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 /*
@@ -648,7 +648,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class ConditionalORNode : public Node
@@ -748,7 +748,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 */
 
@@ -845,7 +845,7 @@ public:
         checkSign(t);
         return t;
     }
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class ArrayInitNode : public Node
@@ -942,7 +942,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class UnaryNOTNode : public Node
@@ -1037,7 +1037,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -1148,7 +1148,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -1245,7 +1245,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -1341,7 +1341,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -1436,7 +1436,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class UnaryPrePlusPlusNode : public Node
@@ -1531,7 +1531,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class UnaryPreMinusMinusNode : public Node
@@ -1627,7 +1627,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class ArithModuloNode : public Node
@@ -1727,7 +1727,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -1829,7 +1829,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -1932,7 +1932,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -2033,7 +2033,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class ArithDivNode : public Node
@@ -2133,7 +2133,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -2234,7 +2234,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -2336,7 +2336,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -2437,7 +2437,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -2540,7 +2540,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -2641,7 +2641,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -2742,7 +2742,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -2843,7 +2843,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -2944,7 +2944,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -3045,7 +3045,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class ShiftLeftNode : public Node
@@ -3145,7 +3145,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -3246,7 +3246,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -3352,7 +3352,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -3466,7 +3466,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -3633,7 +3633,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -3738,7 +3738,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class WireAccessNode : public Node
@@ -3897,7 +3897,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class AssignNode : public Node
@@ -4000,7 +4000,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -4140,7 +4140,7 @@ public:
         
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -4278,7 +4278,7 @@ public:
         return getNoType();
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -4418,7 +4418,7 @@ public:
         return getNoType();
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -4562,7 +4562,7 @@ public:
         return getNoType();
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -4730,7 +4730,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -4831,7 +4831,7 @@ public:
         return getNoType();
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -4924,7 +4924,7 @@ public:
         return InputOutputTypeCheck(this,vc,tm);
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -5033,7 +5033,7 @@ public:
         return InputOutputTypeCheck(this,vc,tm);
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class FunctionCallNode : public Node
@@ -5162,7 +5162,7 @@ public:
         return t;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class DotOperatorNode : public Node
@@ -5268,7 +5268,7 @@ public:
         return dotTypeCheck(this,vc,tm,"");
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -5377,7 +5377,7 @@ public:
         return InputOutputTypeCheck(this,vc,tm);
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class DefineNode : public Node
@@ -5485,7 +5485,7 @@ public:
         return getNoType();
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class IncludeNode : public Node
@@ -5577,7 +5577,7 @@ public:
         return getNoType();
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -5673,7 +5673,7 @@ public:
         return getNoType();
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class ArrayDeclarationListNode : public Node
@@ -5769,7 +5769,7 @@ public:
         return getNoType();
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class StatementListNode : public Node
@@ -5865,7 +5865,7 @@ public:
         return getNoType();
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class DeclarationCommaListNode : public Node
@@ -5966,7 +5966,7 @@ public:
         return getNoType();
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class ArrayInitListNode : public Node
@@ -6082,7 +6082,7 @@ public:
         return first;
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class FunctionArgListNode : public Node
@@ -6184,7 +6184,7 @@ public:
         return getNoType();
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -6287,7 +6287,7 @@ public:
         return getNoType();
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -6392,7 +6392,7 @@ public:
         return getNoType();
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -6513,7 +6513,7 @@ public:
         return getNoType();
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -6694,7 +6694,7 @@ public:
         return unaryTypeCheckFunctionDeclaration(this,vc,tm,"");
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
     bool givenrecwarning;
 };
 
@@ -6844,7 +6844,7 @@ public:
         return forTypeCheck(this,vc,tm,"");
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -6994,7 +6994,7 @@ public:
         return ifTypeCheck(this,vc,tm,"");
     }
     
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class CompoundStatementNode : public Node
@@ -7143,7 +7143,7 @@ public:
         }
         return getNoType();
     }
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class ExpressionStatementNode : public Node
@@ -7263,7 +7263,7 @@ public:
         
         return getNoType();
     }
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -7372,7 +7372,7 @@ public:
         checkSign(t);
         return t;
     }
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 class VarDeclarationForNode : public Node
@@ -7482,7 +7482,7 @@ public:
     {
         return getNoType();
     }
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 
@@ -7667,7 +7667,7 @@ public:
     {
         return getNoType();
     }
-    CORV  circuitOutput(VariableContext *, TypeMap *);
+    CORV  circuitOutput(VariableContext *, TypeMap *, int idxF);
 };
 
 

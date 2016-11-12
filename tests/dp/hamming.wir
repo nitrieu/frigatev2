@@ -35,12 +35,13 @@ function counter_int getHam32(int32 hamm32,counter_int dist) {
 function void main()
 {
    counter_int dist = 0;
-   value_int hamming = getXOR(input1,input2);
+   value_int hamming;
+ hamming= getXOR(input1,input2);
 
-   for(counter_int i=0; i<iterations; i++) /* wiresize / 32 */
+   for(counter_int i=0; i<iterations-1; i++) /* wiresize / 32 */
    {
       dist=getHam32(hamming{i*32:32},dist);
    }
-  output1 = dist;
+  output1 = getHam32(hamming{(iterations-1)*32:32},dist);
 
 }

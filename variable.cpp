@@ -452,7 +452,7 @@ long FunctionVariable::assignPermWires(long l)
 {
     
     wirebase = l;
-    
+ 
     for(int i=0;i<argsv.size();i++)
     {
         l = argsv[i]->assignPermWires(l);
@@ -468,19 +468,19 @@ long FunctionVariable::assignPermWires(long l)
 
 
 
-long ArrayVariable::FillInWires(WireSet * ws, long l)
+long ArrayVariable::FillInWires(WireSet * ws, long l, int idxF)
 {
     //cout << "fit1s\n";
     
     if(ws == 0)
     {
-        ws = getPool()->getWires(size());
+	    ws = getPool(idxF)->getWires(size());
     }
     wireset = ws;
 
     for(int i=0;i<av.size();i++)
     {
-        l = av[i]->FillInWires(ws,l);
+	    l = av[i]->FillInWires(ws, l, idxF);
     }
     
     //cout << "fit1e\n";
@@ -488,12 +488,12 @@ long ArrayVariable::FillInWires(WireSet * ws, long l)
     return l;
 }
 
-long IntVariable::FillInWires(WireSet * ws, long l)
+long IntVariable::FillInWires(WireSet * ws, long l, int idxF)
 {
     
     if(ws == 0)
     {
-        ws = getPool()->getWires(size());
+	    ws = getPool(idxF)->getWires(size());
     }
     wireset = ws;
 
@@ -506,11 +506,11 @@ long IntVariable::FillInWires(WireSet * ws, long l)
     return l;
 }
 
-long StructVariable::FillInWires(WireSet * ws, long l)
+long StructVariable::FillInWires(WireSet * ws, long l, int idxF)
 {
     if(ws == 0)
     {
-        ws = getPool()->getWires(size());
+	    ws = getPool(idxF)->getWires(size());
     }
     wireset = ws;
     
@@ -519,18 +519,18 @@ long StructVariable::FillInWires(WireSet * ws, long l)
     for (std::unordered_map<string,StructItem *>::iterator it = st->si.begin(); it!= st->si.end(); ++it )
     {
         StructItem * sItem =  (StructItem *)(it->second);
-        l = map[sItem->name]->FillInWires(ws,l);
+	    l = map[sItem->name]->FillInWires(ws, l, idxF);
     }
     return l;
 }
 
-long FunctionVariable::FillInWires(WireSet * ws, long l)
+long FunctionVariable::FillInWires(WireSet * ws, long l, int idxF)
 {
     
     
     if(ws == 0)
     {
-        ws = getPool()->getWires(size());
+	    ws = getPool(idxF)->getWires(size());
     }
     wireset = ws;
     
@@ -538,11 +538,11 @@ long FunctionVariable::FillInWires(WireSet * ws, long l)
     
     if(returnv != 0)
     {
-        l = returnv->FillInWires(ws,l);
+	    l = returnv->FillInWires(ws, l, idxF);
     }
     for(int i=0;i<argsv.size();i++)
     {
-        l = argsv[i]->FillInWires(ws,l);
+	    l = argsv[i]->FillInWires(ws, l, idxF);
     }
     return l;
 }

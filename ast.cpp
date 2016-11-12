@@ -18,6 +18,7 @@ unsigned long startTimeb, endTimeb;
 
 using namespace std;
 
+
 Type * binaryTypeCheckNoStructNoArray(Node *left,Node *right,VariableContext * vc, TypeMap * tm, string op)
 {
     Type * leftt = left->typeCheck(vc,tm);
@@ -1718,96 +1719,96 @@ Type * InputOutputTypeCheck(Node *n,VariableContext * vc, TypeMap * tm)
 
 
 
-CORV  DefineNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  DefineNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
-CORV  OutputNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  OutputNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
 
-CORV IntTypedefNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV IntTypedefNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
-CORV UIntTypedefNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV UIntTypedefNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
-CORV  IncludeNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  IncludeNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
-CORV PartiesNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV PartiesNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
-CORV  ProgramListNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ProgramListNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
-CORV  StructTypedefNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  StructTypedefNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
-CORV  InputNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  InputNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
-CORV  VarDeclarationCommaNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  VarDeclarationCommaNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "usednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
-CORV  ArrayDeclarationListNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ArrayDeclarationListNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
-CORV  DeclarationNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  DeclarationNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
-CORV  DeclarationCommaListNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  DeclarationCommaListNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
-CORV  ArrayDecNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ArrayDecNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
-CORV ArithModuloNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV ArithModuloNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     /*preparation*/
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+    CORV leftcorv = left->circuitOutput(vc,tm, idxF);
+    CORV rightcorv = right->circuitOutput(vc,tm, idxF);
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv;
@@ -1819,7 +1820,7 @@ CORV ArithModuloNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         ensureAnyVariableToVec(rightcorv);
         rightv = &(rightcorv.vec);
         //ensureSameSize(*leftv,*rightv);
-        ensureTypedSize(*leftv,*rightv,returnTypeOfNode);
+        ensureTypedSize(*leftv,*rightv,returnTypeOfNode,idxF);
     }
     
     
@@ -1830,12 +1831,12 @@ CORV ArithModuloNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     /*outputting the circuit*/
     if(isSigned)
     {
-        outputDivideSigned(leftv,rightv,destv.vec,true);
+	    outputDivideSigned(leftv, rightv, destv.vec, true, idxF);
         //cout << "signed div\n";
     }
     else
     {
-        outputDivideUnsigned(leftv,rightv,destv.vec,true);
+	    outputDivideUnsigned(leftv, rightv, destv.vec, true, idxF);
         //cout << "unsigned div\n";
     }
     
@@ -1852,16 +1853,16 @@ CORV ArithModuloNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         destv.vec[i]->locked = true;
     }
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
     return destv;
 
 }
-CORV  ArithDivNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ArithDivNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     /*preparation*/
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+    CORV leftcorv = left->circuitOutput(vc,tm, idxF);
+    CORV rightcorv = right->circuitOutput(vc,tm, idxF);
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv;
@@ -1873,7 +1874,7 @@ CORV  ArithDivNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         ensureAnyVariableToVec(rightcorv);
         rightv = &(rightcorv.vec);
         //ensureSameSize(*leftv,*rightv);
-        ensureTypedSize(*leftv,*rightv,returnTypeOfNode);
+	    ensureTypedSize(*leftv, *rightv, returnTypeOfNode, idxF);
     }
     
     
@@ -1884,11 +1885,11 @@ CORV  ArithDivNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     /*outputting the circuit*/
     if(isSigned)
     {
-        outputDivideSigned(leftv,rightv,destv.vec,false);
+	    outputDivideSigned(leftv, rightv, destv.vec, false, idxF);
     }
     else
     {
-        outputDivideUnsigned(leftv,rightv,destv.vec,false);
+	    outputDivideUnsigned(leftv, rightv, destv.vec, false, idxF);
     }
     
     /*cleanup*/
@@ -1904,17 +1905,17 @@ CORV  ArithDivNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         destv.vec[i]->locked = true;
     }
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
     return destv;
 
 }
 
-CORV ArithReModuloNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV ArithReModuloNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     /*preparation*/
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+    CORV leftcorv = left->circuitOutput(vc,tm, idxF);
+    CORV rightcorv = right->circuitOutput(vc,tm, idxF);
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv;
@@ -1928,8 +1929,8 @@ CORV ArithReModuloNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         
 
         //cout << "origsize: "<<leftv->size()<<" "<<rightv->size()<<" "<<isSigned<<"\n";
-        ensureTypedSize(*leftv,operandTypeOfNode);
-        ensureTypedSize(*rightv,operand2TypeOfNode);
+	    ensureTypedSize(*leftv, operandTypeOfNode, idxF);
+	    ensureTypedSize(*rightv, operand2TypeOfNode, idxF);
         //ensureSameSize(*leftv,*rightv);
         //cout << "postchangesize: "<<leftv->size()<<" "<<rightv->size()<<"\n";
     }
@@ -1942,11 +1943,11 @@ CORV ArithReModuloNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     /*outputting the circuit*/
     if(isSigned)
     {
-        outputReDivideSigned(leftv,rightv,destv.vec,true,nodeSpecVariable);
+        outputReDivideSigned(leftv,rightv,destv.vec,true,nodeSpecVariable,idxF);
     }
     else
     {
-        outputReDivideUnsigned(leftv,rightv,destv.vec,true,nodeSpecVariable);
+	    outputReDivideUnsigned(leftv, rightv, destv.vec, true, nodeSpecVariable, idxF);
     }
     
     /*cleanup*/
@@ -1968,17 +1969,17 @@ CORV ArithReModuloNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         destv.vec[i]->locked = true;
     }
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
     return destv;
     
 }
 
-CORV  ArithReDivNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ArithReDivNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     /*preparation*/
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+    CORV leftcorv = left->circuitOutput(vc,tm, idxF);
+    CORV rightcorv = right->circuitOutput(vc,tm, idxF);
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv;
@@ -1990,8 +1991,8 @@ CORV  ArithReDivNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         ensureAnyVariableToVec(rightcorv);
         rightv = &(rightcorv.vec);
         //ensureSameSize(*leftv,*rightv);
-        ensureTypedSize(*leftv,operandTypeOfNode);
-        ensureTypedSize(*rightv,operand2TypeOfNode);
+	    ensureTypedSize(*leftv, operandTypeOfNode, idxF);
+	    ensureTypedSize(*rightv, operand2TypeOfNode, idxF);
     }
     
     
@@ -2002,11 +2003,11 @@ CORV  ArithReDivNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     /*outputting the circuit*/
     if(isSigned)
     {
-        outputReDivideSigned(leftv,rightv,destv.vec,false,nodeSpecVariable);
+	    outputReDivideSigned(leftv, rightv, destv.vec, false, nodeSpecVariable, idxF);
     }
     else
     {
-        outputReDivideUnsigned(leftv,rightv,destv.vec,false,nodeSpecVariable);
+	    outputReDivideUnsigned(leftv, rightv, destv.vec, false, nodeSpecVariable, idxF);
     }
     
     /*cleanup*/
@@ -2029,19 +2030,19 @@ CORV  ArithReDivNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         destv.vec[i]->locked = true;
     }
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
     return destv;
 }
 
 
-CORV  ArithExMultNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ArithExMultNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     //cout << "start ArithExMultNode\n";
     
     /*preparation*/
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+    CORV leftcorv = left->circuitOutput(vc,tm, idxF);
+    CORV rightcorv = right->circuitOutput(vc,tm, idxF);
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv;
@@ -2053,7 +2054,7 @@ CORV  ArithExMultNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         ensureAnyVariableToVec(rightcorv);
         rightv = &(rightcorv.vec);
         //ensureSameSize(*leftv,*rightv);
-        ensureTypedSize(*leftv,*rightv,operandTypeOfNode);
+	    ensureTypedSize(*leftv, *rightv, operandTypeOfNode, idxF);
     }
     
     //cout << "spec: "<<nodeSpecVariable<<"\n";
@@ -2066,11 +2067,11 @@ CORV  ArithExMultNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     /*outputting the circuit*/
     if(isSigned)
     {
-        outputExMultSigned(leftv,rightv,destv.vec);
+	    outputExMultSigned(leftv, rightv, destv.vec, idxF);
     }
     else
     {
-        outputExMultUnsigned(leftv,rightv,destv.vec);
+	    outputExMultUnsigned(leftv, rightv, destv.vec, idxF);
     }
     
     
@@ -2087,7 +2088,7 @@ CORV  ArithExMultNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         destv.vec[i]->locked = true;
     }
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
     //cout << "end ArithExMultNode\n";
     
@@ -2097,38 +2098,38 @@ CORV  ArithExMultNode::circuitOutput(VariableContext * vc, TypeMap * tm)
 
 
 
-CORV  FunctionReturnTypeNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  FunctionReturnTypeNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
-CORV  VarDeclarationListNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  VarDeclarationListNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
-CORV  VarDeclarationPrimNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  VarDeclarationPrimNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
-CORV  FunctionVarDeclarationNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  FunctionVarDeclarationNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
-CORV DeclarationArgCommaListNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV DeclarationArgCommaListNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
 
-CORV  VarDeclarationForNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  VarDeclarationForNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
@@ -2371,10 +2372,12 @@ void lockCORVvec(CORV & c)
 
 
 
-CORV  AssignNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  AssignNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = expr->circuitOutput(vc,tm);
+	CORV leftcorv = left->circuitOutput(vc, tm, idxF);
+	CORV rightcorv = expr->circuitOutput(vc, tm, idxF);
+	
+	string strDPGlobalOut;
     
     Variable * var_x = (*vc)["-+IFCOND+-"];
     
@@ -2398,7 +2401,7 @@ CORV  AssignNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         startplace = leftcorv.var->wv->startwirenum;
     }
     
-    ensureSize(rightcorv.vec,size);
+	ensureSize(rightcorv.vec, size, idxF);
     
     Variable * leftvar = leftcorv.var;
     
@@ -2423,7 +2426,6 @@ CORV  AssignNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             if(leftcorv.var != 0)
             {
                 w1 = getWire(i,leftcorv.var->wv);
-	           
             }
             else
             {
@@ -2434,25 +2436,25 @@ CORV  AssignNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             
             if(w1->refs > 0 && (!(w2->other ==w1 && w1->refs ==1) ))
             {
-                clearReffedWire(w1);
+	            clearReffedWire(w1, idxF);
             }
             
-            assignWire(w1,w2);
+	        assignWire(w1, w2, idxF);
             
             if(!getIsTiny())
             {
-                makeWireContainValueNoONEZEROcopy(w1,false,true);
+	            makeWireContainValueNoONEZEROcopy(w1, idxF);
             }
             else
             {
-                makeWireContainValueNoONEZEROcopyTiny(w1);
+	            makeWireContainValueNoONEZEROcopyTiny(w1, idxF);
             }
+	        strDPGlobalOut.append(to_string(w1->wireNumber) + " ");
         }
         if(getIsTiny())
         {
             makeWireContainValueNoONEZEROcopyTinyEnd();
         }
-	   
     }
     else
     {
@@ -2477,10 +2479,10 @@ CORV  AssignNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             
             if(w1->refs > 0)
             {
-                clearReffedWire(w1);
+	            clearReffedWire(w1, idxF);
             }
             
-            assignWireCond(w1,w2, cond);
+	        assignWireCond(w1, w2, cond, idxF);
             
             /*if(!getIsTiny())
             {
@@ -2491,28 +2493,29 @@ CORV  AssignNode::circuitOutput(VariableContext * vc, TypeMap * tm)
                 makeWireContainValueNoONEZEROcopyTiny(w1);
             }*/
             
-            makeWireContainValueNoONEZEROcopy(w1, false,true);
+	        makeWireContainValueNoONEZEROcopy(w1, idxF);
+	        strDPGlobalOut.append(to_string(w1->wireNumber) + " ");
         }
         /*if(getIsTiny())
         {
             makeWireContainValueNoONEZEROcopyTinyEnd();
         }*/
-	   
     }
 
-	appendDuploGC("\n\n"); //end of function
-	
+    
+    
     unlockCORV(rightcorv);
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
+	appendDuploGC("Global OUT: " + strDPGlobalOut + "\n\n", isMainFunction());
     
     return leftcorv;
 }
 
 
-CORV  UnaryNOTNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  UnaryNOTNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
-    CORV leftcorv = operand->circuitOutput(vc,tm);
+	CORV leftcorv = operand->circuitOutput(vc, tm, idxF);
     
     ensureIntVariableToVec(leftcorv);
     vector<Wire *> * leftv = &(leftcorv.vec);
@@ -2520,13 +2523,13 @@ CORV  UnaryNOTNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     CORV v;
     v.vec.resize(leftv->size());
     
-    WireSet * ws = getPool()->getWires(leftv->size());
+    WireSet * ws = getPool(idxF)->getWires(leftv->size());
     
     for(int i=0;i<leftv->size();i++)
     {
         v.vec[i] = ws->wires[i];
-        Wire * d = invertWire(leftv->operator[](i));
-        assignWire(v.vec[i],d);
+	    Wire * d = invertWire(leftv->operator[](i), idxF);
+	    assignWire(v.vec[i], d, idxF);
     }
     
     for(int i=0;i<leftv->size();i++)
@@ -2537,17 +2540,17 @@ CORV  UnaryNOTNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     {
         v.vec[i]->locked = true;
     }
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     return v;
 }
 
 
 
-CORV  ArithPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ArithPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     /*preparation*/
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+	CORV leftcorv = left->circuitOutput(vc, tm, idxF);
+	CORV rightcorv = right->circuitOutput(vc, tm, idxF);
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv;
@@ -2560,7 +2563,7 @@ CORV  ArithPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         ensureAnyVariableToVec(rightcorv);
         rightv = &(rightcorv.vec);
         //ensureSameSize(*leftv,*rightv);
-        ensureTypedSize(*leftv,*rightv,returnTypeOfNode);
+	    ensureTypedSize(*leftv, *rightv, returnTypeOfNode, idxF);
     }
 
     
@@ -2569,7 +2572,7 @@ CORV  ArithPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     
 
     /*outputting the circuit*/
-    outputAddition(leftv,rightv,destv.vec);
+	outputAddition(leftv, rightv, destv.vec, idxF);
 
     
     /*cleanup*/
@@ -2585,7 +2588,7 @@ CORV  ArithPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         destv.vec[i]->locked = true;
     }
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
     //cout << "size of cleanup "<<size<<"\n";
     
@@ -2593,11 +2596,11 @@ CORV  ArithPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
 
 }
 
-CORV  ArithMultNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ArithMultNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     /*preparation*/
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+	CORV leftcorv = left->circuitOutput(vc, tm, idxF);
+	CORV rightcorv = right->circuitOutput(vc, tm, idxF);
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv;
@@ -2609,7 +2612,7 @@ CORV  ArithMultNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         ensureAnyVariableToVec(rightcorv);
         rightv = &(rightcorv.vec);
         //ensureSameSize(*leftv,*rightv);
-        ensureTypedSize(*leftv,*rightv,returnTypeOfNode);
+	    ensureTypedSize(*leftv, *rightv, returnTypeOfNode, idxF);
     }
     
     
@@ -2620,11 +2623,11 @@ CORV  ArithMultNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     /*outputting the circuit*/
     if(isSigned)
     {
-        outputMultSigned(leftv,rightv,destv.vec);
+	    outputMultSigned(leftv, rightv, destv.vec, idxF);
     }
     else
     {
-        outputMultUnsigned(leftv,rightv,destv.vec);
+	    outputMultUnsigned(leftv, rightv, destv.vec, idxF);
     }
     
     
@@ -2641,19 +2644,19 @@ CORV  ArithMultNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         destv.vec[i]->locked = true;
     }
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
     return destv;
 
 }
 
 
-CORV  UnaryPrePlusPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  UnaryPrePlusPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
-    CORV leftcorv = operand->circuitOutput(vc,tm);
+	CORV leftcorv = operand->circuitOutput(vc, tm, idxF);
     
     vector<Wire *> onevec;
-    onevec.push_back(get_ONE_WIRE());
+	onevec.push_back(get_ONE_WIRE(idxF));
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv = &onevec;
@@ -2663,21 +2666,21 @@ CORV  UnaryPrePlusPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         ensureIntVariableToVec(leftcorv);
         leftv = &(leftcorv.vec);
         //leftv  = &(((IntVariable *)leftcorv.var)->wires);
-        ensureSize(onevec,((IntVariable *)leftcorv.var)->size());
+	    ensureSize(onevec, ((IntVariable *)leftcorv.var)->size(), idxF);
     }
     else
     {
         /*this should not be necessary as variable is required, but just in case -> better to be safe than sorry*/
         ensureAnyVariableToVec(leftcorv);
         leftv = &(leftcorv.vec);
-        ensureSameSize(*leftv,*rightv);
+	    ensureSameSize(*leftv, *rightv, idxF);
     }
     
     CORV destv;
     destv.vec.resize(leftv->size());
     
     /*outputting the circuit*/
-    outputAddition(leftv,rightv,destv.vec);
+	outputAddition(leftv, rightv, destv.vec, idxF);
     
     
     //force leftcorv to be in vec
@@ -2694,7 +2697,7 @@ CORV  UnaryPrePlusPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     
     /*intermedate cleanup to remove unnecessary refs that would break the assignWire function*/
     
-    getPool()->freeIfNoRefs();
+	getPool(idxF)->freeIfNoRefs();
     
     
     Variable * var_x = (*vc)["-+IFCOND+-"];
@@ -2708,9 +2711,9 @@ CORV  UnaryPrePlusPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         for(int i=0;i<destv.vec.size();i++)
         {
             
-            assignWire(destvariable->wires[i], destv.vec[i]);
+	        assignWire(destvariable->wires[i], destv.vec[i], idxF);
             destv.vec[i]->locked = false;
-            makeWireContainValueNoONEZEROcopy(destvariable->wires[i]);
+	        makeWireContainValueNoONEZEROcopy(destvariable->wires[i], idxF);
         }
     }
     else
@@ -2721,22 +2724,22 @@ CORV  UnaryPrePlusPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         for(int i=0;i<destv.vec.size();i++)
         {
             
-            assignWireCond(destvariable->wires[i], destv.vec[i],cond);
+	        assignWireCond(destvariable->wires[i], destv.vec[i], cond, idxF);
             destv.vec[i]->locked = false;
-            makeWireContainValueNoONEZEROcopy(destvariable->wires[i]);
+	        makeWireContainValueNoONEZEROcopy(destvariable->wires[i], idxF);
         }
     }
     
     /*cleanup*/
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
     return leftcorv;
 }
-CORV ConditionalLessNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV ConditionalLessNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     /*preparation*/
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+	CORV leftcorv = left->circuitOutput(vc, tm, idxF);
+	CORV rightcorv = right->circuitOutput(vc, tm, idxF);
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv;
@@ -2746,9 +2749,9 @@ CORV ConditionalLessNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         leftv = &(leftcorv.vec);
         ensureAnyVariableToVec(rightcorv);
         rightv = &(rightcorv.vec);
-        ensureSameSize(*leftv,*rightv);
+	    ensureSameSize(*leftv, *rightv, idxF);
         //ensureTypedSize(*leftv,*rightv,typeOfNode);
-        ensureTypedSize(*leftv,*rightv,operandTypeOfNode);
+	    ensureTypedSize(*leftv, *rightv, operandTypeOfNode, idxF);
     }
     
     CORV destv;
@@ -2765,11 +2768,11 @@ CORV ConditionalLessNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     /*outputting the circuit*/
     if(isSigned)
     {
-        outputLessThanSigned(leftv,rightv,destv.vec);
+	    outputLessThanSigned(leftv, rightv, destv.vec, idxF);
     }
     else
     {
-        outputLessThanUnsigned(leftv,rightv,destv.vec);
+	    outputLessThanUnsigned(leftv, rightv, destv.vec, idxF);
     }
 
     
@@ -2798,17 +2801,17 @@ CORV ConditionalLessNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     
     
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     return destv;
 }
 
 
-CORV  ConditionalEqualNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ConditionalEqualNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     /*preparation*/
-    CORV leftcorv = left->circuitOutput(vc,tm);
+	CORV leftcorv = left->circuitOutput(vc, tm, idxF);
     
-    CORV rightcorv = right->circuitOutput(vc,tm);
+	CORV rightcorv = right->circuitOutput(vc, tm, idxF);
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv;
@@ -2819,14 +2822,14 @@ CORV  ConditionalEqualNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         ensureAnyVariableToVec(rightcorv);
         rightv = &(rightcorv.vec);
         //ensureSameSize(*leftv,*rightv);
-        ensureTypedSize(*leftv,*rightv,operandTypeOfNode);
+	    ensureTypedSize(*leftv, *rightv, operandTypeOfNode, idxF);
     }
     
     CORV destv;
     destv.vec.resize(1);
     
     /*outputting the circuit*/
-    outputEquals(leftv,rightv,destv.vec);
+	outputEquals(leftv, rightv, destv.vec, idxF);
     
     
     /*cleanup*/
@@ -2842,14 +2845,14 @@ CORV  ConditionalEqualNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         destv.vec[i]->locked = true;
     }
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     return destv;
 }
-CORV  ConditionalGreaterNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ConditionalGreaterNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     /*preparation*/
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+	CORV leftcorv = left->circuitOutput(vc, tm, idxF);
+	CORV rightcorv = right->circuitOutput(vc, tm, idxF);
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv;
@@ -2860,7 +2863,7 @@ CORV  ConditionalGreaterNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         ensureAnyVariableToVec(rightcorv);
         rightv = &(rightcorv.vec);
         //ensureSameSize(*leftv,*rightv);
-        ensureTypedSize(*leftv,*rightv,operandTypeOfNode);
+	    ensureTypedSize(*leftv, *rightv, operandTypeOfNode, idxF);
     }
     
     CORV destv;
@@ -2870,11 +2873,11 @@ CORV  ConditionalGreaterNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     /*notice the parameter reversal*/
     if(isSigned)
     {
-        outputLessThanSigned(rightv,leftv,destv.vec);
+	    outputLessThanSigned(rightv, leftv, destv.vec, idxF);
     }
     else
     {
-        outputLessThanUnsigned(rightv,leftv,destv.vec);
+	    outputLessThanUnsigned(rightv, leftv, destv.vec, idxF);
     }
     
     /*cleanup*/
@@ -2890,15 +2893,15 @@ CORV  ConditionalGreaterNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         destv.vec[i]->locked = true;
     }
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     return destv;
 
 }
 
-CORV  BitwiseORNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  BitwiseORNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+    CORV leftcorv = left->circuitOutput(vc,tm, idxF);
+    CORV rightcorv = right->circuitOutput(vc,tm, idxF);
     
     ensureIntVariableToVec(leftcorv);
     ensureIntVariableToVec(rightcorv);
@@ -2907,13 +2910,13 @@ CORV  BitwiseORNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     vector<Wire *> * rightv = &(rightcorv.vec);
     
     //ensureSameSize(*leftv,*rightv);
-    ensureTypedSize(*leftv,*rightv,returnTypeOfNode);
+	ensureTypedSize(*leftv, *rightv, returnTypeOfNode, idxF);
 
     
     CORV v;
     v.vec.resize(leftv->size());
     
-    WireSet * ws = getPool()->getWires(leftv->size());
+    WireSet * ws = getPool(idxF)->getWires(leftv->size());
     
     for(int i=0;i<leftv->size();i++)
     {
@@ -2922,8 +2925,8 @@ CORV  BitwiseORNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     
     for(int i=0;i<leftv->size();i++)
     {
-        Wire * d = outputGate(14,leftv->operator[](i),rightv->operator[](i));
-        assignWire(v.vec[i],d);
+	    Wire * d = outputGate(14, leftv->operator[](i), rightv->operator[](i), idxF);
+	    assignWire(v.vec[i], d, idxF);
     }
     
     for(int i=0;i<leftv->size();i++)
@@ -2935,18 +2938,18 @@ CORV  BitwiseORNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     {
         v.vec[i]->locked = true;
     }
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
     return v;
 }
 
-CORV  ShiftLeftNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ShiftLeftNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     
     
     /*preparation*/
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+	CORV leftcorv = left->circuitOutput(vc, tm, idxF);
+	CORV rightcorv = right->circuitOutput(vc, tm, idxF);
     
 
     long shiftamt;
@@ -2968,7 +2971,7 @@ CORV  ShiftLeftNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     {
         destv.vec.resize(lsize+shiftamt);
         
-        WireSet * ws = getPool()->getWires(lsize+shiftamt);
+        WireSet * ws = getPool(idxF)->getWires(lsize+shiftamt);
         
         for(int i=0;i<lsize+shiftamt;i++)
         {
@@ -2977,13 +2980,13 @@ CORV  ShiftLeftNode::circuitOutput(VariableContext * vc, TypeMap * tm)
 
         for(int i=0;i<shiftamt;i++)
         {
-            assignWire(destv.vec[i],get_ZERO_WIRE());
+	        assignWire(destv.vec[i], get_ZERO_WIRE(idxF), idxF);
         }
         for(int i=0;i<leftcorv.vec.size();i++)
         {
-            //destv.vec[i+shiftamt] = getPool()->getWire();
-            assignWire(destv.vec[i+shiftamt],leftcorv.vec[i]);
-            makeWireContainValueNoONEZEROcopy(destv.vec[i+shiftamt]);
+            //destv.vec[i+shiftamt] = getPool(idxF)->getWire();
+	        assignWire(destv.vec[i + shiftamt], leftcorv.vec[i], idxF);
+	        makeWireContainValueNoONEZEROcopy(destv.vec[i + shiftamt], idxF);
         }
     }
     else
@@ -2995,7 +2998,7 @@ CORV  ShiftLeftNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         {
             destv.vec.resize(lsize+shiftamt);
             
-            WireSet * ws = getPool()->getWires(lsize+shiftamt);
+            WireSet * ws = getPool(idxF)->getWires(lsize+shiftamt);
             
             for(int i=0;i<lsize+shiftamt;i++)
             {
@@ -3006,20 +3009,20 @@ CORV  ShiftLeftNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             
             for(int i=0;i<shiftamt;i++)
             {
-                //destv.vec[i] = get_ZERO_WIRE();
-                assignWire(destv.vec[i],get_ZERO_WIRE());
+                //destv.vec[i] = get_ZERO_WIRE(idxF);
+                assignWire(destv.vec[i],get_ZERO_WIRE(idxF), idxF);
             }
             for(int i=0;i<leftcorv.var->size();i++)
             {
-                assignWire(destv.vec[i+shiftamt],iv->wires[i]);
-                makeWireContainValueNoONEZEROcopy(destv.vec[i+shiftamt]);
+	            assignWire(destv.vec[i + shiftamt], iv->wires[i], idxF);
+	            makeWireContainValueNoONEZEROcopy(destv.vec[i + shiftamt], idxF);
             }
         }
         else
         {
             destv.vec.resize(lsize);
             
-            WireSet * ws = getPool()->getWires(lsize);
+            WireSet * ws = getPool(idxF)->getWires(lsize);
             
             for(int i=0;i<lsize;i++)
             {
@@ -3029,14 +3032,14 @@ CORV  ShiftLeftNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             //destv.vec.resize(lsize);
             for(int i=0;i<shiftamt && i < destv.vec.size();i++)
             {
-                //destv.vec[i] = get_ZERO_WIRE();
-                assignWire(destv.vec[i],get_ZERO_WIRE());
+                //destv.vec[i] = get_ZERO_WIRE(idxF);
+	            assignWire(destv.vec[i], get_ZERO_WIRE(idxF), idxF);
             }
             for(int i=0;i<lsize && (i+shiftamt) < destv.vec.size();i++)
             {
-                //destv.vec[i+shiftamt] = getPool()->getWire();
-                assignWire(destv.vec[i+shiftamt], iv->wires[i]);
-                makeWireContainValueNoONEZEROcopy(destv.vec[i+shiftamt]);
+                //destv.vec[i+shiftamt] = getPool(idxF)->getWire();
+	            assignWire(destv.vec[i + shiftamt], iv->wires[i], idxF);
+	            makeWireContainValueNoONEZEROcopy(destv.vec[i + shiftamt], idxF);
             }
             
         }
@@ -3054,15 +3057,15 @@ CORV  ShiftLeftNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     
     
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     return destv;
 
 }
-CORV  ArithMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ArithMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     /*preparation*/
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+    CORV leftcorv = left->circuitOutput(vc,tm, idxF);
+    CORV rightcorv = right->circuitOutput(vc,tm, idxF);
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv;
@@ -3072,7 +3075,7 @@ CORV  ArithMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     leftv = &(leftcorv.vec);
     ensureAnyVariableToVec(rightcorv);
     rightv = &(rightcorv.vec);
-    ensureTypedSize(*leftv,*rightv,returnTypeOfNode);
+	ensureTypedSize(*leftv, *rightv, returnTypeOfNode, idxF);
     
 
     
@@ -3080,7 +3083,7 @@ CORV  ArithMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     destv.vec.resize(leftv->size());
     
     /*outputting the circuit*/
-    outputSubtract(leftv,rightv,destv.vec);
+	outputSubtract(leftv, rightv, destv.vec, idxF);
     
     /*cleanup*/
     int size =leftv->size();
@@ -3099,13 +3102,13 @@ CORV  ArithMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         destv.vec[i]->locked = true;
     }
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     return destv;
 }
-CORV  BitwiseANDNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  BitwiseANDNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+    CORV leftcorv = left->circuitOutput(vc,tm, idxF);
+    CORV rightcorv = right->circuitOutput(vc,tm, idxF);
     
     ensureIntVariableToVec(leftcorv);
     ensureIntVariableToVec(rightcorv);
@@ -3114,13 +3117,13 @@ CORV  BitwiseANDNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     vector<Wire *> * rightv = &(rightcorv.vec);
     
     //ensureSameSize(*leftv,*rightv);
-    ensureTypedSize(*leftv,*rightv,returnTypeOfNode);
+	ensureTypedSize(*leftv, *rightv, returnTypeOfNode, idxF);
     
     
     CORV v;
     v.vec.resize(leftv->size());
     
-    WireSet * ws = getPool()->getWires(leftv->size());
+    WireSet * ws = getPool(idxF)->getWires(leftv->size());
     
     for(int i=0;i<leftv->size();i++)
     {
@@ -3129,8 +3132,8 @@ CORV  BitwiseANDNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     
     for(int i=0;i<leftv->size();i++)
     {
-        Wire * d = outputGate(8,leftv->operator[](i),rightv->operator[](i));
-        assignWire(v.vec[i],d);
+	    Wire * d = outputGate(8, leftv->operator[](i), rightv->operator[](i), idxF);
+	    assignWire(v.vec[i], d, idxF);
     }
     
     for(int i=0;i<leftv->size();i++)
@@ -3142,13 +3145,13 @@ CORV  BitwiseANDNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     {
         v.vec[i]->locked = true;
     }
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     return v;
 }
-CORV  BitwiseXORNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  BitwiseXORNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+    CORV leftcorv = left->circuitOutput(vc,tm, idxF);
+    CORV rightcorv = right->circuitOutput(vc,tm, idxF);
     
     ensureIntVariableToVec(leftcorv);
     ensureIntVariableToVec(rightcorv);
@@ -3157,12 +3160,12 @@ CORV  BitwiseXORNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     vector<Wire *> * rightv = &(rightcorv.vec);
     
     //ensureSameSize(*leftv,*rightv);
-    ensureTypedSize(*leftv,*rightv,returnTypeOfNode);
+	ensureTypedSize(*leftv, *rightv, returnTypeOfNode, idxF);
     
     CORV v;
     v.vec.resize(leftv->size());
     
-    WireSet * ws = getPool()->getWires(leftv->size());
+    WireSet * ws = getPool(idxF)->getWires(leftv->size());
     
     for(int i=0;i<leftv->size();i++)
     {
@@ -3171,8 +3174,8 @@ CORV  BitwiseXORNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     
     for(int i=0;i<leftv->size();i++)
     {
-        Wire * d = outputGate(6,leftv->operator[](i),rightv->operator[](i));
-        assignWire(v.vec[i],d);
+	    Wire * d = outputGate(6, leftv->operator[](i), rightv->operator[](i), idxF);
+	    assignWire(v.vec[i], d, idxF);
     }
     
     for(int i=0;i<leftv->size();i++)
@@ -3184,15 +3187,15 @@ CORV  BitwiseXORNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     {
         v.vec[i]->locked = true;
     }
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     return v;
 }
 
-CORV  RotateLeftNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  RotateLeftNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     /*preparation*/
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+	CORV leftcorv = left->circuitOutput(vc, tm, idxF);
+	CORV rightcorv = right->circuitOutput(vc, tm, idxF);
     
     
     long shiftamt;
@@ -3211,7 +3214,7 @@ CORV  RotateLeftNode::circuitOutput(VariableContext * vc, TypeMap * tm)
 
     destv.vec.resize(lsize);
     
-    WireSet * ws = getPool()->getWires(lsize);
+    WireSet * ws = getPool(idxF)->getWires(lsize);
     
     for(int i=0;i<lsize;i++)
     {
@@ -3226,9 +3229,9 @@ CORV  RotateLeftNode::circuitOutput(VariableContext * vc, TypeMap * tm)
 
         for(int i=0;i<leftcorv.vec.size();i++)
         {
-            //destv.vec[(i+shiftamt)%lsize] = getPool()->getWire();
-            assignWire(destv.vec[(i+shiftamt)%lsize], leftcorv.vec[i]);
-            makeWireContainValueNoONEZEROcopy(destv.vec[(i+shiftamt)%lsize]);
+            //destv.vec[(i+shiftamt)%lsize] = getPool(idxF)->getWire();
+	        assignWire(destv.vec[(i + shiftamt) % lsize], leftcorv.vec[i], idxF);
+	        makeWireContainValueNoONEZEROcopy(destv.vec[(i + shiftamt) % lsize], idxF);
         }
     }
     else
@@ -3242,7 +3245,7 @@ CORV  RotateLeftNode::circuitOutput(VariableContext * vc, TypeMap * tm)
 
             for(int i=0;i<lsize;i++)
             {
-                assignWire(destv.vec[(i+shiftamt)%lsize],iv->wires[i]);
+	            assignWire(destv.vec[(i + shiftamt) % lsize], iv->wires[i],idxF);
             }
         }
         else
@@ -3251,9 +3254,9 @@ CORV  RotateLeftNode::circuitOutput(VariableContext * vc, TypeMap * tm)
 
             for(int i=0;i<lsize;i++)
             {
-                //destv.vec[(i+shiftamt)%lsize] = getPool()->getWire();
-                assignWire(destv.vec[(i+shiftamt)%lsize],iv->wires[i]);
-                makeWireContainValueNoONEZEROcopy(destv.vec[(i+shiftamt)%lsize]);
+                //destv.vec[(i+shiftamt)%lsize] = getPool(idxF)->getWire();
+	            assignWire(destv.vec[(i + shiftamt) % lsize], iv->wires[i], idxF);
+	            makeWireContainValueNoONEZEROcopy(destv.vec[(i + shiftamt) % lsize], idxF);
             }
             
         }
@@ -3269,14 +3272,14 @@ CORV  RotateLeftNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         destv.vec[i]->locked = true;
     }
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     return destv;
 }
-CORV  ShiftRightNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ShiftRightNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     /*preparation*/
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+	CORV leftcorv = left->circuitOutput(vc, tm, idxF);
+	CORV rightcorv = right->circuitOutput(vc, tm, idxF);
     
     
     long shiftamt;
@@ -3304,7 +3307,7 @@ CORV  ShiftRightNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         
         destv.vec.resize(newsize);
         
-        WireSet * ws = getPool()->getWires(newsize);
+        WireSet * ws = getPool(idxF)->getWires(newsize);
         
         for(int i=0;i<newsize;i++)
         {
@@ -3314,13 +3317,13 @@ CORV  ShiftRightNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         int i;
         for(i=0;i<lsize - shiftamt;i++)
         {
-            //destv.vec[i] = getPool()->getWire();
-            assignWire(destv.vec[i], leftcorv.vec[i+shiftamt]);
-            makeWireContainValue(destv.vec[i]);
+            //destv.vec[i] = getPool(idxF)->getWire();
+	        assignWire(destv.vec[i], leftcorv.vec[i + shiftamt], idxF);
+	        makeWireContainValue(destv.vec[i], idxF);
         }
         for(;i<newsize;i++)
         {
-            destv.vec[i] = get_ZERO_WIRE();
+	        destv.vec[i] = get_ZERO_WIRE(idxF);
         }
     }
     else
@@ -3336,7 +3339,7 @@ CORV  ShiftRightNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             
             destv.vec.resize(newsize);
             
-            WireSet * ws = getPool()->getWires(newsize);
+            WireSet * ws = getPool(idxF)->getWires(newsize);
             
             for(int i=0;i<newsize;i++)
             {
@@ -3346,20 +3349,20 @@ CORV  ShiftRightNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             int i;
             for(i=0;i<lsize - shiftamt;i++)
             {
-                //destv.vec[i] = getPool()->getWire();
-                assignWire(destv.vec[i],iv->wires[i+shiftamt]);
-                makeWireContainValue(destv.vec[i]);
+                //destv.vec[i] = getPool(idxF)->getWire();
+	            assignWire(destv.vec[i], iv->wires[i + shiftamt], idxF);
+	            makeWireContainValue(destv.vec[i], idxF);
             }
             for(;i<newsize;i++)
             {
-                assignWire(destv.vec[i],get_ZERO_WIRE());
+	            assignWire(destv.vec[i], get_ZERO_WIRE(idxF), idxF);
             }
         }
         else
         {
             destv.vec.resize(lsize);
             
-            WireSet * ws = getPool()->getWires(lsize);
+            WireSet * ws = getPool(idxF)->getWires(lsize);
             
             for(int i=0;i<lsize;i++)
             {
@@ -3370,14 +3373,14 @@ CORV  ShiftRightNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             int i;
             for(i=0;i<iv->size() - shiftamt;i++)
             {
-                //destv.vec[i] = getPool()->getWire();
-                assignWire(destv.vec[i], iv->wires[i+shiftamt]);
-                makeWireContainValue(destv.vec[i]);
+                //destv.vec[i] = getPool(idxF)->getWire();
+	            assignWire(destv.vec[i], iv->wires[i + shiftamt], idxF);
+	            makeWireContainValue(destv.vec[i], idxF);
             }
             for(;i<iv->size();i++)
             {
                 //this would need to be modified for signextend
-                assignWire(destv.vec[i],get_ZERO_WIRE());
+	            assignWire(destv.vec[i], get_ZERO_WIRE(idxF), idxF);
             }
         }
     }
@@ -3392,19 +3395,19 @@ CORV  ShiftRightNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         destv.vec[i]->locked = true;
     }
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     return destv;
 }
-CORV  UnaryMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  UnaryMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     
     /*preparation*/
-    CORV leftcorv = operand->circuitOutput(vc,tm);
+    CORV leftcorv = operand->circuitOutput(vc,tm, idxF);
     
     
     vector<Wire *> rightrealv;
     rightrealv.resize(1);
-    rightrealv[0] = get_ZERO_WIRE();
+    rightrealv[0] = get_ZERO_WIRE(idxF);
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv = &rightrealv;
@@ -3415,21 +3418,21 @@ CORV  UnaryMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         ensureIntVariableToVec(leftcorv);
         leftv = &(leftcorv.vec);
         //leftv  = &(((IntVariable *)leftcorv.var)->wires);
-        ensureSize(rightrealv,((IntVariable *)leftcorv.var)->size());
+	    ensureSize(rightrealv, ((IntVariable *)leftcorv.var)->size(), idxF);
     }
     else
     {
         /*this should not be necessary as variable is required, but just in case -> better to be safe than sorry*/
         ensureAnyVariableToVec(leftcorv);
         leftv = &(leftcorv.vec);
-        ensureSameSize(*leftv,*rightv);
+	    ensureSameSize(*leftv, *rightv, idxF);
     }
     
     CORV destv;
     destv.vec.resize(leftv->size());
     
     /*outputting the circuit*/
-    outputSubtract(rightv,leftv,destv.vec);
+	outputSubtract(rightv, leftv, destv.vec, idxF);
     
     /*cleanup*/
     int size =leftv->size();
@@ -3448,7 +3451,7 @@ CORV  UnaryMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         destv.vec[i]->locked = true;
     }
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     return destv;
 
 }
@@ -3456,11 +3459,11 @@ CORV  UnaryMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
 int counta=0;
 int countb=0;
 
-CORV  ReturnNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ReturnNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     if(operand != 0)
     {
-        CORV rcorv = operand->circuitOutput(vc,tm);
+        CORV rcorv = operand->circuitOutput(vc,tm, idxF);
         
         CORV * c = &(rcorv);
         Variable * paramvar = (*vc)["-+RETURNTYPE+-"];
@@ -3473,14 +3476,14 @@ CORV  ReturnNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             {
                 Wire * w = ((IntVariable *)paramvar)->wires[j];
                 
-                assignWire(w,c->vec[j]);
-                makeWireContainValue(w);
+	            assignWire(w, c->vec[j], idxF);
+	            makeWireContainValue(w, idxF);
             }
             for(;j<paramvar->size();j++)
             {
                 Wire * w = ((IntVariable *)paramvar)->wires[j];
-                assignWire(w,get_ZERO_WIRE());
-                makeWireContainValue(w);
+	            assignWire(w, get_ZERO_WIRE(idxF), idxF);
+	            makeWireContainValue(w, idxF);
             }
         }
         else
@@ -3494,14 +3497,14 @@ CORV  ReturnNode::circuitOutput(VariableContext * vc, TypeMap * tm)
                 {
                     Wire * w = ((IntVariable *)paramvar)->wires[j];
                     
-                    assignWire(w,ivar->wires[j]);
-                    makeWireContainValue(w);
+	                assignWire(w, ivar->wires[j], idxF);
+	                makeWireContainValue(w, idxF);
                 }
                 for(;j<paramvar->size();j++)
                 {
                     Wire * w = ((IntVariable *)paramvar)->wires[j];
-                    assignWire(w,get_ZERO_WIRE());
-                    makeWireContainValue(w);
+	                assignWire(w, get_ZERO_WIRE(idxF), idxF);
+	                makeWireContainValue(w, idxF);
                 }
             }
             else
@@ -3515,8 +3518,8 @@ CORV  ReturnNode::circuitOutput(VariableContext * vc, TypeMap * tm)
                 {
                     Wire * w = getWire(j+startparam,paramvar->wv);
                     
-                    assignWire(w,getWire(j+startanyvar,anyvar->wv));
-                    makeWireContainValue(w);
+	                assignWire(w, getWire(j + startanyvar, anyvar->wv), idxF);
+	                makeWireContainValue(w, idxF);
                 }
             }
         }
@@ -3529,7 +3532,7 @@ CORV  ReturnNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     CORV v;
     return v;
 }
-CORV  ParenExprNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ParenExprNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     
     if(operand == 0)
@@ -3539,20 +3542,20 @@ CORV  ParenExprNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     }
     else
     {
-        CORV v = operand->circuitOutput(vc,tm);
+        CORV v = operand->circuitOutput(vc,tm, idxF);
         return v;
     }
 }
 
-CORV  WireAccessNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  WireAccessNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     //startTime = RDTSC;
     //startTimeb = RDTSC;
     long size = 1;
     
-    CORV leftexpr = left->circuitOutput(vc,tm);
+	CORV leftexpr = left->circuitOutput(vc, tm, idxF);
     
-    CORV base = wirebase->circuitOutput(vc,tm);
+	CORV base = wirebase->circuitOutput(vc, tm, idxF);
     long baseint = wiresToLong(&base,"Wire base must not be \"unknown\", i.e. dependent on input, value and must be > 0.",this);
     //long baseint = 0;
     
@@ -3561,7 +3564,7 @@ CORV  WireAccessNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     CORV amt;
     if(wireamount != 0)
     {
-        amt = wireamount->circuitOutput(vc,tm);
+	    amt = wireamount->circuitOutput(vc, tm, idxF);
         size = wiresToLong(&amt,"Wire amount must not be \"unknown\", i.e. dependent on input, value. and must be > 0",this);
     }
     
@@ -3639,7 +3642,7 @@ CORV  WireAccessNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             }
             else
             {
-                v.vec[i] = get_ZERO_WIRE();
+	            v.vec[i] = get_ZERO_WIRE(idxF);
             }
         }
         else
@@ -3653,7 +3656,7 @@ CORV  WireAccessNode::circuitOutput(VariableContext * vc, TypeMap * tm)
                 }
                 else
                 {
-                    v.vec[i] = get_ZERO_WIRE();
+	                v.vec[i] = get_ZERO_WIRE(idxF);
                 }
             }
             else
@@ -3664,7 +3667,7 @@ CORV  WireAccessNode::circuitOutput(VariableContext * vc, TypeMap * tm)
                 }
                 else
                 {
-                    v.vec[i] = get_ZERO_WIRE();
+	                v.vec[i] = get_ZERO_WIRE(idxF);
                 }
             }
         }
@@ -3684,7 +3687,7 @@ CORV  WireAccessNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     {
         v.vec[i]->locked = true;
     }
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
 
     
@@ -3694,11 +3697,11 @@ CORV  WireAccessNode::circuitOutput(VariableContext * vc, TypeMap * tm)
 
 
 
-CORV  ArrayAccessNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ArrayAccessNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
 
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV arraycorv = arrayexpr->circuitOutput(vc,tm);
+	CORV leftcorv = left->circuitOutput(vc, tm, idxF);
+	CORV arraycorv = arrayexpr->circuitOutput(vc, tm, idxF);
     CORV v;
     
     long place = wiresToLong(&arraycorv, "Unknown values found, indexing on arrays MUST be with known values and must be > 0.",this);
@@ -3742,7 +3745,7 @@ CORV  ArrayAccessNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     
 
 
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
 
     
     
@@ -3752,10 +3755,10 @@ CORV  ArrayAccessNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     return v;
 }
 
-CORV  DotOperatorNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  DotOperatorNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     //left side must be variable.
-    CORV leftcorv = left->circuitOutput(vc,tm);
+    CORV leftcorv = left->circuitOutput(vc,tm, idxF);
 
     StructVariable * structvar = (StructVariable *)leftcorv.var;
     Variable *item = structvar->map[isTermNode(right)->var];//get map
@@ -3765,7 +3768,7 @@ CORV  DotOperatorNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     
     return v;
 }
-CORV  FunctionCallNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  FunctionCallNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     
     
@@ -3779,17 +3782,18 @@ CORV  FunctionCallNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     //--|copy returnv to CORV v and return
     
     vector<CORV> param;
+	
+	bool isMainFunc = isMainFunction();
+	string strDPGlobalInput, strDPLocalInput;
     
     param.resize(funcvar->argsv.size());
-	
-	
     
     if(args != 0)
     {
         FunctionArgListNode * faln = isFunctionArgListNode(args);
         for(int i=0;i<faln->nodeList.size();i++)
         {
-            param[i] = faln->nodeList[i]->circuitOutput(vc,tm);
+	        param[i] = faln->nodeList[i]->circuitOutput(vc, tm, idxF);
         }
         
         //copy param
@@ -3807,14 +3811,22 @@ CORV  FunctionCallNode::circuitOutput(VariableContext * vc, TypeMap * tm)
                 for(j=0;j<c->vec.size() && j < paramvar->size();j++)
                 {
                     Wire * w = ((IntVariable *)paramvar)->wires[j];
-                    assignWire(w,c->vec[j]);
-	                makeWireContainValue(w, true,false);
+	                strDPGlobalInput.append(to_string(c->vec[j]->wireNumber) + " ");
+	                strDPLocalInput.append(to_string(c->vec[j]->prevWireNumber[1]) + " ");
+	                assignWire(w, c->vec[j], idxF);
+	                makeWireContainValue(w, idxF);	               
+	                
                 }
                 for(;j<paramvar->size();j++)
                 {
                     Wire * w = ((IntVariable *)paramvar)->wires[j];
-                    assignWire(w,get_ZERO_WIRE());
-	                makeWireContainValue(w, true,false);
+	                
+	                strDPGlobalInput.append(to_string(get_ZERO_WIRE(idxF)->wireNumber) + " ");
+	                strDPLocalInput.append(to_string(get_ZERO_WIRE(idxF)->prevWireNumber[1]) + " ");
+	                assignWire(w, get_ZERO_WIRE(idxF), idxF);
+	                makeWireContainValue(w, idxF);
+	                
+	                
                 }
             }
             else
@@ -3827,14 +3839,21 @@ CORV  FunctionCallNode::circuitOutput(VariableContext * vc, TypeMap * tm)
                     for(j=0;j<ivar->size() && j < paramvar->size();j++)
                     {
                         Wire * w = ((IntVariable *)paramvar)->wires[j];
-                        assignWire(w,ivar->wires[j]);
-	                    makeWireContainValue(w, true,false);
+	                    strDPGlobalInput.append(to_string(ivar->wires[j]->wireNumber) + " ");
+	                    strDPLocalInput.append(to_string(ivar->wires[j]->prevWireNumber[1]) + " ");
+	                    assignWire(w, ivar->wires[j], idxF);
+	                    makeWireContainValue(w, idxF);
+	                    //appendDuploGC("--" + to_string(w->wireNumber) + " " +  to_string(w->prevWireNumber[0]) + " " + to_string(w->prevWireNumber[1]) + "\n", isMainFunc);
+	                
                     }
                     for(;j<paramvar->size();j++)
                     {
                         Wire * w = ((IntVariable *)paramvar)->wires[j];
-                        assignWire(w,get_ZERO_WIRE());
-	                    makeWireContainValue(w, true,false);
+	                    strDPGlobalInput.append(to_string(get_ZERO_WIRE(idxF)->wireNumber) + " ");
+	                    strDPLocalInput.append(to_string(get_ZERO_WIRE(idxF)->prevWireNumber[1]) + " ");
+	                    assignWire(w, get_ZERO_WIRE(idxF), idxF);
+	                    makeWireContainValue(w, idxF);	                   
+	                
                     }
                 }
                 else
@@ -3847,8 +3866,13 @@ CORV  FunctionCallNode::circuitOutput(VariableContext * vc, TypeMap * tm)
                     for(int j=0;j<anyvar->size();j++)
                     {
                         Wire * w = getWire(j+startparam,paramvar->wv);
-                        assignWire(w,getWire(j+startanyvar,anyvar->wv));
-	                    makeWireContainValue(w, true,false);
+	                   
+	                    strDPGlobalInput.append(to_string(getWire(j + startanyvar, anyvar->wv)->wireNumber) + " ");
+	                    strDPLocalInput.append(to_string(getWire(j + startanyvar, anyvar->wv)->prevWireNumber[1]) + " ");
+	                    
+	                    assignWire(w, getWire(j + startanyvar, anyvar->wv), idxF);
+	                    makeWireContainValue(w, idxF);	 
+	                
                     }
                 }
             }
@@ -3857,12 +3881,12 @@ CORV  FunctionCallNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         }
     }
 
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
     if(funcvar->functionNode->gatesFromNode != 0 || funcvar->functionNode->gatesFromNodeXor != 0)
     {
         outputFunctionCall(funcvar->functionNumber);
-	    outputFunctionCallDP(funcvar->functionNumber);
+	    outputFunctionCallDP(funcvar->functionNumber, strDPLocalInput, strDPGlobalInput);
     }
     
     
@@ -3905,7 +3929,7 @@ CORV  FunctionCallNode::circuitOutput(VariableContext * vc, TypeMap * tm)
                 }
                 v->type = tt;
                 v->FillInType(true);
-                v->FillInWires(0,0);
+	            v->FillInWires(0, 0, idxF);
                 setSizes(v->wv,0);
                 v->FillInDepth(99999);
                 
@@ -3935,7 +3959,7 @@ CORV  FunctionCallNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             counter++;
         }
         
-        messyAssignAndCopy(funcvar->returnv,rvar,true,true);
+        messyAssignAndCopy(funcvar->returnv,rvar,idxF);
         
         v.var = rvar;
     }
@@ -3952,14 +3976,14 @@ CORV  FunctionCallNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     }
     return v;
 }
-CORV  FunctionArgListNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  FunctionArgListNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     cout << "unusednode: "<<nodeName<<"\n";
     CORV v;
     return v;
 }
 
-CORV  ArrayInitListNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ArrayInitListNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     
     ArrayVariable * av = new ArrayVariable();
@@ -3969,7 +3993,7 @@ CORV  ArrayInitListNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     for(int i=0;i<nodeList.size();i++)
     {
         
-        CORV c = nodeList[i]->circuitOutput(vc,tm);
+        CORV c = nodeList[i]->circuitOutput(vc,tm, idxF);
         
         if(c.var == 0)
         {
@@ -3995,24 +4019,24 @@ CORV  ArrayInitListNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     
     return v;
 }
-CORV  ArrayInitNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ArrayInitNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
-    CORV v = operand->circuitOutput(vc,tm);
+	CORV v = operand->circuitOutput(vc, tm, idxF);
     return v;
 }
 
-CORV  StatementListNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  StatementListNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     for(int i=0;i<nodeList.size();i++)
     {
-        nodeList[i]->circuitOutput(vc,tm);
+	    nodeList[i]->circuitOutput(vc, tm, idxF);
     }
     
     CORV v;
     return v;
 }
 
-CORV  VarDeclarationNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  VarDeclarationNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
 
     VarDeclarationNode * vdn = isVarDeclarationNode(this);
@@ -4128,7 +4152,7 @@ CORV  VarDeclarationNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             v->nodeOfName = dn->name;
             
             v->FillInType(true);
-            v->FillInWires(0,0);
+	        v->FillInWires(0, 0, idxF);
             
             (*vc)[v->name] = v;
             setSizes(v->wv,0);
@@ -4147,9 +4171,9 @@ CORV  VarDeclarationNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             
        
             
-            CORV rv = dn->init_expression->circuitOutput(vc,tm);
+            CORV rv = dn->init_expression->circuitOutput(vc,tm, idxF);
 
-            messyAssignAndCopy(rv, v);
+	        messyAssignAndCopy(rv, v, idxF);
 
             if(rv.var != 0)
             {
@@ -4178,7 +4202,7 @@ CORV  VarDeclarationNode::circuitOutput(VariableContext * vc, TypeMap * tm)
 
 
 
-CORV  CompoundStatementNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  CompoundStatementNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     increaseDepth();
     
@@ -4223,7 +4247,7 @@ CORV  CompoundStatementNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         
 
         
-        stmt->circuitOutput(vct, tm);
+	    stmt->circuitOutput(vct, tm, idxF);
         
         
 
@@ -4270,7 +4294,7 @@ CORV  CompoundStatementNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         }
         
         
-        getPool()->freeIfNoRefs();
+        getPool(idxF)->freeIfNoRefs();
         
 
         
@@ -4321,13 +4345,13 @@ CORV  CompoundStatementNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     return v;
 }
 
-CORV  UnaryPostPlusPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  UnaryPostPlusPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
 
-    CORV leftcorv = operand->circuitOutput(vc,tm);
+	CORV leftcorv = operand->circuitOutput(vc, tm, idxF);
     
     vector<Wire *> onevec;
-    onevec.push_back(get_ONE_WIRE());
+	onevec.push_back(get_ONE_WIRE(idxF));
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv = &onevec;
@@ -4337,21 +4361,21 @@ CORV  UnaryPostPlusPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         ensureIntVariableToVec(leftcorv);
         leftv = &(leftcorv.vec);
         //leftv  = &(((IntVariable *)leftcorv.var)->wires);
-        ensureSize(onevec,((IntVariable *)leftcorv.var)->size());
+	    ensureSize(onevec, ((IntVariable *)leftcorv.var)->size(), idxF);
     }
     else
     {
         /*this should not be necessary as variable is required, but just in case -> better to be safe than sorry*/
         ensureAnyVariableToVec(leftcorv);
         leftv = &(leftcorv.vec);
-        ensureSameSize(*leftv,*rightv);
+	    ensureSameSize(*leftv, *rightv, idxF);
     }
     
     CORV destv;
     destv.vec.resize(leftv->size());
     
     /*outputting the circuit*/
-    outputAddition(leftv,rightv,destv.vec);
+	outputAddition(leftv, rightv, destv.vec, idxF);
     
     
     //force leftcorv to be in vec
@@ -4361,7 +4385,7 @@ CORV  UnaryPostPlusPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     leftcorv.var = 0; // i.e. only the vector is passed up, not the variable.
     
     
-    WireSet * ws = getPool()->getWires(leftcorv.vec.size());
+    WireSet * ws = getPool(idxF)->getWires(leftcorv.vec.size());
     
     
     //have to assign since the vec wires hold references to the variable wires
@@ -4369,10 +4393,10 @@ CORV  UnaryPostPlusPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     {
         Wire * w = ws->wires[i];
         
-        assignWire(w,leftcorv.vec[i]);
+	    assignWire(w, leftcorv.vec[i], idxF);
         leftcorv.vec[i] = w;
         w->locked = true;
-        makeWireContainValueNoONEZEROcopy(leftcorv.vec[i]);
+	    makeWireContainValueNoONEZEROcopy(leftcorv.vec[i], idxF);
         
     }
     
@@ -4383,7 +4407,7 @@ CORV  UnaryPostPlusPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
 
     /*intermedate cleanup to remove unnecessary refs that would break the assignWire function*/
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
     Variable * var_x = (*vc)["-+IFCOND+-"];
     
@@ -4396,9 +4420,9 @@ CORV  UnaryPostPlusPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         for(int i=0;i<destv.vec.size();i++)
         {
             
-            assignWire(destvariable->wires[i], destv.vec[i]);
+	        assignWire(destvariable->wires[i], destv.vec[i], idxF);
             destv.vec[i]->locked = false;
-            makeWireContainValueNoONEZEROcopy(destvariable->wires[i]);
+	        makeWireContainValueNoONEZEROcopy(destvariable->wires[i], idxF);
         }
     }
     else
@@ -4409,26 +4433,26 @@ CORV  UnaryPostPlusPlusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         for(int i=0;i<destv.vec.size();i++)
         {
             
-            assignWireCond(destvariable->wires[i], destv.vec[i],cond);
+	        assignWireCond(destvariable->wires[i], destv.vec[i], cond, idxF);
             destv.vec[i]->locked = false;
-            makeWireContainValueNoONEZEROcopy(destvariable->wires[i]);
+	        makeWireContainValueNoONEZEROcopy(destvariable->wires[i], idxF);
         }
     }
     
     /*cleanup*/
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
     return leftcorv;
 }
 
 
 
-CORV  UnaryPreMinusMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  UnaryPreMinusMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
-    CORV leftcorv = operand->circuitOutput(vc,tm);
+	CORV leftcorv = operand->circuitOutput(vc, tm, idxF);
     
     vector<Wire *> onevec;
-    onevec.push_back(get_ONE_WIRE());
+	onevec.push_back(get_ONE_WIRE(idxF));
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv = &onevec;
@@ -4438,21 +4462,21 @@ CORV  UnaryPreMinusMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         ensureIntVariableToVec(leftcorv);
         leftv = &(leftcorv.vec);
         //leftv  = &(((IntVariable *)leftcorv.var)->wires);
-        ensureSize(onevec,((IntVariable *)leftcorv.var)->size());
+	    ensureSize(onevec, ((IntVariable *)leftcorv.var)->size(), idxF);
     }
     else
     {
         /*this should not be necessary as variable is required, but just in case -> better to be safe than sorry*/
         ensureAnyVariableToVec(leftcorv);
         leftv = &(leftcorv.vec);
-        ensureSameSize(*leftv,*rightv);
+	    ensureSameSize(*leftv, *rightv, idxF);
     }
     
     CORV destv;
     destv.vec.resize(leftv->size());
     
     /*outputting the circuit*/
-    outputSubtract(leftv,rightv,destv.vec);
+	outputSubtract(leftv, rightv, destv.vec, idxF);
     
     
     //force leftcorv to be in vec
@@ -4469,7 +4493,7 @@ CORV  UnaryPreMinusMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     
     /*intermedate cleanup to remove unnecessary refs that would break the assignWire function*/
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
     Variable * var_x = (*vc)["-+IFCOND+-"];
     
@@ -4482,9 +4506,9 @@ CORV  UnaryPreMinusMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         for(int i=0;i<destv.vec.size();i++)
         {
             
-            assignWire(destvariable->wires[i], destv.vec[i]);
+	        assignWire(destvariable->wires[i], destv.vec[i], idxF);
             destv.vec[i]->locked = false;
-            makeWireContainValueNoONEZEROcopy(destvariable->wires[i]);
+	        makeWireContainValueNoONEZEROcopy(destvariable->wires[i], idxF);
         }
     }
     else
@@ -4495,23 +4519,23 @@ CORV  UnaryPreMinusMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         for(int i=0;i<destv.vec.size();i++)
         {
             
-            assignWireCond(destvariable->wires[i], destv.vec[i],cond);
+	        assignWireCond(destvariable->wires[i], destv.vec[i], cond, idxF);
             destv.vec[i]->locked = false;
-            makeWireContainValueNoONEZEROcopy(destvariable->wires[i]);
+	        makeWireContainValueNoONEZEROcopy(destvariable->wires[i], idxF);
         }
     }
     
     /*cleanup*/
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
     return leftcorv;
 }
 
-CORV  ConditionalNotEqualNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ConditionalNotEqualNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     /*preparation*/
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+    CORV leftcorv = left->circuitOutput(vc,tm, idxF);
+    CORV rightcorv = right->circuitOutput(vc,tm, idxF);
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv;
@@ -4522,15 +4546,15 @@ CORV  ConditionalNotEqualNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         ensureAnyVariableToVec(rightcorv);
         rightv = &(rightcorv.vec);
         //ensureSameSize(*leftv,*rightv);
-        ensureTypedSize(*leftv,*rightv,operandTypeOfNode);
+	    ensureTypedSize(*leftv, *rightv, operandTypeOfNode, idxF);
     }
     
     CORV destv;
     destv.vec.resize(1);
     
     /*outputting the circuit*/
-    outputEquals(leftv,rightv,destv.vec);
-    destv.vec[0] = invertWire(destv.vec[0]);
+	outputEquals(leftv, rightv, destv.vec, idxF);
+	destv.vec[0] = invertWire(destv.vec[0], idxF);
     
     /*cleanup*/
     
@@ -4546,14 +4570,14 @@ CORV  ConditionalNotEqualNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         destv.vec[i]->locked = true;
     }
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     return destv;
 }
-CORV  ExpressionStatementNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ExpressionStatementNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     if(operand != 0)
     {
-        CORV t = operand->circuitOutput(vc,tm);
+        CORV t = operand->circuitOutput(vc,tm, idxF);
         
         if(t.var == 0)
         {
@@ -4574,12 +4598,12 @@ CORV  ExpressionStatementNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             }
         }
 
-        getPool()->freeIfNoRefs();
+        getPool(idxF)->freeIfNoRefs();
     }
     CORV v;
     return v;
 }
-CORV  FunctionDeclarationNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  FunctionDeclarationNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
 
     increaseDepth();
@@ -4632,7 +4656,7 @@ CORV  FunctionDeclarationNode::circuitOutput(VariableContext * vc, TypeMap * tm)
 
     if(fdn->stmts != 0)
     {
-        fdn->stmts->circuitOutput(vct,tm);
+	    fdn->stmts->circuitOutput(vct, tm, idxF);
     }
 
     
@@ -4642,7 +4666,7 @@ CORV  FunctionDeclarationNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         
         for(int i=0; i <v_->size();i++)
         {
-            makeWireNotOther(getWire(i,funcvar->return_var));
+	        makeWireNotOther(getWire(i, funcvar->return_var), idxF);
         }
     }
     
@@ -4675,7 +4699,7 @@ CORV  FunctionDeclarationNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             }
         }
     }
-    getPool()->freeIfNoRefs();
+	getPool(idxF)->freeIfNoRefs();
     delete vct;
     
     endCircuitCount(getNonXorGates(),getXorGates());
@@ -4685,12 +4709,12 @@ CORV  FunctionDeclarationNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     CORV v;
     return v;
 }
-CORV  UnaryPostMinusMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  UnaryPostMinusMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
-    CORV leftcorv = operand->circuitOutput(vc,tm);
+    CORV leftcorv = operand->circuitOutput(vc,tm, idxF);
     
     vector<Wire *> onevec;
-    onevec.push_back(get_ONE_WIRE());
+	onevec.push_back(get_ONE_WIRE(idxF));
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv = &onevec;
@@ -4700,21 +4724,21 @@ CORV  UnaryPostMinusMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         ensureIntVariableToVec(leftcorv);
         leftv = &(leftcorv.vec);
         //leftv  = &(((IntVariable *)leftcorv.var)->wires);
-        ensureSize(onevec,((IntVariable *)leftcorv.var)->size());
+	    ensureSize(onevec, ((IntVariable *)leftcorv.var)->size(), idxF);
     }
     else
     {
         /*this should not be necessary as variable is required, but just in case -> better to be safe than sorry*/
         ensureAnyVariableToVec(leftcorv);
         leftv = &(leftcorv.vec);
-        ensureSameSize(*leftv,*rightv);
+	    ensureSameSize(*leftv, *rightv, idxF);
     }
     
     CORV destv;
     destv.vec.resize(leftv->size());
     
     /*outputting the circuit*/
-    outputSubtract(leftv,rightv,destv.vec);
+	outputSubtract(leftv, rightv, destv.vec, idxF);
     
     
     //force leftcorv to be in vec
@@ -4723,17 +4747,17 @@ CORV  UnaryPostMinusMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     IntVariable * destvariable = (IntVariable *) (leftcorv.var);
     leftcorv.var = 0; // i.e. only the vector is passed up, not the variable.
     
-    WireSet * ws = getPool()->getWires(leftcorv.vec.size());
+    WireSet * ws = getPool(idxF)->getWires(leftcorv.vec.size());
     
     //have to assign since the vec wires hold references to the variable wires
     for(int i=0;i<leftcorv.vec.size();i++)
     {
         Wire * w = ws->wires[i];
         
-        assignWire(w,leftcorv.vec[i]);
+	    assignWire(w, leftcorv.vec[i], idxF);
         leftcorv.vec[i] = w;
         w->locked = true;
-        makeWireContainValueNoONEZEROcopy(leftcorv.vec[i]);
+	    makeWireContainValueNoONEZEROcopy(leftcorv.vec[i], idxF);
         
     }
     
@@ -4744,7 +4768,7 @@ CORV  UnaryPostMinusMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     
     /*intermedate cleanup to remove unnecessary refs that would break the assignWire function*/
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
     Variable * var_x = (*vc)["-+IFCOND+-"];
     
@@ -4757,9 +4781,9 @@ CORV  UnaryPostMinusMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         for(int i=0;i<destv.vec.size();i++)
         {
             
-            assignWire(destvariable->wires[i], destv.vec[i]);
+	        assignWire(destvariable->wires[i], destv.vec[i], idxF);
             destv.vec[i]->locked = false;
-            makeWireContainValueNoONEZEROcopy(destvariable->wires[i]);
+	        makeWireContainValueNoONEZEROcopy(destvariable->wires[i], idxF);
         }
     }
     else
@@ -4770,24 +4794,24 @@ CORV  UnaryPostMinusMinusNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         for(int i=0;i<destv.vec.size();i++)
         {
             
-            assignWireCond(destvariable->wires[i], destv.vec[i],cond);
+	        assignWireCond(destvariable->wires[i], destv.vec[i], cond, idxF);
             destv.vec[i]->locked = false;
-            makeWireContainValueNoONEZEROcopy(destvariable->wires[i]);
+	        makeWireContainValueNoONEZEROcopy(destvariable->wires[i], idxF);
         }
     }
     
     /*cleanup*/
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
     return leftcorv;
 
 }
 
-CORV ConditionalLessEqualNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV ConditionalLessEqualNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     /*preparation*/
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+    CORV leftcorv = left->circuitOutput(vc,tm, idxF);
+    CORV rightcorv = right->circuitOutput(vc,tm, idxF);
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv;
@@ -4798,7 +4822,7 @@ CORV ConditionalLessEqualNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         ensureAnyVariableToVec(rightcorv);
         rightv = &(rightcorv.vec);
         //ensureSameSize(*leftv,*rightv);
-        ensureTypedSize(*leftv,*rightv,operandTypeOfNode);
+	    ensureTypedSize(*leftv, *rightv, operandTypeOfNode, idxF);
     }
     
     CORV destv;
@@ -4808,16 +4832,16 @@ CORV ConditionalLessEqualNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     /*notice the parameter reversal for a > operation*/
     if(isSigned)
     {
-        outputLessThanSigned(rightv,leftv,destv.vec);
+	    outputLessThanSigned(rightv, leftv, destv.vec, idxF);
     }
     else
     {
-        outputLessThanUnsigned(rightv,leftv,destv.vec);
+	    outputLessThanUnsigned(rightv, leftv, destv.vec, idxF);
     }
     
     
     /*then not the greater than result*/
-    destv.vec[0] = invertWire(destv.vec[0]);
+	destv.vec[0] = invertWire(destv.vec[0], idxF);
     
     /*cleanup*/
     int size =leftv->size();
@@ -4832,17 +4856,17 @@ CORV ConditionalLessEqualNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         destv.vec[i]->locked = true;
     }
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     return destv;
 
 }
 
 
-CORV  ConditionalGreaterEqualNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ConditionalGreaterEqualNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     /*preparation*/
-    CORV leftcorv = left->circuitOutput(vc,tm);
-    CORV rightcorv = right->circuitOutput(vc,tm);
+    CORV leftcorv = left->circuitOutput(vc,tm, idxF);
+    CORV rightcorv = right->circuitOutput(vc,tm, idxF);
     
     vector<Wire *> * leftv;
     vector<Wire *> * rightv;
@@ -4853,7 +4877,7 @@ CORV  ConditionalGreaterEqualNode::circuitOutput(VariableContext * vc, TypeMap *
         ensureAnyVariableToVec(rightcorv);
         rightv = &(rightcorv.vec);
         //ensureSameSize(*leftv,*rightv);
-        ensureTypedSize(*leftv,*rightv,operandTypeOfNode);
+	    ensureTypedSize(*leftv, *rightv, operandTypeOfNode, idxF);
     }
     
     CORV destv;
@@ -4862,14 +4886,14 @@ CORV  ConditionalGreaterEqualNode::circuitOutput(VariableContext * vc, TypeMap *
     /*outputting the circuit*/
     if(isSigned)
     {
-        outputLessThanSigned(leftv,rightv,destv.vec);
+	    outputLessThanSigned(leftv, rightv, destv.vec, idxF);
     }
     else
     {
-        outputLessThanUnsigned(leftv,rightv,destv.vec);
+	    outputLessThanUnsigned(leftv, rightv, destv.vec, idxF);
     }
     /*then not the less than result*/
-    destv.vec[0] = invertWire(destv.vec[0]);
+	destv.vec[0] = invertWire(destv.vec[0], idxF);
     
     /*cleanup*/
     int size =leftv->size();
@@ -4884,16 +4908,16 @@ CORV  ConditionalGreaterEqualNode::circuitOutput(VariableContext * vc, TypeMap *
         destv.vec[i]->locked = true;
     }
     
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     return destv;
 }
 
-CORV  IfNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  IfNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     
     increaseDepth();
     
-    CORV condcorv = cond->circuitOutput(vc,tm);
+    CORV condcorv = cond->circuitOutput(vc,tm, idxF);
     
     Wire * condw;
     
@@ -4908,11 +4932,11 @@ CORV  IfNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         
     if(condw->state == ONE)
     {
-        if(stmts!= 0){ stmts->circuitOutput(vc,tm);}
+        if(stmts!= 0){ stmts->circuitOutput(vc, tm, idxF); }
     }
     else if(condw->state == ZERO)
     {
-        if(elsestmts!= 0){ elsestmts->circuitOutput(vc,tm);}
+        if(elsestmts!= 0){ elsestmts->circuitOutput(vc, tm, idxF); }
     }
     else
     {
@@ -4925,7 +4949,7 @@ CORV  IfNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         {
             prevcond = ((IntVariable *)var_x)->wires[0];
             
-            ififcond = outputGate(8,prevcond,condw);
+	        ififcond = outputGate(8, prevcond, condw, idxF);
             ififcond->locked = true;
             ififcond->varlocked = true;
             var.wires.resize(1);
@@ -4945,12 +4969,12 @@ CORV  IfNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         
         if(stmts != 0)
         {
-            stmts->circuitOutput(vc,tm);
+	        stmts->circuitOutput(vc, tm, idxF);
         }
         if(elsestmts!= 0)
         {
             condw->locked = false;
-            condw = invertWire(condw);
+	        condw = invertWire(condw, idxF);
             condw->locked = true;
             if(var_x == 0)
             {
@@ -4961,12 +4985,12 @@ CORV  IfNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             {
                 ififcond->locked = false;
                 ififcond->varlocked = false;
-                ififcond = outputGate(8,prevcond,condw);
+	            ififcond = outputGate(8, prevcond, condw, idxF);
                 ififcond->locked = true;
                 ififcond->varlocked = true;
                 var.wires[0] = ififcond;
             }
-            elsestmts->circuitOutput(vc,tm);
+	        elsestmts->circuitOutput(vc, tm, idxF);
         }
         
         if(ififcond != 0)
@@ -4982,14 +5006,14 @@ CORV  IfNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     }
     
     unlockCORV(condcorv);
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
     decreaseDepth();
     
     CORV v;
     return v;
 }
-CORV  ForNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  ForNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     
 
@@ -5009,12 +5033,12 @@ CORV  ForNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     VarDeclarationForNode * vdfn = isVarDeclarationForNode(declaration);
     VarDeclarationNode * temp = new VarDeclarationNode(vdfn->type,vdfn->each_var);
     
-    temp->circuitOutput(vct,tm);
+	temp->circuitOutput(vct, tm, idxF);
     
     
     
     
-    CORV condcorv= condition->circuitOutput(vct,tm);
+	CORV condcorv = condition->circuitOutput(vct, tm, idxF);
     
     Wire * cond;
     if(condcorv.var == 0)
@@ -5044,15 +5068,15 @@ CORV  ForNode::circuitOutput(VariableContext * vc, TypeMap * tm)
     
     while(cond->state == ONE )
     {
-        if(has_procs){ getPool()->sortFreeWires(); /*cout << "sorting\n"; getPool()->printUsedPoolState();*/ }
+        if(has_procs){ getPool(idxF)->sortFreeWires(); /*cout << "sorting\n"; getPool(idxF)->printUsedPoolState();*/ }
         
-        CORV temp = stmts->circuitOutput(vct,tm);
+	    CORV temp = stmts->circuitOutput(vct, tm, idxF);
         
-        temp = increment->circuitOutput(vct,tm);
+	    temp = increment->circuitOutput(vct, tm, idxF);
         unlockCORV(temp);
         
         unlockCORV(condcorv);
-        condcorv = condition->circuitOutput(vct,tm);
+	    condcorv = condition->circuitOutput(vct, tm, idxF);
         
         if(condcorv.var == 0)
         {
@@ -5067,7 +5091,7 @@ CORV  ForNode::circuitOutput(VariableContext * vc, TypeMap * tm)
         {
             addError(this->nodeLocation->fname,this->nodeLocation->position,"Conditional Expression in for loop cannot be based on input values when it is check!");
             
-            getPool()->printUsedPoolState();
+            getPool(idxF)->printUsedPoolState();
             
             if(hasError())
             {
@@ -5102,7 +5126,7 @@ CORV  ForNode::circuitOutput(VariableContext * vc, TypeMap * tm)
             }
         }
     }
-    getPool()->freeIfNoRefs();
+    getPool(idxF)->freeIfNoRefs();
     
     
     decreaseDepth();
@@ -5134,7 +5158,7 @@ IntVariable * createIntOfSizeNOSETNAME(int size)
     return v;
 }
 
-CORV  TermNode::circuitOutput(VariableContext * vc, TypeMap * tm)
+CORV  TermNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     if(isNum)
     {

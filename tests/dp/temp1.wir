@@ -1,0 +1,17 @@
+#define wiresize 2
+#parties 2
+
+typedef uint_t wiresize int
+typedef uint_t wiresize*2 int2x
+
+#input 1 int
+#input 2 int
+#output 1 int
+
+
+
+function void main()
+{
+   
+output1=input1^input2;
+}

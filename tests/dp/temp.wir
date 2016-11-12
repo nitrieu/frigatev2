@@ -10,10 +10,10 @@ typedef uint_t wiresize*2 int2x
 
 
 
-function int f1(int a, int b)
+function int f1(int a, int b,int c)
 {
   
-  return a&b;
+  return a&b^c;
 }
 function int f2(int a, int b)
 {
@@ -32,7 +32,10 @@ function void main()
 {
    int c;
 int d;
-c=f1(input1, input2);
+c=f1(input1, input2,input2);
+for(int i=0; i<2; i++) /* wiresize / 32 */
+   {
 d=f2(input1, input2);
+}
 output1=f3(c,d);
 }

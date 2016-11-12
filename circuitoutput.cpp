@@ -15,23 +15,26 @@ bool useTinyOutput = false;
 //duplo
 bool isPrintDuploGC = false;
 string strDuploGC;
-string strDpInFunc;
-string strDpOutFunc;
 ofstream fDuploGC;
-string strDuploZeroOne;
+vector<string> strDuploZeroOne;
+bool isMainFunc = false;
 
 void printDuploGC(bool value)
 {
 	isPrintDuploGC = value;
 }
 
-void appendDuploGC(string str)
+void appendDuploGC(string value, bool cond)
 {
-	if(isPrintDuploGC)
-		strDuploGC.append(str);
+	if(isPrintDuploGC && cond)
+		strDuploGC.append(value);
+	
 }
 
-
+bool isMainFunction()
+{
+	return isMainFunc;
+}
 void setTinyFiles(bool in)
 {
     useTinyOutput = in;
@@ -42,7 +45,8 @@ bool getIsTiny()
     return useTinyOutput;
 }
 
-int currentbasewire=0;
+vector<int>currentbasewire;
+int currentbasewiremain;
 int maxWireValue;
 int functionWireStart;
 
@@ -50,11 +54,11 @@ int functionWireStart;
 
 unordered_map<string, Node *> functionNameToNode;
 
-Wire * ONE_WIRE;
-Wire * ZERO_WIRE;
+vector < Wire *> ONE_WIRE;
+vector < Wire *> ZERO_WIRE;
 
-unsigned long one_wire_l;
-unsigned long zero_wire_l;
+vector<unsigned long> one_wire_l;
+vector<unsigned long> zero_wire_l;
 
 class gatherFunctionCallTraverse : public BottomUpTraverse <vector<Node *> >
 {
@@ -123,11 +127,11 @@ public:
 
 
 
-WirePool pool;
+vector<WirePool> pool;
 
-WirePool * getPool()
+WirePool * getPool(int idxF)
 {
-    return &pool;
+	return &pool[idxF];
 }
 
 int co_depth = 0;
@@ -159,19 +163,19 @@ string removeFilePrefix(string fname)
 }
 
 //this function fills any extra space with 0s -> this should really only be needed for constants as type checking will force it to be correct otherwise.
-void ensureSameSize(vector<Wire *> & w1, vector<Wire *> & w2)
+void ensureSameSize(vector<Wire *> & w1, vector<Wire *> & w2, int idxF)
 {
     while(w1.size() < w2.size())
     {
-        w1.push_back(get_ZERO_WIRE());
+        w1.push_back(get_ZERO_WIRE(idxF));
     }
     while(w1.size() > w2.size())
     {
-        w2.push_back(get_ZERO_WIRE());
+        w2.push_back(get_ZERO_WIRE(idxF));
     }
 }
 
-void ensureTypedSize(vector<Wire *> & w1, vector<Wire *> & w2, Type * t)
+void ensureTypedSize(vector<Wire *> & w1, vector<Wire *> & w2, Type * t, int idxF)
 {
     int l;
     
@@ -191,20 +195,20 @@ void ensureTypedSize(vector<Wire *> & w1, vector<Wire *> & w2, Type * t)
     }
     else if(isConstType(t))
     {
-        ensureSameSize(w1,w2);
+	    ensureSameSize(w1, w2, idxF);
         return;
     }
     else
     {
-        ensureSameSize(w1,w2);
+	    ensureSameSize(w1, w2, idxF);
         return;
     }
     
-    ensureSize(w1,l);
-    ensureSize(w2,l);
+	ensureSize(w1, l, idxF);
+	ensureSize(w2, l, idxF);
 }
 
-void ensureTypedSize(vector<Wire *> & w1, Type * t)
+void ensureTypedSize(vector<Wire *> & w1, Type * t, int idxF)
 {
     int l;
     
@@ -231,10 +235,10 @@ void ensureTypedSize(vector<Wire *> & w1, Type * t)
          exit(1);
      }
     
-    ensureSize(w1,l);
+	ensureSize(w1, l, idxF);
 }
 
-void ensureSize(vector<Wire *> & w1,int length)
+void ensureSize(vector<Wire *> & w1,int length, int idxF)
 {
     if(w1.size() == length)
     {
@@ -242,7 +246,7 @@ void ensureSize(vector<Wire *> & w1,int length)
     }
     while(w1.size() < length)
     {
-        w1.push_back(get_ZERO_WIRE());
+        w1.push_back(get_ZERO_WIRE(idxF));
     }
     if(w1.size() > length)
     {
@@ -324,7 +328,7 @@ void messyUnlock(Variable * cvar)
     }
 }
 
-void messyAssignAndCopy(Variable * cvar, Variable * pattern, bool isFnInp, bool isFnOut)
+void messyAssignAndCopy(Variable * cvar, Variable * pattern , int idxF)
 {
     if(cvar->v_enum == Intv)
     {
@@ -337,12 +341,12 @@ void messyAssignAndCopy(Variable * cvar, Variable * pattern, bool isFnInp, bool 
         {
             if(i < intvsize)
             {
-                assignWire(dest->wires[i],intv->wires[i]);
-	            makeWireContainValueNoONEZEROcopy(dest->wires[i],isFnInp, isFnOut);
+	            assignWire(dest->wires[i], intv->wires[i],  idxF);
+	            makeWireContainValueNoONEZEROcopy(dest->wires[i], idxF);
             }
             else
             {
-                assignWire(dest->wires[i],get_ZERO_WIRE());
+	            assignWire(dest->wires[i], get_ZERO_WIRE(idxF), idxF);
             }
         }
     }
@@ -353,7 +357,7 @@ void messyAssignAndCopy(Variable * cvar, Variable * pattern, bool isFnInp, bool 
         
         for(int i=0;i<dest->av.size();i++)
         {
-	        messyAssignAndCopy(arrayv->av[i], dest->av[i], isFnInp, isFnOut);
+	        messyAssignAndCopy(arrayv->av[i], dest->av[i], idxF);
         }
     }
     else if(cvar->v_enum == Structv)
@@ -364,7 +368,7 @@ void messyAssignAndCopy(Variable * cvar, Variable * pattern, bool isFnInp, bool 
         for (std::unordered_map<string,Variable *>::iterator it = structv->map.begin(); it!= structv->map.end(); ++it )
         {
             Variable * v =  (Variable *)(it->second);
-	        messyAssignAndCopy(v, dest->map[(string)(it->first)], isFnInp, isFnOut);
+	        messyAssignAndCopy(v, dest->map[(string)(it->first)], idxF);
         }
     }
     else
@@ -376,7 +380,7 @@ void messyAssignAndCopy(Variable * cvar, Variable * pattern, bool isFnInp, bool 
 
 //messyCopy assumes the wv in c.var are not correct and does not use them.
 //also assumes pattern is correctly constructed and c.var is patterned after pattern correctly BUT the individual variables might be incorrect lengths (i.e. are from constants)
-void messyAssignAndCopy(CORV & c, Variable * pattern)
+void messyAssignAndCopy(CORV & c, Variable * pattern, int idxF)
 {
     if (c.var == 0)
     {
@@ -389,12 +393,12 @@ void messyAssignAndCopy(CORV & c, Variable * pattern)
         {
             if(i < intvsize)
             {
-                assignWire(dest->wires[i],c.vec[i]);
-                makeWireContainValueNoONEZEROcopy(dest->wires[i]);
+	            assignWire(dest->wires[i], c.vec[i], idxF);
+	            makeWireContainValueNoONEZEROcopy(dest->wires[i], idxF);
             }
             else
             {
-                assignWire(dest->wires[i],get_ZERO_WIRE());
+	            assignWire(dest->wires[i], get_ZERO_WIRE(idxF), idxF);
             }
         }
         return;
@@ -411,12 +415,12 @@ void messyAssignAndCopy(CORV & c, Variable * pattern)
         {
             if(i < intvsize)
             {
-                assignWire(dest->wires[i],intv->wires[i]);
-                makeWireContainValueNoONEZEROcopy(dest->wires[i]);
+	            assignWire(dest->wires[i], intv->wires[i], idxF);
+	            makeWireContainValueNoONEZEROcopy(dest->wires[i], idxF);
             }
             else
             {
-                assignWire(dest->wires[i],get_ZERO_WIRE());
+	            assignWire(dest->wires[i], get_ZERO_WIRE(idxF), idxF);
             }
         }
     }
@@ -427,7 +431,7 @@ void messyAssignAndCopy(CORV & c, Variable * pattern)
         
         for(int i=0;i<dest->av.size();i++)
         {
-            messyAssignAndCopy(arrayv->av[i],dest->av[i]);
+	        messyAssignAndCopy(arrayv->av[i], dest->av[i], idxF);
         }
     }
     else if(c.var->v_enum == Structv)
@@ -438,7 +442,7 @@ void messyAssignAndCopy(CORV & c, Variable * pattern)
         for (std::unordered_map<string,Variable *>::iterator it = structv->map.begin(); it!= structv->map.end(); ++it )
         {
             Variable * v =  (Variable *)(it->second);
-            messyAssignAndCopy(v,dest->map[(string)(it->first)]);
+	        messyAssignAndCopy(v, dest->map[(string)(it->first)], idxF);
         }
     }
     else
@@ -457,7 +461,6 @@ void putVariableToVector(CORV & c)
     c.vec.resize(c.var->size());
     
     int startplace = c.var->wv->startwirenum;
-	
     
     for(int i=0;i<c.var->size();i++)
     {
@@ -510,7 +513,7 @@ void printwirevecValue(vector<Wire *> & v)
 }
 
 
-Wire * addGate(short table, Wire * a, Wire * b, Wire * dest)
+Wire * addGate(short table, Wire * a, Wire * b, Wire * dest, int idxF)
 {
     
     int awirenum = a->wireNumber;
@@ -546,32 +549,32 @@ Wire * addGate(short table, Wire * a, Wire * b, Wire * dest)
     
     if(a->state == ONE)
     {
-        awirenum = one_wire_l;
+	    awirenum = one_wire_l[idxF];
     }
     else if(a->state == ZERO)
     {
-        awirenum = zero_wire_l;
+	    awirenum = zero_wire_l[idxF];
     }
     
     if(b->state == ONE)
     {
-        bwirenum = one_wire_l;
+	    bwirenum = one_wire_l[idxF];
     }
     else if(b->state == ZERO)
     {
-        bwirenum = zero_wire_l;
+	    bwirenum = zero_wire_l[idxF];
     }
     
     //if this the program gets here then the value must be unknown. If it was known in any way (or a reference to another wire) it would have been done in the short circuit function
     dest->state = UNKNOWN;
-    writeGate(table,dest->wireNumber,awirenum,bwirenum);
+	writeGate(table, dest->wireNumber, awirenum, bwirenum, idxF);
     return dest;
 }
 
 
-Wire * invertWire(Wire * w2)
+Wire * invertWire(Wire * w2, int idxF)
 {
-    Wire * w1 = pool.getWire();
+	Wire * w1 = pool[idxF].getWire();
     
     
     if(w2->state == ONE)
@@ -610,9 +613,9 @@ Wire * invertWire(Wire * w2)
     return w1;
 }
 
-Wire * invertWireNoInvertOutput(Wire * w2)
+Wire * invertWireNoInvertOutput(Wire * w2, int idxF)
 {
-    Wire * w1 = pool.getWire();
+	Wire * w1 = pool[idxF].getWire();
     
     
     if(w2->state == ONE)
@@ -625,11 +628,11 @@ Wire * invertWireNoInvertOutput(Wire * w2)
     }
     else if(w2->state == UNKNOWN)
     {
-        addGate(6,w2,ONE_WIRE,w1);
+	    addGate(6, w2, ONE_WIRE[idxF], w1, idxF);
     }
     else if(w2->state == UNKNOWN_OTHER_WIRE)
     {
-        addGate(6,w2->other,ONE_WIRE,w1);
+	    addGate(6, w2->other, ONE_WIRE[idxF], w1, idxF);
     }
     else if(w2->state == UNKNOWN_INVERT)
     {
@@ -647,11 +650,11 @@ Wire * invertWireNoInvertOutput(Wire * w2)
     return w1;
 }
 
-Wire * invertWireNoAllocUnlessNecessary(Wire * w2)
+Wire * invertWireNoAllocUnlessNecessary(Wire * w2, int idxF)
 {
     if(w2->refs > 0)
     {
-        Wire * w1 = invertWire(w2);
+	    Wire * w1 = invertWire(w2, idxF);
         return w1;
     }
     
@@ -683,13 +686,20 @@ Wire * invertWireNoAllocUnlessNecessary(Wire * w2)
     return w2;
 }
 
-void clearReffedWire(Wire * w)
+void clearReffedWire(Wire * w, int idxF)
 {
     if(w->refs == 0)
         return;
     
-    Wire * newwire = pool.getWire();
-    writeCopy(newwire->wireNumber,w->wireNumber);
+	Wire * newwire = pool[idxF].getWire();
+	writeCopy(newwire->wireNumber, w->wireNumber, idxF);
+	
+	if (isPrintDuploGC)
+	{
+		newwire->prevWireNumber[0] = w->wireNumber;
+		newwire->prevWireNumber[1] = w->prevWireNumber[0];
+		
+	}
     
     for(int i=w->refsToMeSize-1;i>=0;i--)
     {
@@ -723,7 +733,7 @@ void clearOtherdWire(Wire * w1)
 */
 
 //assigns wires from w2 to w1 and deals with other references
-void assignWire(Wire *  w1, Wire * w2)
+void assignWire(Wire *  w1, Wire * w2, int idxF)
 {
     if(w1 == w2)
     {
@@ -755,7 +765,7 @@ void assignWire(Wire *  w1, Wire * w2)
     }
     else if(w1->refs > 0)
     {
-        clearReffedWire(w1);
+	    clearReffedWire(w1, idxF);
     }
     
     //clear w1
@@ -801,7 +811,7 @@ void assignWire(Wire *  w1, Wire * w2)
 }
 
 //assigns w2 to w1 if w3 is true
-void assignWireCond(Wire *  w1, Wire * w2, Wire * w3)
+void assignWireCond(Wire *  w1, Wire * w2, Wire * w3, int idxF)
 {
     if(w1 == w2)
     {
@@ -810,23 +820,23 @@ void assignWireCond(Wire *  w1, Wire * w2, Wire * w3)
     
 
 
-    Wire * xor1o = outputGate(6,w2,w1);
-    Wire * and1o = outputGate(8,xor1o,w3);
+	Wire * xor1o = outputGate(6, w2, w1, idxF);
+	Wire * and1o = outputGate(8, xor1o, w3, idxF);
     
     if(w1->refs > 0)
     {
-        clearReffedWire(w1);
+	    clearReffedWire(w1, idxF);
     }
     else if(w1->other != 0)
     {
         //cout << "other in assign cond is not 0\n";
-        makeWireContainValue(w1);
+	    makeWireContainValue(w1, idxF);
         /*clearOtherdWire(w1);
         w1->other = 0;
         cout << "other in assign cond is not 0\n";*/
     }
     
-    outputGate(6,w1,and1o,w1);
+	outputGate(6, w1, and1o, w1, idxF);
 }
 
 
@@ -834,13 +844,13 @@ ofstream * os;
 
 
 
-Wire * get_ONE_WIRE()
+Wire * get_ONE_WIRE(int idxF)
 {
-    return ONE_WIRE;
+	return ONE_WIRE[idxF];
 }
-Wire * get_ZERO_WIRE()
+Wire * get_ZERO_WIRE(int idxF)
 {
-    return ZERO_WIRE;
+	return ZERO_WIRE[idxF];
 }
 
 
@@ -855,7 +865,7 @@ Wire * get_ZERO_WIRE()
 
 
 //precondiction - all vectors are of proper size( |leftv| == |rightv| and |destv| == 1)
-void outputEquals(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv)
+void outputEquals(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv, int idxF)
 {
     Wire * outputwire;
     Wire * lastxor;
@@ -867,17 +877,17 @@ void outputEquals(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *>
     
     for(int i=0;i<leftv->size();i++)
     {
-        t = invertWireNoInvertOutput(leftv->operator[](i));
+	    t = invertWireNoInvertOutput(leftv->operator[](i), idxF);
         
-        currentxor = outputGateNoInvertOutput(6,t,rightv->operator[](i));
+	    currentxor = outputGateNoInvertOutput(6, t, rightv->operator[](i), idxF);
         
         if(i > 1)
         {
-            outputwire = outputGate(8,currentxor,lastand);
+	        outputwire = outputGate(8, currentxor, lastand, idxF);
         }
         else if(i ==1)
         {
-            outputwire = outputGate(8,currentxor,lastxor);
+	        outputwire = outputGate(8, currentxor, lastxor, idxF);
         }
         else if(i == 0)
         {
@@ -895,7 +905,7 @@ void outputEquals(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *>
 
 //precondiction - all vectors are of proper size( |leftv| == |rightv| and |destv| >= 1 (should be == 1 but > will suffice))
 //subtracts leftv from rightv
-void outputLessThanSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv)
+void outputLessThanSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv, int idxF)
 {
     int length = leftv->size();
     
@@ -907,17 +917,17 @@ void outputLessThanSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
     switch(length)
     {
         case 1:
-            destv[0] = outputGate(4,rightv->operator[](0),leftv->operator[](0));
+	    destv[0] = outputGate(4, rightv->operator[](0), leftv->operator[](0), idxF);
             outputwire = destv[0];
             break;
         default:
             
-            Wire * carry = getPool()->getWire();
-            Wire * xorab = getPool()->getWire();
-            Wire * xorac = getPool()->getWire();
-            Wire * and1 = getPool()->getWire();
+            Wire * carry = getPool(idxF)->getWire();
+            Wire * xorab = getPool(idxF)->getWire();
+            Wire * xorac = getPool(idxF)->getWire();
+            Wire * and1 = getPool(idxF)->getWire();
             
-            Wire * na = getPool()->getWire();
+            Wire * na = getPool(idxF)->getWire();
             
             carry->state = ZERO;
         
@@ -933,28 +943,28 @@ void outputLessThanSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
             {
                 for(int i=0;i<length;i++)
                 {
-                    na = invertWireNoInvertOutput(leftv->operator[](i));
+	                na = invertWireNoInvertOutput(leftv->operator[](i), idxF);
                     
-                    xorab = clearWireForReuse(xorab);
-                    outputGate(6,rightv->operator[](i),na,xorab);
+	                xorab = clearWireForReuse(xorab, idxF);
+	                outputGate(6, rightv->operator[](i), na, xorab, idxF);
                     
                     if(i < length-1)
                     {
                         
-                        xorac = clearWireForReuse(xorac);
-                        outputGate(6,carry,na,xorac);
+	                    xorac = clearWireForReuse(xorac, idxF);
+	                    outputGate(6, carry, na, xorac, idxF);
                         
-                        and1 = clearWireForReuse(and1);
-                        outputGateNoInvertOutput(8,xorab,xorac,and1);
+	                    and1 = clearWireForReuse(and1, idxF);
+	                    outputGateNoInvertOutput(8, xorab, xorac, and1, idxF);
                         
-                        carry = clearWireForReuse(carry);
-                        outputGateNoInvertOutput(6,na,and1,carry);
+	                    carry = clearWireForReuse(carry, idxF);
+	                    outputGateNoInvertOutput(6, na, and1, carry, idxF);
                     }
                     else
                     {
-                        Wire * t = invertWireNoInvertOutput(xorab);
+	                    Wire * t = invertWireNoInvertOutput(xorab, idxF);
                         
-                        Wire * d = outputGateNoInvertOutput(6,t,carry);
+	                    Wire * d = outputGateNoInvertOutput(6, t, carry, idxF);
                         //Wire * d = outputGate(9,xorab,carry);
                         outputwire = d;
                         destv[0] = outputwire;
@@ -964,35 +974,35 @@ void outputLessThanSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
             }
             else
             {
-                Wire * d = getPool()->getWire();
+                Wire * d = getPool(idxF)->getWire();
                 destv[0] = d;
                 
                 for(int i=0;i<length;i++)
                 {
                     //cout << i<<"\n";
                     
-                    na = invertWireNoInvertOutput(leftv->operator[](i));
+	                na = invertWireNoInvertOutput(leftv->operator[](i), idxF);
                     
-                    xorab = clearWireForReuse(xorab);
-                    outputGate(6,rightv->operator[](i),na,xorab);
+	                xorab = clearWireForReuse(xorab, idxF);
+	                outputGate(6, rightv->operator[](i), na, xorab, idxF);
                     
                     if(i < length-1)
                     {
                         
-                        xorac = clearWireForReuse(xorac);
-                        outputGate(6,carry,na,xorac);
+	                    xorac = clearWireForReuse(xorac, idxF);
+	                    outputGate(6, carry, na, xorac, idxF);
                         
-                        and1 = clearWireForReuse(and1);
-                        outputGateNoInvertOutput(8,xorab,xorac,and1);
+	                    and1 = clearWireForReuse(and1, idxF);
+	                    outputGateNoInvertOutput(8, xorab, xorac, and1, idxF);
                         
-                        carry = clearWireForReuse(carry);
-                        outputGateNoInvertOutput(6,na,and1,carry);
+	                    carry = clearWireForReuse(carry, idxF);
+	                    outputGateNoInvertOutput(6, na, and1, carry, idxF);
                     }
                     else
                     {
-                        Wire * t = invertWireNoInvertOutput(xorab);
+	                    Wire * t = invertWireNoInvertOutput(xorab, idxF);
                         
-                        outputGateNoInvertOutput(6,t,carry,d);
+	                    outputGateNoInvertOutput(6, t, carry, d, idxF);
                         outputwire = d;
                     }
                     
@@ -1015,7 +1025,7 @@ void outputLessThanSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
                         {
                             //cout <<"outlarg";
                             
-                            addComplexOpSingleDestBit(2,size,i+1,i+1,0 ,(*leftv),(*rightv),destv,carry, (i+size) == length-1);
+	                        addComplexOpSingleDestBit(2, size, i + 1, i + 1, 0, (*leftv), (*rightv), destv, carry, (i + size) == length - 1, idxF);
                             
                             i+=size;
                         }
@@ -1049,7 +1059,7 @@ void outputLessThanSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
 
 //precondiction - all vectors are of proper size( |leftv| == |rightv| and |destv| >= 1 (should be == 1 but > will suffice))
 //subtracts leftv from rightv
-void outputLessThanUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv)
+void outputLessThanUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv, int idxF)
 {
     int length = leftv->size();
     
@@ -1061,17 +1071,17 @@ void outputLessThanUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vect
     switch(length)
     {
         case 1:
-            destv[0] = outputGate(4,rightv->operator[](0),leftv->operator[](0));
+	    destv[0] = outputGate(4, rightv->operator[](0), leftv->operator[](0), idxF);
             outputwire = destv[0];
             break;
         default:
             
-            Wire * carry = getPool()->getWire();
-            Wire * xorab = getPool()->getWire();
-            Wire * xorac = getPool()->getWire();
-            Wire * and1 = getPool()->getWire();
+            Wire * carry = getPool(idxF)->getWire();
+            Wire * xorab = getPool(idxF)->getWire();
+            Wire * xorac = getPool(idxF)->getWire();
+            Wire * and1 = getPool(idxF)->getWire();
             
-            Wire * na = getPool()->getWire();
+            Wire * na = getPool(idxF)->getWire();
             
             carry->state = ZERO;
             
@@ -1079,36 +1089,36 @@ void outputLessThanUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vect
             length++;
             
             leftv->resize(length);
-            leftv->operator[](length-1) = ZERO_WIRE;
+            leftv->operator[](length-1) = ZERO_WIRE[idxF];
             rightv->resize(length);
-            rightv->operator[](length-1) = ZERO_WIRE;
+            rightv->operator[](length-1) = ZERO_WIRE[idxF];
             
             if(!useTinyOutput)
             {
                 for(int i=0;i<length;i++)
                 {
-                    na = invertWireNoInvertOutput(leftv->operator[](i));
+	                na = invertWireNoInvertOutput(leftv->operator[](i), idxF);
                     
-                    xorab = clearWireForReuse(xorab);
-                    outputGate(6,rightv->operator[](i),na,xorab);
+	                xorab = clearWireForReuse(xorab, idxF);
+	                outputGate(6, rightv->operator[](i), na, xorab, idxF);
                     
                     if(i < length-1)
                     {
                         
-                        xorac = clearWireForReuse(xorac);
-                        outputGate(6,carry,na,xorac);
+	                    xorac = clearWireForReuse(xorac, idxF);
+	                    outputGate(6, carry, na, xorac, idxF);
                         
-                        and1 = clearWireForReuse(and1);
-                        outputGateNoInvertOutput(8,xorab,xorac,and1);
+	                    and1 = clearWireForReuse(and1, idxF);
+	                    outputGateNoInvertOutput(8, xorab, xorac, and1, idxF);
                         
-                        carry = clearWireForReuse(carry);
-                        outputGateNoInvertOutput(6,na,and1,carry);
+	                    carry = clearWireForReuse(carry, idxF);
+	                    outputGateNoInvertOutput(6, na, and1, carry, idxF);
                     }
                     else
                     {
-                        Wire * t = invertWireNoInvertOutput(xorab);
+	                    Wire * t = invertWireNoInvertOutput(xorab,idxF);
                         
-                        Wire * d = outputGateNoInvertOutput(6,t,carry);
+	                    Wire * d = outputGateNoInvertOutput(6, t, carry, idxF);
                         //Wire * d = outputGate(9,xorab,carry);
                         outputwire = d;
                         destv[0] = outputwire;
@@ -1118,35 +1128,35 @@ void outputLessThanUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vect
             }
             else
             {
-                Wire * d = getPool()->getWire();
+                Wire * d = getPool(idxF)->getWire();
                 destv[0] = d;
                 
                 for(int i=0;i<length;i++)
                 {
                     //cout << i<<"\n";
                     
-                    na = invertWireNoInvertOutput(leftv->operator[](i));
+                    na = invertWireNoInvertOutput(leftv->operator[](i), idxF);
                     
-                    xorab = clearWireForReuse(xorab);
-                    outputGate(6,rightv->operator[](i),na,xorab);
+                    xorab = clearWireForReuse(xorab, idxF);
+	                outputGate(6, rightv->operator[](i), na, xorab, idxF);
                     
                     if(i < length-1)
                     {
                         
-                        xorac = clearWireForReuse(xorac);
-                        outputGate(6,carry,na,xorac);
+	                    xorac = clearWireForReuse(xorac, idxF);
+	                    outputGate(6, carry, na, xorac, idxF);
                         
-                        and1 = clearWireForReuse(and1);
-                        outputGateNoInvertOutput(8,xorab,xorac,and1);
+	                    and1 = clearWireForReuse(and1, idxF);
+	                    outputGateNoInvertOutput(8, xorab, xorac, and1, idxF);
                         
-                        carry = clearWireForReuse(carry);
-                        outputGateNoInvertOutput(6,na,and1,carry);
+	                    carry = clearWireForReuse(carry, idxF);
+	                    outputGateNoInvertOutput(6, na, and1, carry, idxF);
                     }
                     else
                     {
-                        Wire * t = invertWireNoInvertOutput(xorab);
+	                    Wire * t = invertWireNoInvertOutput(xorab, idxF);
                         
-                        outputGateNoInvertOutput(6,t,carry,d);
+	                    outputGateNoInvertOutput(6, t, carry, d, idxF);
                         outputwire = d;
                     }
                     
@@ -1167,7 +1177,7 @@ void outputLessThanUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vect
                         
                         if(size > 0)
                         {
-                            addComplexOpSingleDestBit(2,size,i+1,i+1,0 ,(*leftv),(*rightv),destv,carry, (i+size) == length-1);
+	                        addComplexOpSingleDestBit(2, size, i + 1, i + 1, 0, (*leftv), (*rightv), destv, carry, (i + size) == length - 1, idxF);
                             
                             i+=size;
                         }
@@ -1199,7 +1209,7 @@ void outputLessThanUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vect
 }
 
 //precondiction - all vectors are of proper size( |leftv| == |rightv| == |destv| ))
-void outputSubtract(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv)
+void outputSubtract(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv, int idxF)
 {
     int length = leftv->size();
     
@@ -1211,21 +1221,21 @@ void outputSubtract(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire 
     switch(length)
     {
         case 1:
-            destv[0] = outputGate(6,rightv->operator[](0),leftv->operator[](0));
+	    destv[0] = outputGate(6, rightv->operator[](0), leftv->operator[](0), idxF);
             break;
         default:
             
             
-            Wire * carry = getPool()->getWire();
-            Wire * xorab = getPool()->getWire();
-            Wire * xorac = getPool()->getWire();
-            Wire * and1 = getPool()->getWire();
+            Wire * carry = getPool(idxF)->getWire();
+            Wire * xorab = getPool(idxF)->getWire();
+            Wire * xorac = getPool(idxF)->getWire();
+            Wire * and1 = getPool(idxF)->getWire();
             
-            Wire * na = getPool()->getWire();
+            Wire * na = getPool(idxF)->getWire();
             
             carry->state = ZERO;
             
-            WireSet * ws = getPool()->getWires(length);
+            WireSet * ws = getPool(idxF)->getWires(length);
             
             for(int i=0;i<length;i++)
             {
@@ -1236,14 +1246,14 @@ void outputSubtract(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire 
             {
                 for(int i=0;i<length;i++)
                 {
-                    na = invertWireNoInvertOutput(leftv->operator[](i));
+                    na = invertWireNoInvertOutput(leftv->operator[](i),idxF);
                     
-                    xorab = clearWireForReuse(xorab);
-                    outputGate(6,rightv->operator[](i),na,xorab);
+	                xorab = clearWireForReuse(xorab, idxF);
+	                outputGate(6, rightv->operator[](i), na, xorab, idxF);
                     
-                    Wire * t = invertWireNoInvertOutput(xorab);
+	                Wire * t = invertWireNoInvertOutput(xorab, idxF);
                     
-                    outputGateNoInvertOutput(6,t,carry,destv[i]);
+	                outputGateNoInvertOutput(6, t, carry, destv[i], idxF);
                     
                     //outputGate(9,xorab,carry, destv[i]);
                     //destv[i] = d;
@@ -1251,14 +1261,14 @@ void outputSubtract(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire 
                     if(i < length-1)
                     {
                         
-                        xorac = clearWireForReuse(xorac);
-                        outputGate(6,carry,na,xorac);
+	                    xorac = clearWireForReuse(xorac, idxF);
+	                    outputGate(6, carry, na, xorac, idxF);
                         
-                        and1 = clearWireForReuse(and1);
-                        outputGateNoInvertOutput(8,xorab,xorac,and1);
+	                    and1 = clearWireForReuse(and1, idxF);
+	                    outputGateNoInvertOutput(8, xorab, xorac, and1, idxF);
                         
-                        carry = clearWireForReuse(carry);
-                        outputGateNoInvertOutput(6,na,and1,carry);
+	                    carry = clearWireForReuse(carry, idxF);
+	                    outputGateNoInvertOutput(6, na, and1, carry, idxF);
                     }
                     
                 }
@@ -1267,14 +1277,14 @@ void outputSubtract(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire 
             {
                 for(int i=0;i<length;i++)
                 {
-                    na = invertWireNoInvertOutput(leftv->operator[](i));
+	                na = invertWireNoInvertOutput(leftv->operator[](i), idxF);
                     
-                    xorab = clearWireForReuse(xorab);
-                    outputGate(6,rightv->operator[](i),na,xorab);
+	                xorab = clearWireForReuse(xorab, idxF);
+	                outputGate(6, rightv->operator[](i), na, xorab, idxF);
                     
-                    Wire * t = invertWireNoInvertOutput(xorab);
+	                Wire * t = invertWireNoInvertOutput(xorab, idxF);
                     
-                    outputGateNoInvertOutput(6,t,carry,destv[i]);
+	                outputGateNoInvertOutput(6, t, carry, destv[i], idxF);
                     
                     //outputGate(9,xorab,carry, destv[i]);
                     //destv[i] = d;
@@ -1282,14 +1292,14 @@ void outputSubtract(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire 
                     if(i < length-1)
                     {
                         
-                        xorac = clearWireForReuse(xorac);
-                        outputGate(6,carry,na,xorac);
+	                    xorac = clearWireForReuse(xorac, idxF);
+	                    outputGate(6, carry, na, xorac, idxF);
                         
-                        and1 = clearWireForReuse(and1);
-                        outputGateNoInvertOutput(8,xorab,xorac,and1);
+	                    and1 = clearWireForReuse(and1, idxF);
+	                    outputGateNoInvertOutput(8, xorab, xorac, and1, idxF);
                         
-                        carry = clearWireForReuse(carry);
-                        outputGateNoInvertOutput(6,na,and1,carry);
+	                    carry = clearWireForReuse(carry, idxF);
+	                    outputGateNoInvertOutput(6, na, and1, carry, idxF);
                     }
                     
                     if(carry->state == UNKNOWN)
@@ -1307,7 +1317,7 @@ void outputSubtract(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire 
                         
                         if(size > 0)
                         {
-                            addComplexOp(1,size,i+1,i+1,i+1,(*leftv),(*rightv),destv,carry, (i+size) == length-1);
+	                        addComplexOp(1, size, i + 1, i + 1, i + 1, (*leftv), (*rightv), destv, carry, (i + size) == length - 1, idxF);
                             
                             i+=size;
                         }
@@ -1335,26 +1345,26 @@ void outputSubtract(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire 
 }
 
 //precondiction - all vectors are of proper size( |leftv| == |rightv| == |destv| ))
-void outputAddition(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv)
+void outputAddition(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv, int idxF)
 {
     int length = leftv->size();
     
     switch(length)
     {
         case 1:
-            destv[0] = outputGate(6,rightv->operator[](0),leftv->operator[](0));
+	    destv[0] = outputGate(6, rightv->operator[](0), leftv->operator[](0), idxF);
             break;
         default:
             //new adder
-            Wire * carry = getPool()->getWire();
-            Wire * xorab = getPool()->getWire();
-            Wire * xorac = getPool()->getWire();
-            //Wire * xorabxc = getPool()->getWire();
-            Wire * and1 = getPool()->getWire();
+            Wire * carry = getPool(idxF)->getWire();
+            Wire * xorab = getPool(idxF)->getWire();
+            Wire * xorac = getPool(idxF)->getWire();
+            //Wire * xorabxc = getPool(idxF)->getWire();
+            Wire * and1 = getPool(idxF)->getWire();
             
             carry->state = ZERO;
             
-            WireSet * ws = getPool()->getWires(length);
+            WireSet * ws = getPool(idxF)->getWires(length);
             
             for(int i=0;i<length;i++)
             {
@@ -1366,24 +1376,24 @@ void outputAddition(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire 
             {
                 for(int i=0;i<length;i++)
                 {
-                    xorab = clearWireForReuse(xorab);
-                    outputGateNoInvertOutput(6,rightv->operator[](i),leftv->operator[](i),xorab);
+	                xorab = clearWireForReuse(xorab, idxF);
+	                outputGateNoInvertOutput(6, rightv->operator[](i), leftv->operator[](i), xorab, idxF);
                     
                     /*Wire * d = outputGate(6,xorab,carry);
                     destv[i] = d;*/
-                    outputGate(6,xorab,carry, destv[i]);
+	                outputGate(6, xorab, carry, destv[i], idxF);
                     
                     if(i < length-1)
                     {
                         
-                        xorac = clearWireForReuse(xorac);
-                        outputGate(6,carry,leftv->operator[](i),xorac);
+	                    xorac = clearWireForReuse(xorac, idxF);
+	                    outputGate(6, carry, leftv->operator[](i), xorac, idxF);
                         
-                        and1 = clearWireForReuse(and1);
-                        outputGateNoInvertOutput(8,xorab,xorac,and1);
+	                    and1 = clearWireForReuse(and1, idxF);
+	                    outputGateNoInvertOutput(8, xorab, xorac, and1, idxF);
                         
-                        carry = clearWireForReuse(carry);
-                        outputGateNoInvertOutput(6,leftv->operator[](i),and1,carry);
+	                    carry = clearWireForReuse(carry, idxF);
+	                    outputGateNoInvertOutput(6, leftv->operator[](i), and1, carry, idxF);
                     }
                     
                 }
@@ -1394,22 +1404,22 @@ void outputAddition(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire 
                 
                 for(int i=0;i<length;i++)
                 {
-                    xorab = clearWireForReuse(xorab);
-                    outputGateNoInvertOutput(6,rightv->operator[](i),leftv->operator[](i),xorab);
+	                xorab = clearWireForReuse(xorab, idxF);
+	                outputGateNoInvertOutput(6, rightv->operator[](i), leftv->operator[](i), xorab, idxF);
                     
-                    outputGate(6,xorab,carry, destv[i]);
+	                outputGate(6, xorab, carry, destv[i], idxF);
                     
                     if(i < length-1)
                     {
                         
-                        xorac = clearWireForReuse(xorac);
-                        outputGate(6,carry,leftv->operator[](i),xorac);
+	                    xorac = clearWireForReuse(xorac, idxF);
+	                    outputGate(6, carry, leftv->operator[](i), xorac, idxF);
                         
-                        and1 = clearWireForReuse(and1);
-                        outputGateNoInvertOutput(8,xorab,xorac,and1);
+	                    and1 = clearWireForReuse(and1, idxF);
+	                    outputGateNoInvertOutput(8, xorab, xorac, and1, idxF);
                         
-                        carry = clearWireForReuse(carry);
-                        outputGateNoInvertOutput(6,leftv->operator[](i),and1,carry);
+	                    carry = clearWireForReuse(carry, idxF);
+                        outputGateNoInvertOutput(6,leftv->operator[](i),and1,carry,idxF);
                     }
                     
                     if(carry->state == UNKNOWN)
@@ -1427,7 +1437,7 @@ void outputAddition(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire 
                         
                         if(size > 0)
                         {
-                            addComplexOp(0,size,i+1,i+1,i+1,(*leftv),(*rightv),destv,carry, (i+size) == length-1);
+	                        addComplexOp(0, size, i + 1, i + 1, i + 1, (*leftv), (*rightv), destv, carry, (i + size) == length - 1, idxF);
                             
                             i+=size;
                         }
@@ -1445,7 +1455,7 @@ void outputAddition(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire 
 //left is x input
 //right is y input
 //mult algorithm from MIT slides from course 6.111, fall 2012, lecture 8/9, slide 33
-void outputMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv)
+void outputMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv, int idxF)
 {
     int length = leftv->size();
     
@@ -1453,7 +1463,7 @@ void outputMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wir
     switch(length)
     {
         case 1:
-            destv[0] = outputGate(8,leftv->operator[](0),rightv->operator[](0));
+	    destv[0] = outputGate(8, leftv->operator[](0), rightv->operator[](0), idxF);
             break;
         default:
             
@@ -1464,13 +1474,13 @@ void outputMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wir
             vector<Wire *> rowinputsright;
             rowinputsright.resize(length);
             
-            Wire * carry = getPool()->getWire();
-            Wire * xor2 = getPool()->getWire();
-            Wire * xorab = getPool()->getWire();
-            Wire * andn1 = getPool()->getWire();
-            Wire * andn2 = getPool()->getWire();
+            Wire * carry = getPool(idxF)->getWire();
+            Wire * xor2 = getPool(idxF)->getWire();
+            Wire * xorab = getPool(idxF)->getWire();
+            Wire * andn1 = getPool(idxF)->getWire();
+            Wire * andn2 = getPool(idxF)->getWire();
             
-            WireSet * ws = getPool()->getWires(length);
+            WireSet * ws = getPool(idxF)->getWires(length);
             
             for(int i=0;i<length;i++)
             {
@@ -1492,31 +1502,31 @@ void outputMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wir
                     for(int k=0;k<length-i;k++)
                     {
                         //cout << "> gate\n";
-                        rowinputsleft[k] = outputGate(8,leftv->operator[](k),rightv->operator[](0));
+	                    rowinputsleft[k] = outputGate(8, leftv->operator[](k), rightv->operator[](0), idxF);
                     }
                     //only on first row do we do this
-                    rowinputsleft[length-1] = invertWireNoAllocUnlessNecessary(rowinputsleft[length-1]);
+	                rowinputsleft[length - 1] = invertWireNoAllocUnlessNecessary(rowinputsleft[length - 1], idxF);
                     
                     for(int k=0;k<length-i-1;k++)
                     {
                        // cout << "> gate\n";
-                        rowinputsright[k] = outputGate(8,leftv->operator[](k),rightv->operator[](1));
+	                    rowinputsright[k] = outputGate(8, leftv->operator[](k), rightv->operator[](1), idxF);
                     }
                     
                     
-                    //destv[0] = getPool()->getWire();
+                    //destv[0] = getPool(idxF)->getWire();
                     
-                    assignWire(destv[0],rowinputsleft[0]);
+	                assignWire(destv[0], rowinputsleft[0], idxF);
                     
                     //shift down
                     for(int k=0;k<length-1;k++)
                     {
-                        assignWire(rowinputsleft[k],rowinputsleft[k+1]);
+	                    assignWire(rowinputsleft[k], rowinputsleft[k + 1], idxF);
                     }
                     
                     if(i == length-2)
                     {
-                        rowinputsright[0] = invertWireNoAllocUnlessNecessary(rowinputsright[0]);
+	                    rowinputsright[0] = invertWireNoAllocUnlessNecessary(rowinputsright[0], idxF);
                     }
                 }
                 else
@@ -1526,14 +1536,14 @@ void outputMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wir
                     for(int k=0;k<length-1-i;k++)
                     {
                         //cout << "> gate\n";
-                        rowinputsright[k] = clearWireForReuse(rowinputsright[k]);
-                        outputGate(8,leftv->operator[](k),rightv->operator[](i+1), rowinputsright[k]);
+	                    rowinputsright[k] = clearWireForReuse(rowinputsright[k], idxF);
+	                    outputGate(8, leftv->operator[](k), rightv->operator[](i + 1), rowinputsright[k], idxF);
                     }
                     
                     //last row
                     if(i == length-2)
                     {
-                        rowinputsright[0] = invertWireNoAllocUnlessNecessary(rowinputsright[0]);
+	                    rowinputsright[0] = invertWireNoAllocUnlessNecessary(rowinputsright[0], idxF);
                     }
                     
                 }
@@ -1549,17 +1559,17 @@ void outputMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wir
                     //output half adder
                     if(j == 0)
                     {
-                        xorab = clearWireForReuse(xorab);
-                        outputGate(6,rowinputsright[0],rowinputsleft[0],xorab);
+	                    xorab = clearWireForReuse(xorab, idxF);
+	                    outputGate(6, rowinputsright[0], rowinputsleft[0], xorab, idxF);
 
-                        //destv[i+1] = pool.getWire();
-                        assignWire(destv[i+1],xorab);
+                        //destv[i+1] = pool[idxF].getWire();
+	                    assignWire(destv[i + 1], xorab, idxF);
                        // cout << "> gate\n";
-                        carry = clearWireForReuse(carry);
+	                    carry = clearWireForReuse(carry, idxF);
                         
                         if(i != length-2)
                         {
-                            outputGate(8,rowinputsright[0],rowinputsleft[0],carry);
+	                        outputGate(8, rowinputsright[0], rowinputsleft[0], carry, idxF);
                         }
 
                     }
@@ -1567,36 +1577,36 @@ void outputMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wir
                     {
                         //cout << "start FA\n";
                         
-                        xorab = clearWireForReuse(xorab);
-                        outputGate(6,rowinputsright[j],rowinputsleft[j],xorab);
+	                    xorab = clearWireForReuse(xorab, idxF);
+	                    outputGate(6, rowinputsright[j], rowinputsleft[j], xorab, idxF);
                         
-                        rowinputsleft[j-1] = clearWireForReuse(rowinputsleft[j-1]);
-                        outputGate(6,xorab,carry,rowinputsleft[j-1]);
+	                    rowinputsleft[j - 1] = clearWireForReuse(rowinputsleft[j - 1], idxF);
+	                    outputGate(6, xorab, carry, rowinputsleft[j - 1], idxF);
                         
                         if(j < length-1-i-1)
                         {
                             //cout << "full adder\n";
                             
-                            andn2 = clearWireForReuse(andn2);
-                            outputGate(6,carry,rowinputsleft[j],andn2);
+	                        andn2 = clearWireForReuse(andn2, idxF);
+	                        outputGate(6, carry, rowinputsleft[j], andn2, idxF);
                             //cout << "> gate\n";
-                            andn1 = clearWireForReuse(andn1);
-                            outputGate(8,xorab,andn2,andn1);
+	                        andn1 = clearWireForReuse(andn1, idxF);
+	                        outputGate(8, xorab, andn2, andn1, idxF);
                             
-                            carry = clearWireForReuse(carry);
-                            outputGate(6,rowinputsleft[j],andn1,carry);
+	                        carry = clearWireForReuse(carry, idxF);
+	                        outputGate(6, rowinputsleft[j], andn1, carry, idxF);
                         }
                     }
                     
-                    if(andn2->refs == 0) clearWireForReuse(andn2);
-                    if(andn1->refs == 0) clearWireForReuse(andn1);
-                    if(xorab->refs == 0) clearWireForReuse(xorab);
-                    if(andn2->refs == 0) clearWireForReuse(andn2);
-                    if(andn1->refs == 0) clearWireForReuse(andn1);
-                    if(xorab->refs == 0) clearWireForReuse(xorab);
-                    if(andn2->refs == 0) clearWireForReuse(andn2);
-                    if(andn1->refs == 0) clearWireForReuse(andn1);
-                    if(xorab->refs == 0) clearWireForReuse(xorab);
+	                if (andn2->refs == 0) clearWireForReuse(andn2, idxF);
+	                if (andn1->refs == 0) clearWireForReuse(andn1, idxF);
+	                if (xorab->refs == 0) clearWireForReuse(xorab, idxF);
+	                if (andn2->refs == 0) clearWireForReuse(andn2, idxF);
+	                if (andn1->refs == 0) clearWireForReuse(andn1, idxF);
+	                if (xorab->refs == 0) clearWireForReuse(xorab, idxF);
+	                if (andn2->refs == 0) clearWireForReuse(andn2, idxF);
+	                if (andn1->refs == 0) clearWireForReuse(andn1, idxF);
+	                if (xorab->refs == 0) clearWireForReuse(xorab, idxF);
                 }
             }
             break;
@@ -1609,13 +1619,13 @@ void outputMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wir
     printwirevec(*leftv); cout <<"\n";
     printwirevec(destv); cout <<"\n";*/
     
-    //destv[leftv->size()-1] = pool.getWire();
+    //destv[leftv->size()-1] = pool[idxF].getWire();
     //outputGate(6,leftv->operator[](leftv->size()-1),rightv->operator[](leftv->size()-1),destv[leftv->size()-1]);
     
 }
 
 
-void outputMultUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv)
+void outputMultUnsigned(vector<Wire *> * leftv, vector<Wire *> * rightv, vector<Wire *> & destv, int idxF)
 {
     int length = leftv->size();
     
@@ -1623,7 +1633,7 @@ void outputMultUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
     switch(length)
     {
         case 1:
-            destv[0] = outputGate(8,leftv->operator[](0),rightv->operator[](0));
+            destv[0] = outputGate(8,leftv->operator[](0),rightv->operator[](0), idxF);
             break;
         default:
             
@@ -1634,14 +1644,14 @@ void outputMultUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
             vector<Wire *> rowinputsright;
             rowinputsright.resize(length);
             
-            Wire * carry = getPool()->getWire();
-            Wire * xor2 = getPool()->getWire();
-            Wire * xorab = getPool()->getWire();
-            Wire * andn1 = getPool()->getWire();
-            Wire * andn2 = getPool()->getWire();
+            Wire * carry = getPool(idxF)->getWire();
+            Wire * xor2 = getPool(idxF)->getWire();
+            Wire * xorab = getPool(idxF)->getWire();
+            Wire * andn1 = getPool(idxF)->getWire();
+            Wire * andn2 = getPool(idxF)->getWire();
             
             
-            WireSet * ws = getPool()->getWires(length);
+            WireSet * ws = getPool(idxF)->getWires(length);
             
             for(int i=0;i<length;i++)
             {
@@ -1658,25 +1668,25 @@ void outputMultUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
                     
                     for(int k=0;k<length-i;k++)
                     {
-                        rowinputsleft[k] = outputGate(8,leftv->operator[](k),rightv->operator[](0));
+	                    rowinputsleft[k] = outputGate(8, leftv->operator[](k), rightv->operator[](0), idxF);
                     }
                     //only on first row do we do this
                     //rowinputsleft[length-1] = invertWireNoAllocUnlessNecessary(rowinputsleft[length-1]);
                     
                     for(int k=0;k<length-i-1;k++)
                     {
-                        rowinputsright[k] = outputGate(8,leftv->operator[](k),rightv->operator[](1));
+	                    rowinputsright[k] = outputGate(8, leftv->operator[](k), rightv->operator[](1), idxF);
                     }
                     
                     
-                    //destv[0] = getPool()->getWire();
+                    //destv[0] = getPool(idxF)->getWire();
                     
-                    assignWire(destv[0],rowinputsleft[0]);
+                    assignWire(destv[0],rowinputsleft[0], idxF);
                     
                     //shift down
                     for(int k=0;k<length-1;k++)
                     {
-                        assignWire(rowinputsleft[k],rowinputsleft[k+1]);
+	                    assignWire(rowinputsleft[k], rowinputsleft[k + 1], idxF);
                     }
                     
                     /*if(i == length-2)
@@ -1690,8 +1700,8 @@ void outputMultUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
                     
                     for(int k=0;k<length-1-i;k++)
                     {
-                        rowinputsright[k] = clearWireForReuse(rowinputsright[k]);
-                        outputGate(8,leftv->operator[](k),rightv->operator[](i+1), rowinputsright[k]);
+	                    rowinputsright[k] = clearWireForReuse(rowinputsright[k], idxF);
+	                    outputGate(8, leftv->operator[](k), rightv->operator[](i + 1), rowinputsright[k], idxF);
                     }
                     
                     //last row
@@ -1712,50 +1722,50 @@ void outputMultUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
                     //output half adder
                     if(j == 0)
                     {
-                        xorab = clearWireForReuse(xorab);
-                        outputGate(6,rowinputsright[0],rowinputsleft[0],xorab);
+	                    xorab = clearWireForReuse(xorab, idxF);
+	                    outputGate(6, rowinputsright[0], rowinputsleft[0], xorab, idxF);
                         
-                        //destv[i+1] = pool.getWire();
-                        assignWire(destv[i+1],xorab);
+                        //destv[i+1] = pool[idxF].getWire();
+	                    assignWire(destv[i + 1], xorab, idxF);
                         
-                        carry = clearWireForReuse(carry);
+	                    carry = clearWireForReuse(carry, idxF);
                         
                         if(i != length-2)
                         {
-                            outputGate(8,rowinputsright[0],rowinputsleft[0],carry);
+	                        outputGate(8, rowinputsright[0], rowinputsleft[0], carry, idxF);
                         }
                         
                     }
                     else //output full adder
                     {
-                        xorab = clearWireForReuse(xorab);
-                        outputGate(6,rowinputsright[j],rowinputsleft[j],xorab);
+	                    xorab = clearWireForReuse(xorab, idxF);
+	                    outputGate(6, rowinputsright[j], rowinputsleft[j], xorab, idxF);
                         
-                        rowinputsleft[j-1] = clearWireForReuse(rowinputsleft[j-1]);
-                        outputGate(6,xorab,carry,rowinputsleft[j-1]);
+	                    rowinputsleft[j - 1] = clearWireForReuse(rowinputsleft[j - 1], idxF);
+	                    outputGate(6, xorab, carry, rowinputsleft[j - 1], idxF);
                         
                         if(j < length-1-i-1)
                         {
-                            andn2 = clearWireForReuse(andn2);
-                            outputGate(6,carry,rowinputsleft[j],andn2);
+	                        andn2 = clearWireForReuse(andn2, idxF);
+	                        outputGate(6, carry, rowinputsleft[j], andn2, idxF);
                             
-                            andn1 = clearWireForReuse(andn1);
-                            outputGate(8,xorab,andn2,andn1);
+	                        andn1 = clearWireForReuse(andn1, idxF);
+	                        outputGate(8, xorab, andn2, andn1, idxF);
                             
-                            carry = clearWireForReuse(carry);
-                            outputGate(6,rowinputsleft[j],andn1,carry);
+	                        carry = clearWireForReuse(carry, idxF);
+	                        outputGate(6, rowinputsleft[j], andn1, carry, idxF);
                         }
                     }
                     
-                    if(andn2->refs == 0) clearWireForReuse(andn2);
-                    if(andn1->refs == 0) clearWireForReuse(andn1);
-                    if(xorab->refs == 0) clearWireForReuse(xorab);
-                    if(andn2->refs == 0) clearWireForReuse(andn2);
-                    if(andn1->refs == 0) clearWireForReuse(andn1);
-                    if(xorab->refs == 0) clearWireForReuse(xorab);
-                    if(andn2->refs == 0) clearWireForReuse(andn2);
-                    if(andn1->refs == 0) clearWireForReuse(andn1);
-                    if(xorab->refs == 0) clearWireForReuse(xorab);
+	                if (andn2->refs == 0) clearWireForReuse(andn2, idxF);
+	                if (andn1->refs == 0) clearWireForReuse(andn1, idxF);
+	                if (xorab->refs == 0) clearWireForReuse(xorab, idxF);
+	                if (andn2->refs == 0) clearWireForReuse(andn2, idxF);
+	                if (andn1->refs == 0) clearWireForReuse(andn1, idxF);
+	                if (xorab->refs == 0) clearWireForReuse(xorab, idxF);
+	                if (andn2->refs == 0) clearWireForReuse(andn2, idxF);
+	                if (andn1->refs == 0) clearWireForReuse(andn1, idxF);
+	                if (xorab->refs == 0) clearWireForReuse(xorab, idxF);
                 }
             }
             break;
@@ -1772,19 +1782,19 @@ int xwireback;
 
 
 //leftv - dividend, rightv - divisor
-void outputDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv, bool IsModDiv)
+void outputDivideUnsigned(vector<Wire *> * leftv, vector<Wire *> * rightv, vector<Wire *> & destv, bool IsModDiv, int idxF)
 {
     int origlength = leftv->size();
     int length = leftv->size()+1;
     
-    Wire * carry = getPool()->getWire();
-    Wire * xorab = getPool()->getWire();
-    Wire * xorac = getPool()->getWire();
-    Wire * and1 = getPool()->getWire();
+    Wire * carry = getPool(idxF)->getWire();
+    Wire * xorab = getPool(idxF)->getWire();
+    Wire * xorac = getPool(idxF)->getWire();
+    Wire * and1 = getPool(idxF)->getWire();
     
-    Wire * xortout = getPool()->getWire();
+    Wire * xortout = getPool(idxF)->getWire();
     
-    Wire * t = get_ONE_WIRE();
+	Wire * t = get_ONE_WIRE(idxF);
     
     vector<Wire *> inputx, inputy,remainw;
     vector<Wire *> lleft, lright,ldest;
@@ -1806,8 +1816,8 @@ void outputDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
 
     for(;i_out<length;i_out++)
     {
-        lleft[i_out] = get_ZERO_WIRE();
-        lright[i_out] = get_ZERO_WIRE();
+        lleft[i_out] = get_ZERO_WIRE(idxF);
+        lright[i_out] = get_ZERO_WIRE(idxF);
     }
 
     inputx.resize(length);
@@ -1821,7 +1831,7 @@ void outputDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
         //printWire(lright[i]);
         
         inputx[i] = lright[i];
-        inputy[i] = getPool()->getWire();
+        inputy[i] = getPool(idxF)->getWire();
     }
     
     vector<Wire *> keepwiresA;
@@ -1838,7 +1848,7 @@ void outputDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
             
             for(int j=1;j<length;j++)
             {
-                assignWire(inputy[j], get_ZERO_WIRE());
+	            assignWire(inputy[j], get_ZERO_WIRE(idxF), idxF);
             }
         }
         else
@@ -1846,7 +1856,7 @@ void outputDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
             inputy[0] = lleft[length-1-i];
             for(int j=1;j<length;j++)
             {
-                assignWire(inputy[j], remainw[j-1]);
+	            assignWire(inputy[j], remainw[j - 1] , idxF);
             }
         }
 
@@ -1857,18 +1867,18 @@ void outputDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
         }
         else
         {
-            assignWire(carry,t);
+	        assignWire(carry, t, idxF);
         }
         
         
         /*controlled add / subtract*/
         for(int j=0;j<length;j++)
         {
-            xortout = clearWireForReuse(xortout);
-            outputGateNoInvertOutput(6,t,inputx[j],xortout);
+	        xortout = clearWireForReuse(xortout, idxF);
+	        outputGateNoInvertOutput(6, t, inputx[j], xortout, idxF);
             
-            xorab = clearWireForReuse(xorab);
-            outputGateNoInvertOutput(6,inputy[j],xortout,xorab);
+	        xorab = clearWireForReuse(xorab, idxF);
+	        outputGateNoInvertOutput(6, inputy[j], xortout, xorab, idxF);
             
             //full adder part
             if(remainw[j] != 0)
@@ -1887,7 +1897,7 @@ void outputDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
                         }
                         else
                         {
-                            remainw[j] = getPool()->getWire();
+                            remainw[j] = getPool(idxF)->getWire();
                         }
                     }
                     else
@@ -1900,42 +1910,42 @@ void outputDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
                         }
                         else
                         {
-                            remainw[j] = getPool()->getWire();
+                            remainw[j] = getPool(idxF)->getWire();
                         }
                     }
-                    if(remainw[j] == 0) remainw[j] = getPool()->getWire();
+                    if(remainw[j] == 0) remainw[j] = getPool(idxF)->getWire();
                 }
                 
     
                 
-                remainw[j] = clearWireForReuse(remainw[j]);
-                outputGate(6,xorab,carry,remainw[j]);
+	            remainw[j] = clearWireForReuse(remainw[j], idxF);
+	            outputGate(6, xorab, carry, remainw[j], idxF);
             }
             else
             {
-                remainw[j] = outputGate(6,xorab,carry);
+	            remainw[j] = outputGate(6, xorab, carry, idxF);
             }
             
             
             if(j < length-1)
             {
-                xorac = clearWireForReuse(xorac);
-                outputGate(6,carry,xortout,xorac);
+	            xorac = clearWireForReuse(xorac, idxF);
+	            outputGate(6, carry, xortout, xorac, idxF);
                 
-                and1 = clearWireForReuse(and1);
-                outputGateNoInvertOutput(8,xorab,xorac,and1);
+	            and1 = clearWireForReuse(and1, idxF);
+	            outputGateNoInvertOutput(8, xorab, xorac, and1, idxF);
                 
-                carry = clearWireForReuse(carry);
-                outputGateNoInvertOutput(6,xortout,and1,carry);
+                carry = clearWireForReuse(carry, idxF);
+	            outputGateNoInvertOutput(6, xortout, and1, carry, idxF);
             }
             
-            if(xortout->refs == 0) clearWireForReuse(xortout);
-            if(xorab->refs == 0) clearWireForReuse(xorab);
-            if(xorac->refs == 0) clearWireForReuse(xorac);
-            if(and1->refs == 0) clearWireForReuse(and1);
+	        if (xortout->refs == 0) clearWireForReuse(xortout, idxF);
+	        if (xorab->refs == 0) clearWireForReuse(xorab, idxF);
+	        if (xorac->refs == 0) clearWireForReuse(xorac, idxF);
+	        if (and1->refs == 0) clearWireForReuse(and1, idxF);
         }
         
-        t = invertWireNoInvertOutput(remainw[length-1]);
+	    t = invertWireNoInvertOutput(remainw[length - 1], idxF);
 
         
         if(!IsModDiv)
@@ -1955,16 +1965,16 @@ void outputDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
         
         vector<Wire *> addDest;
         addDest.resize(ldest.size());
-        outputAddition(&ldest,&lright,addDest);
+	    outputAddition(&ldest, &lright, addDest, idxF);
         
         //cout << "before fail\n";
         for(int i=0;i<ldest.size();i++)
         {
-            assignWireCond(ldest[i],addDest[i],ldest[destv.size()]);
+	        assignWireCond(ldest[i], addDest[i], ldest[destv.size()], idxF);
         }
     }
     
-    WireSet * ws = getPool()->getWires(origlength);
+    WireSet * ws = getPool(idxF)->getWires(origlength);
     
     for(int i=0;i<origlength;i++)
     {
@@ -1976,28 +1986,28 @@ void outputDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
     /*reduce to original length*/
     for(int i=0;i<origlength;i++)
     {
-        assignWire(destv[i],ldest[i]);
+	    assignWire(destv[i], ldest[i], idxF);
     }
 }
 
 
 
 //leftv - dividend, rightv - divisor
-void outputDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv, bool IsModDiv)
+void outputDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv, bool IsModDiv, int idxF)
 {
     //cout << "outputDivideSigned not complete\n";
     
     int origlength = leftv->size();
     int length = leftv->size()+1;
     
-    Wire * carry = getPool()->getWire();
-    Wire * xorab = getPool()->getWire();
-    Wire * xorac = getPool()->getWire();
-    Wire * and1 = getPool()->getWire();
+    Wire * carry = getPool(idxF)->getWire();
+    Wire * xorab = getPool(idxF)->getWire();
+    Wire * xorac = getPool(idxF)->getWire();
+    Wire * and1 = getPool(idxF)->getWire();
     
-    Wire * xortout = getPool()->getWire();
+    Wire * xortout = getPool(idxF)->getWire();
     
-    Wire * t = get_ONE_WIRE();
+	Wire * t = get_ONE_WIRE(idxF);
     
     vector<Wire *> inputx, inputy,remainw;
     vector<Wire *> lleft, lright,ldest, subtractedleft;
@@ -2009,22 +2019,22 @@ void outputDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
     int i_out=0;
     for(;i_out<origlength;i_out++)
     {
-        lleft[i_out] = getPool()->getWire();
-        assignWire(lleft[i_out],leftv->operator[](i_out));
+        lleft[i_out] = getPool(idxF)->getWire();
+	    assignWire(lleft[i_out], leftv->operator[](i_out), idxF);
         //makeWireContainValue(lleft[i_out]);
         
-        lright[i_out] = getPool()->getWire();
+        lright[i_out] = getPool(idxF)->getWire();
         //lright[i_out] = rightv->operator[](i_out);
-        assignWire(lright[i_out],rightv->operator[](i_out));
+	    assignWire(lright[i_out], rightv->operator[](i_out), idxF);
         //makeWireContainValue(lright[i_out]);
     }
     
     
-    Wire * ifsubtractl = getPool()->getWire();
-    Wire * ifsubtractr = getPool()->getWire();
+    Wire * ifsubtractl = getPool(idxF)->getWire();
+    Wire * ifsubtractr = getPool(idxF)->getWire();
     
-    assignWire(ifsubtractl,lleft[origlength-1]);
-    assignWire(ifsubtractr,lright[origlength-1]);
+	assignWire(ifsubtractl, lleft[origlength - 1], idxF);
+	assignWire(ifsubtractr, lright[origlength - 1], idxF);
     
     vector<Wire *> zeros;
     vector<Wire *> subDestr,subDestl;
@@ -2034,17 +2044,17 @@ void outputDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
     
     for(int i=0;i<origlength;i++)
     {
-        zeros[i] = ZERO_WIRE;
+        zeros[i] = ZERO_WIRE[idxF];
     }
     
-    outputSubtract(&zeros,leftv,subDestl);
-    outputSubtract(&zeros,rightv,subDestr);
+	outputSubtract(&zeros, leftv, subDestl, idxF);
+	outputSubtract(&zeros, rightv, subDestr, idxF);
     
     
     for(i_out=0;i_out<origlength;i_out++)
     {
-        assignWireCond(lleft[i_out],subDestl[i_out], ifsubtractl);
-        assignWireCond(lright[i_out],subDestr[i_out], ifsubtractr);
+	    assignWireCond(lleft[i_out], subDestl[i_out], ifsubtractl, idxF);
+	    assignWireCond(lright[i_out], subDestr[i_out], ifsubtractr, idxF);
     }
     
     
@@ -2055,8 +2065,8 @@ void outputDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
     
     for(;i_out<length;i_out++)
     {
-        lleft[i_out] = get_ZERO_WIRE();
-        lright[i_out] = get_ZERO_WIRE();
+        lleft[i_out] = get_ZERO_WIRE(idxF);
+        lright[i_out] = get_ZERO_WIRE(idxF);
     }
     
     inputx.resize(length);
@@ -2070,7 +2080,7 @@ void outputDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
         //printWire(lright[i]);
         
         inputx[i] = lright[i];
-        inputy[i] = getPool()->getWire();
+        inputy[i] = getPool(idxF)->getWire();
     }
     
     vector<Wire *> keepwiresA;
@@ -2087,7 +2097,7 @@ void outputDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
             
             for(int j=1;j<length;j++)
             {
-                assignWire(inputy[j], get_ZERO_WIRE());
+	            assignWire(inputy[j], get_ZERO_WIRE(idxF), idxF);
             }
         }
         else
@@ -2095,7 +2105,7 @@ void outputDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
             inputy[0] = lleft[length-1-i];
             for(int j=1;j<length;j++)
             {
-                assignWire(inputy[j], remainw[j-1]);
+	            assignWire(inputy[j], remainw[j - 1], idxF);
             }
         }
         
@@ -2106,18 +2116,18 @@ void outputDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
         }
         else
         {
-            assignWire(carry,t);
+	        assignWire(carry, t, idxF);
         }
         
         
         /*controlled add / subtract*/
         for(int j=0;j<length;j++)
         {
-            xortout = clearWireForReuse(xortout);
-            outputGateNoInvertOutput(6,t,inputx[j],xortout);
+	        xortout = clearWireForReuse(xortout, idxF);
+	        outputGateNoInvertOutput(6, t, inputx[j], xortout, idxF);
             
-            xorab = clearWireForReuse(xorab);
-            outputGateNoInvertOutput(6,inputy[j],xortout,xorab);
+	        xorab = clearWireForReuse(xorab, idxF);
+	        outputGateNoInvertOutput(6, inputy[j], xortout, xorab, idxF);
             
             //full adder part
             if(remainw[j] != 0)
@@ -2136,7 +2146,7 @@ void outputDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
                         }
                         else
                         {
-                            remainw[j] = getPool()->getWire();
+                            remainw[j] = getPool(idxF)->getWire();
                         }
                     }
                     else
@@ -2149,42 +2159,42 @@ void outputDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
                         }
                         else
                         {
-                            remainw[j] = getPool()->getWire();
+                            remainw[j] = getPool(idxF)->getWire();
                         }
                     }
-                    if(remainw[j] == 0) remainw[j] = getPool()->getWire();
+                    if(remainw[j] == 0) remainw[j] = getPool(idxF)->getWire();
                 }
                 
                 
                 
-                remainw[j] = clearWireForReuse(remainw[j]);
-                outputGate(6,xorab,carry,remainw[j]);
+	            remainw[j] = clearWireForReuse(remainw[j], idxF);
+	            outputGate(6, xorab, carry, remainw[j], idxF);
             }
             else
             {
-                remainw[j] = outputGate(6,xorab,carry);
+	            remainw[j] = outputGate(6, xorab, carry, idxF);
             }
             
             
             if(j < length-1)
             {
-                xorac = clearWireForReuse(xorac);
-                outputGate(6,carry,xortout,xorac);
+	            xorac = clearWireForReuse(xorac, idxF);
+	            outputGate(6, carry, xortout, xorac, idxF);
                 
-                and1 = clearWireForReuse(and1);
-                outputGateNoInvertOutput(8,xorab,xorac,and1);
+	            and1 = clearWireForReuse(and1, idxF);
+	            outputGateNoInvertOutput(8, xorab, xorac, and1, idxF);
                 
-                carry = clearWireForReuse(carry);
-                outputGateNoInvertOutput(6,xortout,and1,carry);
+	            carry = clearWireForReuse(carry, idxF);
+	            outputGateNoInvertOutput(6, xortout, and1, carry, idxF);
             }
             
-            if(xortout->refs == 0) clearWireForReuse(xortout);
-            if(xorab->refs == 0) clearWireForReuse(xorab);
-            if(xorac->refs == 0) clearWireForReuse(xorac);
-            if(and1->refs == 0) clearWireForReuse(and1);
+	        if (xortout->refs == 0) clearWireForReuse(xortout, idxF);
+	        if (xorab->refs == 0) clearWireForReuse(xorab, idxF);
+	        if (xorac->refs == 0) clearWireForReuse(xorac, idxF);
+	        if (and1->refs == 0) clearWireForReuse(and1, idxF);
         }
         
-        t = invertWireNoInvertOutput(remainw[length-1]);
+	    t = invertWireNoInvertOutput(remainw[length - 1], idxF);
         
         
         if(!IsModDiv)
@@ -2204,12 +2214,12 @@ void outputDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
         
         vector<Wire *> addDest;
         addDest.resize(ldest.size());
-        outputAddition(&ldest,&lright,addDest);
+	    outputAddition(&ldest, &lright, addDest, idxF);
         
         //cout << "before fail\n";
         for(int i=0;i<ldest.size();i++)
         {
-            assignWireCond(ldest[i],addDest[i],ldest[destv.size()]);
+	        assignWireCond(ldest[i], addDest[i], ldest[destv.size()], idxF);
         }
         
         
@@ -2220,13 +2230,13 @@ void outputDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
         zeros.resize(origlength+1);
         
         //expand 0 array
-        zeros[origlength] = ZERO_WIRE;
+	    zeros[origlength] = ZERO_WIRE[ idxF ];
         
-        outputSubtract(&zeros,&ldest,resultsubDest);
+	    outputSubtract(&zeros, &ldest, resultsubDest, idxF);
         
         for(i_out=0;i_out<origlength+1;i_out++)
         {
-            assignWireCond(ldest[i_out],resultsubDest[i_out], ifsubtractl);
+	        assignWireCond(ldest[i_out], resultsubDest[i_out], ifsubtractl, idxF);
         }
     }
     else
@@ -2236,20 +2246,20 @@ void outputDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
         zeros.resize(origlength+1);
         
         //expand 0 array
-        zeros[origlength] = ZERO_WIRE;
+	    zeros[origlength] = ZERO_WIRE[idxF] ;
 
-        outputSubtract(&zeros,&ldest,resultsubDest);
+	    outputSubtract(&zeros, &ldest, resultsubDest, idxF);
         
-        Wire * result = outputGateNoInvertOutput(6,ifsubtractl,ifsubtractr);
+	    Wire * result = outputGateNoInvertOutput(6, ifsubtractl, ifsubtractr, idxF);
         
         for(i_out=0;i_out<origlength+1;i_out++)
         {
-            assignWireCond(ldest[i_out],resultsubDest[i_out], result);
+	        assignWireCond(ldest[i_out], resultsubDest[i_out], result, idxF);
         }
         
     }
     
-    WireSet * ws = getPool()->getWires(origlength);
+    WireSet * ws = getPool(idxF)->getWires(origlength);
     
     for(int i=0;i<origlength;i++)
     {
@@ -2260,7 +2270,7 @@ void outputDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
     /*reduce to original length*/
     for(int i=0;i<origlength;i++)
     {
-        assignWire(destv[i],ldest[i]);
+	    assignWire(destv[i], ldest[i], idxF);
     }
 }
 
@@ -2273,7 +2283,7 @@ void outputDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
 //left is x input
 //right is y input
 //mult algorithm from MIT slides from course 6.111, fall 2012, lecture 8/9, slide 33
-void outputExMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv)
+void outputExMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv, int idxF)
 {
     
     
@@ -2288,7 +2298,7 @@ void outputExMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
     switch(length)
     {
         case 1:
-            ws = getPool()->getWires(2);
+            ws = getPool(idxF)->getWires(2);
             
             for(int i=0;i<2;i++)
             {
@@ -2297,8 +2307,8 @@ void outputExMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
             
         
             
-            assignWire(destv[0], outputGate(8,leftv->operator[](0),rightv->operator[](0)));
-            assignWire(destv[1], outputGate(6,ZERO_WIRE,ZERO_WIRE));
+	    assignWire(destv[0], outputGate(8, leftv->operator[](0), rightv->operator[](0), idxF), idxF);
+	    assignWire(destv[1], outputGate(6, ZERO_WIRE[idxF], ZERO_WIRE[idxF], idxF), idxF);
             break;
         default:
             
@@ -2312,11 +2322,11 @@ void outputExMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
             vector<Wire *> tdest;
             tdest.resize(destv.size());
             
-            Wire * carry = getPool()->getWire();
-            Wire * xor2 = getPool()->getWire();
-            Wire * xorab = getPool()->getWire();
-            Wire * andn1 = getPool()->getWire();
-            Wire * andn2 = getPool()->getWire();
+            Wire * carry = getPool(idxF)->getWire();
+            Wire * xor2 = getPool(idxF)->getWire();
+            Wire * xorab = getPool(idxF)->getWire();
+            Wire * andn1 = getPool(idxF)->getWire();
+            Wire * andn2 = getPool(idxF)->getWire();
             
             
             //number of rows
@@ -2326,8 +2336,8 @@ void outputExMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
                 
                 if(i != 0)
                 {
-                    rowinputsleft[length-1] = clearWireForReuse(rowinputsleft[length-1]);
-                    assignWire(rowinputsleft[length-1], carry);
+	                rowinputsleft[length - 1] = clearWireForReuse(rowinputsleft[length - 1], idxF);
+	                assignWire(rowinputsleft[length - 1], carry, idxF);
                 }
                 
                 //create inputs to each adder
@@ -2336,49 +2346,49 @@ void outputExMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
                     
                     for(int k=0;k<length;k++)
                     {
-                        rowinputsleft[k] = outputGate(8,leftv->operator[](k),rightv->operator[](0));
+	                    rowinputsleft[k] = outputGate(8, leftv->operator[](k), rightv->operator[](0), idxF);
                     }
                     //only on first row do we do this
                     
                     for(int k=0;k<length;k++)
                     {
-                        rowinputsright[k] = outputGate(8,leftv->operator[](k),rightv->operator[](1));
+	                    rowinputsright[k] = outputGate(8, leftv->operator[](k), rightv->operator[](1), idxF);
                     }
                     
                     
-                    tdest[0] = getPool()->getWire();
-                    assignWire(tdest[0],rowinputsleft[0]);
+                    tdest[0] = getPool(idxF)->getWire();
+	                assignWire(tdest[0], rowinputsleft[0], idxF);
                     
                     //shift down
                     for(int k=0;k<length-1;k++)
                     {
-                        assignWire(rowinputsleft[k],rowinputsleft[k+1]);
+	                    assignWire(rowinputsleft[k], rowinputsleft[k + 1], idxF);
                     }
-                    rowinputsleft[length-1] = clearWireForReuse(rowinputsleft[length-1]);
-                    assignWire(rowinputsleft[length-1],ONE_WIRE);
+	                rowinputsleft[length - 1] = clearWireForReuse(rowinputsleft[length - 1], idxF);
+	                assignWire(rowinputsleft[length - 1], ONE_WIRE[idxF], idxF);
                     
-                    rowinputsleft[length-2] = invertWireNoAllocUnlessNecessary(rowinputsleft[length-2]);
+	                rowinputsleft[length - 2] = invertWireNoAllocUnlessNecessary(rowinputsleft[length - 2], idxF);
                     
-                    rowinputsright[length-1] = invertWireNoAllocUnlessNecessary(rowinputsright[length-1]);
+	                rowinputsright[length - 1] = invertWireNoAllocUnlessNecessary(rowinputsright[length - 1], idxF);
                     
                 }
                 else
                 {
                     for(int k=0;k<length;k++)
                     {
-                        rowinputsright[k] = clearWireForReuse(rowinputsright[k]);
-                        outputGate(8,leftv->operator[](k),rightv->operator[](i+1), rowinputsright[k]);
+	                    rowinputsright[k] = clearWireForReuse(rowinputsright[k], idxF);
+	                    outputGate(8, leftv->operator[](k), rightv->operator[](i + 1), rowinputsright[k], idxF);
                     }
                     
                     if(i != length-2)
                     {
-                        rowinputsright[length-1] = invertWireNoAllocUnlessNecessary(rowinputsright[length-1]);
+	                    rowinputsright[length - 1] = invertWireNoAllocUnlessNecessary(rowinputsright[length - 1], idxF);
                     }
                     else
                     {
                         for(int k=0;k<length-1;k++)
                         {
-                            rowinputsright[k] = invertWireNoAllocUnlessNecessary(rowinputsright[k]);
+	                        rowinputsright[k] = invertWireNoAllocUnlessNecessary(rowinputsright[k], idxF);
                         }
                     }
                 }
@@ -2393,43 +2403,43 @@ void outputExMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
                     //output half adder
                     if(j == 0)
                     {
-                        xorab = clearWireForReuse(xorab);
-                        outputGate(6,rowinputsright[0],rowinputsleft[0],xorab);
+	                    xorab = clearWireForReuse(xorab, idxF);
+	                    outputGate(6, rowinputsright[0], rowinputsleft[0], xorab, idxF);
                         
-                        tdest[i+1] = pool.getWire();
-                        assignWire(tdest[i+1],xorab);
+                        tdest[i+1] = pool[idxF].getWire();
+	                    assignWire(tdest[i + 1], xorab, idxF);
                         
-                        carry = clearWireForReuse(carry);
+	                    carry = clearWireForReuse(carry, idxF);
                         
                         
-                        outputGate(8,rowinputsright[0],rowinputsleft[0],carry);
+	                    outputGate(8, rowinputsright[0], rowinputsleft[0], carry, idxF);
                         
                         
                     }
                     else //output full adder
                     {
-                        xorab = clearWireForReuse(xorab);
-                        outputGate(6,rowinputsright[j],rowinputsleft[j],xorab);
+	                    xorab = clearWireForReuse(xorab, idxF);
+	                    outputGate(6, rowinputsright[j], rowinputsleft[j], xorab, idxF);
                         
-                        rowinputsleft[j-1] = clearWireForReuse(rowinputsleft[j-1]);
-                        outputGate(6,xorab,carry,rowinputsleft[j-1]);
+	                    rowinputsleft[j - 1] = clearWireForReuse(rowinputsleft[j - 1], idxF);
+	                    outputGate(6, xorab, carry, rowinputsleft[j - 1], idxF);
                         
                         //if(j < length-1)
                         {
-                            andn2 = clearWireForReuse(andn2);
-                            outputGate(6,carry,rowinputsleft[j],andn2);
+	                        andn2 = clearWireForReuse(andn2, idxF);
+	                        outputGate(6, carry, rowinputsleft[j], andn2, idxF);
                             
-                            andn1 = clearWireForReuse(andn1);
-                            outputGate(8,xorab,andn2,andn1);
+	                        andn1 = clearWireForReuse(andn1, idxF);
+	                        outputGate(8, xorab, andn2, andn1, idxF);
                             
-                            carry = clearWireForReuse(carry);
-                            outputGate(6,rowinputsleft[j],andn1,carry);
+	                        carry = clearWireForReuse(carry, idxF);
+	                        outputGate(6, rowinputsleft[j], andn1, carry, idxF);
                         }
                     }
                     
-                    if(andn2->refs == 0) clearWireForReuse(andn2);
-                    if(andn1->refs == 0) clearWireForReuse(andn1);
-                    if(xorab->refs == 0) clearWireForReuse(xorab);
+	                if (andn2->refs == 0) clearWireForReuse(andn2, idxF);
+	                if (andn1->refs == 0) clearWireForReuse(andn1, idxF);
+	                if (xorab->refs == 0) clearWireForReuse(xorab, idxF);
                 }
                 
                 
@@ -2446,20 +2456,20 @@ void outputExMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
             
             
             
-            Wire * temp = getPool()->getWire();
-            assignWire(temp,tdest[length+length-1]);
+            Wire * temp = getPool(idxF)->getWire();
+	    assignWire(temp, tdest[length + length - 1], idxF);
             
-            makeWireContainValue(temp);
-            assignWire(tdest[length+length-1],ZERO_WIRE);
+	    makeWireContainValue(temp, idxF);
+	    assignWire(tdest[length + length - 1], ZERO_WIRE[idxF], idxF);
             
-            outputGateNoInvertOutput(6,temp,ONE_WIRE,tdest[length+length-1]);
+	    outputGateNoInvertOutput(6, temp, ONE_WIRE[idxF], tdest[length + length - 1], idxF);
             
-            ws = getPool()->getWires(destv.size());
+            ws = getPool(idxF)->getWires(destv.size());
             
             for(int i=0;i<destv.size();i++)
             {
                 destv[i] = ws->wires[i];
-                assignWire(destv[i],tdest[i]);
+	            assignWire(destv[i], tdest[i], idxF);
             }
             
             
@@ -2473,7 +2483,7 @@ void outputExMultSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<W
 }
 
 
-void outputExMultUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv)
+void outputExMultUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv, int idxF)
 {
     int length = leftv->size();
     
@@ -2485,7 +2495,7 @@ void outputExMultUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
     switch(length)
     {
         case 1:
-            ws = getPool()->getWires(2);
+            ws = getPool(idxF)->getWires(2);
             
             for(int i=0;i<2;i++)
             {
@@ -2494,8 +2504,8 @@ void outputExMultUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
             
             
             
-            assignWire(destv[0], outputGate(8,leftv->operator[](0),rightv->operator[](0)));
-            assignWire(destv[1], outputGate(6,ZERO_WIRE,ZERO_WIRE));
+	    assignWire(destv[0], outputGate(8, leftv->operator[](0), rightv->operator[](0), idxF), idxF);
+	    assignWire(destv[1], outputGate(6, ZERO_WIRE[idxF], ZERO_WIRE[idxF], idxF), idxF);
             break;
         default:
             
@@ -2509,11 +2519,11 @@ void outputExMultUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
             vector<Wire *> tdest;
             tdest.resize(destv.size());
             
-            Wire * carry = getPool()->getWire();
-            Wire * xor2 = getPool()->getWire();
-            Wire * xorab = getPool()->getWire();
-            Wire * andn1 = getPool()->getWire();
-            Wire * andn2 = getPool()->getWire();
+            Wire * carry = getPool(idxF)->getWire();
+            Wire * xor2 = getPool(idxF)->getWire();
+            Wire * xorab = getPool(idxF)->getWire();
+            Wire * andn1 = getPool(idxF)->getWire();
+            Wire * andn2 = getPool(idxF)->getWire();
             
             //number of rows
             for(int i=0;i<length-1;i++)
@@ -2522,8 +2532,8 @@ void outputExMultUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
                 
                 if(i != 0)
                 {
-                    rowinputsleft[length-1] = clearWireForReuse(rowinputsleft[length-1]);
-                    assignWire(rowinputsleft[length-1], carry);
+	                rowinputsleft[length - 1] = clearWireForReuse(rowinputsleft[length - 1], idxF);
+	                assignWire(rowinputsleft[length - 1], carry, idxF);
                 }
                 
                 //create inputs to each adder
@@ -2532,34 +2542,34 @@ void outputExMultUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
                     
                     for(int k=0;k<length;k++)
                     {
-                        rowinputsleft[k] = outputGate(8,leftv->operator[](k),rightv->operator[](0));
+	                    rowinputsleft[k] = outputGate(8, leftv->operator[](k), rightv->operator[](0), idxF);
                     }
                     //only on first row do we do this
                     
                     for(int k=0;k<length;k++)
                     {
-                        rowinputsright[k] = outputGate(8,leftv->operator[](k),rightv->operator[](1));
+	                    rowinputsright[k] = outputGate(8, leftv->operator[](k), rightv->operator[](1), idxF);
                     }
                     
                     
-                    tdest[0] = getPool()->getWire();
-                    assignWire(tdest[0],rowinputsleft[0]);
+                    tdest[0] = getPool(idxF)->getWire();
+	                assignWire(tdest[0], rowinputsleft[0], idxF);
                     
                     //shift down
                     for(int k=0;k<length-1;k++)
                     {
-                        assignWire(rowinputsleft[k],rowinputsleft[k+1]);
+	                    assignWire(rowinputsleft[k], rowinputsleft[k + 1], idxF);
                     }
-                    rowinputsleft[length-1] = clearWireForReuse(rowinputsleft[length-1]);
-                    assignWire(rowinputsleft[length-1],ZERO_WIRE);
+	                rowinputsleft[length - 1] = clearWireForReuse(rowinputsleft[length - 1], idxF);
+	                assignWire(rowinputsleft[length - 1], ZERO_WIRE[idxF], idxF);
 
                 }
                 else
                 {
                     for(int k=0;k<length;k++)
                     {
-                        rowinputsright[k] = clearWireForReuse(rowinputsright[k]);
-                        outputGate(8,leftv->operator[](k),rightv->operator[](i+1), rowinputsright[k]);
+	                    rowinputsright[k] = clearWireForReuse(rowinputsright[k], idxF);
+	                    outputGate(8, leftv->operator[](k), rightv->operator[](i + 1), rowinputsright[k], idxF);
                     }
 
                     
@@ -2575,43 +2585,43 @@ void outputExMultUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
                     //output half adder
                     if(j == 0)
                     {
-                        xorab = clearWireForReuse(xorab);
-                        outputGate(6,rowinputsright[0],rowinputsleft[0],xorab);
+	                    xorab = clearWireForReuse(xorab, idxF);
+	                    outputGate(6, rowinputsright[0], rowinputsleft[0], xorab, idxF);
                         
-                        tdest[i+1] = pool.getWire();
-                        assignWire(tdest[i+1],xorab);
+                        tdest[i+1] = pool[idxF].getWire();
+	                    assignWire(tdest[i + 1], xorab, idxF);
                         
-                        carry = clearWireForReuse(carry);
+	                    carry = clearWireForReuse(carry, idxF);
                         
 
-                        outputGate(8,rowinputsright[0],rowinputsleft[0],carry);
+	                    outputGate(8, rowinputsright[0], rowinputsleft[0], carry, idxF);
                         
                         
                     }
                     else //output full adder
                     {
-                        xorab = clearWireForReuse(xorab);
-                        outputGate(6,rowinputsright[j],rowinputsleft[j],xorab);
+	                    xorab = clearWireForReuse(xorab, idxF);
+	                    outputGate(6, rowinputsright[j], rowinputsleft[j], xorab, idxF);
                         
-                        rowinputsleft[j-1] = clearWireForReuse(rowinputsleft[j-1]);
-                        outputGate(6,xorab,carry,rowinputsleft[j-1]);
+	                    rowinputsleft[j - 1] = clearWireForReuse(rowinputsleft[j - 1], idxF);
+	                    outputGate(6, xorab, carry, rowinputsleft[j - 1], idxF);
                         
                         //if(j < length-1)
                         {
-                            andn2 = clearWireForReuse(andn2);
-                            outputGate(6,carry,rowinputsleft[j],andn2);
+	                        andn2 = clearWireForReuse(andn2, idxF);
+	                        outputGate(6, carry, rowinputsleft[j], andn2, idxF);
                             
-                            andn1 = clearWireForReuse(andn1);
-                            outputGate(8,xorab,andn2,andn1);
+	                        andn1 = clearWireForReuse(andn1, idxF);
+	                        outputGate(8, xorab, andn2, andn1, idxF);
                             
-                            carry = clearWireForReuse(carry);
-                            outputGate(6,rowinputsleft[j],andn1,carry);
+	                        carry = clearWireForReuse(carry, idxF);
+	                        outputGate(6, rowinputsleft[j], andn1, carry, idxF);
                         }
                     }
                     
-                    if(andn2->refs == 0) clearWireForReuse(andn2);
-                    if(andn1->refs == 0) clearWireForReuse(andn1);
-                    if(xorab->refs == 0) clearWireForReuse(xorab);
+	                if (andn2->refs == 0) clearWireForReuse(andn2, idxF);
+	                if (andn1->refs == 0) clearWireForReuse(andn1, idxF);
+	                if (xorab->refs == 0) clearWireForReuse(xorab, idxF);
                 }
                 
 
@@ -2626,12 +2636,12 @@ void outputExMultUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
             }
             tdest[length+length-1] = carry;
             
-            ws = getPool()->getWires(destv.size());
+            ws = getPool(idxF)->getWires(destv.size());
             
             for(int i=0;i<destv.size();i++)
             {
                 destv[i] = ws->wires[i];
-                assignWire(destv[i],tdest[i]);
+	            assignWire(destv[i], tdest[i], idxF);
             }
             
             break;
@@ -2641,7 +2651,7 @@ void outputExMultUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
 }
 
 //leftv - dividend, rightv - divisor
-void outputReDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv, bool IsModDiv, int length_in)
+void outputReDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv, bool IsModDiv, int length_in, int idxF)
 {
     
     vector<Wire *> R_left;
@@ -2663,7 +2673,7 @@ void outputReDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vect
     int lssize = leftv->size();
     
     
-    WireSet * ws = getPool()->getWires(lssize);
+    WireSet * ws = getPool(idxF)->getWires(lssize);
     
     for(int i=0;i<lssize;i++)
     {
@@ -2673,17 +2683,17 @@ void outputReDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vect
     int j;
     for(j=0;j<lssize;j++)
     {
-        assignWire(R_left[j],leftv->operator[](j));
+	    assignWire(R_left[j], leftv->operator[](j), idxF);
     }
     for(;j<R_left.size();j++)
     {
-        R_left[j] = ZERO_WIRE;
+        R_left[j] = ZERO_WIRE[idxF];
     }
     
     lssize = rightv->size();
     
     
-    ws = getPool()->getWires(lssize);
+    ws = getPool(idxF)->getWires(lssize);
     
     for(int i=0;i<lssize && i < R_right.size();i++)
     {
@@ -2692,11 +2702,11 @@ void outputReDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vect
     
     for(j=0;j<lssize && j < R_right.size();j++)
     {
-        assignWire(R_right[j],rightv->operator[](j));
+	    assignWire(R_right[j], rightv->operator[](j), idxF);
     }
     for(;j<R_right.size();j++)
     {
-        R_right[j] = ZERO_WIRE;
+        R_right[j] = ZERO_WIRE[idxF];
     }
     
     
@@ -2713,20 +2723,20 @@ void outputReDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vect
     heldresults.resize(lengthOfOp);
     for(int i=0;i<heldresults.size();i++)
     {
-        heldresults[i] =getPool()->getWire();
+        heldresults[i] =getPool(idxF)->getWire();
     }
 
         
     
-    Wire * CASxor = getPool()->getWire();
-    Wire * carry = getPool()->getWire();
-    Wire * xor2 = getPool()->getWire();
-    Wire * xorab = getPool()->getWire();
-    Wire * andn1 = getPool()->getWire();
-    Wire * andn2 = getPool()->getWire();
+    Wire * CASxor = getPool(idxF)->getWire();
+    Wire * carry = getPool(idxF)->getWire();
+    Wire * xor2 = getPool(idxF)->getWire();
+    Wire * xorab = getPool(idxF)->getWire();
+    Wire * andn1 = getPool(idxF)->getWire();
+    Wire * andn2 = getPool(idxF)->getWire();
     
     
-    Wire * T = ONE_WIRE;
+	Wire * T = ONE_WIRE[idxF];
     
     
     for(int i=0;i<lengthOfOp;i++)
@@ -2738,8 +2748,8 @@ void outputReDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vect
     int diff = R_left.size() - rowinputsright.size();
     for(int i=0;i<lengthOfOp;i++)
     {
-        rowinputsleft[i] =getPool()->getWire();
-        assignWire(rowinputsleft[i],R_left[i+diff]);
+        rowinputsleft[i] =getPool(idxF)->getWire();
+	    assignWire(rowinputsleft[i], R_left[i + diff], idxF);
     }
     
     
@@ -2756,54 +2766,54 @@ void outputReDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vect
     {
         //cout << "row: "<<row<<"\n";
         
-        assignWire(rowinputsleft[0],R_left[(lengthOfOp -1)-row]);
+	    assignWire(rowinputsleft[0], R_left[(lengthOfOp - 1) - row], idxF);
         //cout << "RL0 = R_L-"<<(lengthOfOp -1)-row<<"\n";
         
-        assignWire(carry,T);
+	    assignWire(carry, T, idxF);
         for(int col=0;col<lengthOfOp;col++)
         {
          //    cout << "col: "<<col<<"\n";
             
-            CASxor = clearWireForReuse(CASxor);
-            outputGateNoInvertOutput(6,T,rowinputsright[col],CASxor);
+	        CASxor = clearWireForReuse(CASxor, idxF);
+	        outputGateNoInvertOutput(6, T, rowinputsright[col], CASxor, idxF);
             
             
-            xorab = clearWireForReuse(xorab);
-            outputGateNoInvertOutput(6,CASxor,rowinputsleft[col],xorab);
+	        xorab = clearWireForReuse(xorab, idxF);
+	        outputGateNoInvertOutput(6, CASxor, rowinputsleft[col], xorab, idxF);
             
-            heldresults[col] = clearWireForReuse(heldresults[col] );
-            outputGateNoInvertOutput(6,xorab,carry,heldresults[col] );
+	        heldresults[col] = clearWireForReuse(heldresults[col], idxF);
+	        outputGateNoInvertOutput(6, xorab, carry, heldresults[col], idxF);
 
-            andn2 = clearWireForReuse(andn2);
-            outputGateNoInvertOutput(6,carry,CASxor,andn2);
+	        andn2 = clearWireForReuse(andn2, idxF);
+	        outputGateNoInvertOutput(6, carry, CASxor, andn2, idxF);
             
-            andn1 = clearWireForReuse(andn1);
-            outputGateNoInvertOutput(8,xorab,andn2,andn1);
+	        andn1 = clearWireForReuse(andn1, idxF);
+	        outputGateNoInvertOutput(8, xorab, andn2, andn1, idxF);
             
-            carry = clearWireForReuse(carry);
-            outputGateNoInvertOutput(6,CASxor,andn1,carry);
-            
-            
+	        carry = clearWireForReuse(carry, idxF);
+	        outputGateNoInvertOutput(6, CASxor, andn1, carry, idxF);
             
             
             
-            if(andn2->refs == 0) clearWireForReuse(andn2);
-            if(andn1->refs == 0) clearWireForReuse(andn1);
-            if(xorab->refs == 0) clearWireForReuse(xorab);
+            
+            
+	        if (andn2->refs == 0) clearWireForReuse(andn2, idxF);
+	        if (andn1->refs == 0) clearWireForReuse(andn1, idxF);
+	        if (xorab->refs == 0) clearWireForReuse(xorab, idxF);
         }
         
         
         
         for(int i=0;i<lengthOfOp-1;i++)
         {
-            assignWire(rowinputsleft[i+1],heldresults[i]);
+	        assignWire(rowinputsleft[i + 1], heldresults[i], idxF);
            // cout << "RL"<<i+1<<" = held-"<<i+1<<"\n";
         }
         
         
         
         T = heldresults[lengthOfOp-1];
-        T = invertWireNoInvertOutput(T);
+	    T = invertWireNoInvertOutput(T, idxF);
         quotient[lengthOfOp-row-1] = T;
       //  cout << "outing: "<< lengthOfOp-row-1<<"\n";
     }
@@ -2817,12 +2827,12 @@ void outputReDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vect
     if(!IsModDiv)
     {
         
-        ws = getPool()->getWires(destv.size());
+        ws = getPool(idxF)->getWires(destv.size());
         
         for(int i=0;i<destv.size();i++)
         {
             destv[i] = ws->wires[i];
-            assignWire(destv[i],quotient[i]);
+	        assignWire(destv[i], quotient[i], idxF);
         }
         
         /*for(int i=0;i<destv.size();i++)
@@ -2837,11 +2847,11 @@ void outputReDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vect
         
         //cout << "sizes: "<<heldresults.size()<<" "<<R_right.size()<<" "<<addDest.size()<<"\n";
         
-        outputAddition(&heldresults,&R_right,addDest);
+	    outputAddition(&heldresults, &R_right, addDest, idxF);
         
         for(int i=0;i<heldresults.size();i++)
         {
-            assignWireCond(heldresults[i],addDest[i],heldresults[destv.size()]);
+	        assignWireCond(heldresults[i], addDest[i], heldresults[destv.size()], idxF);
         }
         
         
@@ -2850,12 +2860,12 @@ void outputReDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vect
             destv[i] = heldresults[i]; //remainder[i];
         }*/
         
-        ws = getPool()->getWires(destv.size());
+        ws = getPool(idxF)->getWires(destv.size());
         
         for(int i=0;i<destv.size();i++)
         {
             destv[i] = ws->wires[i];
-            assignWire(destv[i],heldresults[i]);
+	        assignWire(destv[i], heldresults[i], idxF);
         }
 
     }
@@ -2866,7 +2876,7 @@ void outputReDivideUnsigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vect
 
 
 //leftv - dividend, rightv - divisor
-void outputReDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv, bool IsModDiv, int length_in)
+void outputReDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector<Wire *> & destv, bool IsModDiv, int length_in, int idxF)
 {
 
     vector<Wire *> R_left;
@@ -2889,7 +2899,7 @@ void outputReDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
     
     
     
-    WireSet * ws = getPool()->getWires(lssize);
+    WireSet * ws = getPool(idxF)->getWires(lssize);
     
     for(int i=0;i<lssize;i++)
     {
@@ -2899,16 +2909,16 @@ void outputReDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
     int j;
     for(j=0;j<lssize;j++)
     {
-        assignWire(R_left[j],leftv->operator[](j));
+	    assignWire(R_left[j], leftv->operator[](j), idxF);
     }
     for(;j<R_left.size();j++)
     {
-        R_left[j] = ZERO_WIRE;
+        R_left[j] = ZERO_WIRE[idxF];
     }
     
     lssize = rightv->size();
     
-    ws = getPool()->getWires(lssize);
+    ws = getPool(idxF)->getWires(lssize);
     
     for(int i=0;i<lssize && i < R_right.size();i++)
     {
@@ -2917,11 +2927,11 @@ void outputReDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
     
     for(j=0;j<lssize && j < R_right.size();j++)
     {
-        assignWire(R_right[j],rightv->operator[](j));
+	    assignWire(R_right[j], rightv->operator[](j), idxF);
     }
     for(;j<R_right.size();j++)
     {
-        R_right[j] = ZERO_WIRE;
+        R_right[j] = ZERO_WIRE[idxF];
     }
     
     
@@ -2941,13 +2951,13 @@ void outputReDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
     //cout << origlength<< "\n" << origlengthx<<"\n"<< R_left.size()<<"\n"<<R_right.size()<<"\n";
     
     
-    Wire * ifsubtractl = getPool()->getWire();
-    Wire * ifsubtractr = getPool()->getWire();
+    Wire * ifsubtractl = getPool(idxF)->getWire();
+    Wire * ifsubtractr = getPool(idxF)->getWire();
     
     //cout << "second\n";
     
-    assignWire(ifsubtractl,R_left[origlength-1]);
-    assignWire(ifsubtractr,R_right[origlengthx-1]);
+	assignWire(ifsubtractl, R_left[origlength - 1], idxF);
+	assignWire(ifsubtractr, R_right[origlengthx - 1], idxF);
     
     //cout << "third\n";
     
@@ -2964,17 +2974,17 @@ void outputReDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
     
     for(int i=0;i<origlength;i++)
     {
-        zerosleft[i] = ZERO_WIRE;
+        zerosleft[i] = ZERO_WIRE[idxF];
     }
     for(int i=0;i<origlengthx;i++)
     {
-        zerosright[i] = ZERO_WIRE;
+        zerosright[i] = ZERO_WIRE[idxF];
     }
     
     //cout << "fifth\n";
     
-    outputSubtract(&zerosleft,leftv,subDestl);
-    outputSubtract(&zerosright,rightv,subDestr);
+	outputSubtract(&zerosleft, leftv, subDestl, idxF);
+	outputSubtract(&zerosright, rightv, subDestr, idxF);
     
     
     /*cout << R_left.size()<<"\n";
@@ -2989,11 +2999,11 @@ void outputReDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
     
     for(int i_out=0;i_out<origlength;i_out++)
     {
-        assignWireCond(R_left[i_out],subDestl[i_out], ifsubtractl);
+	    assignWireCond(R_left[i_out], subDestl[i_out], ifsubtractl, idxF);
     }
     for(int i_out=0;i_out<origlengthx;i_out++)
     {
-        assignWireCond(R_right[i_out],subDestr[i_out], ifsubtractr);
+	    assignWireCond(R_right[i_out], subDestr[i_out], ifsubtractr, idxF);
     }
 
     
@@ -3019,20 +3029,20 @@ void outputReDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
     heldresults.resize(lengthOfOp);
     for(int i=0;i<heldresults.size();i++)
     {
-        heldresults[i] =getPool()->getWire();
+        heldresults[i] =getPool(idxF)->getWire();
     }
     
     
     
-    Wire * CASxor = getPool()->getWire();
-    Wire * carry = getPool()->getWire();
-    Wire * xor2 = getPool()->getWire();
-    Wire * xorab = getPool()->getWire();
-    Wire * andn1 = getPool()->getWire();
-    Wire * andn2 = getPool()->getWire();
+    Wire * CASxor = getPool(idxF)->getWire();
+    Wire * carry = getPool(idxF)->getWire();
+    Wire * xor2 = getPool(idxF)->getWire();
+    Wire * xorab = getPool(idxF)->getWire();
+    Wire * andn1 = getPool(idxF)->getWire();
+    Wire * andn2 = getPool(idxF)->getWire();
     
     
-    Wire * T = ONE_WIRE;
+	Wire * T = ONE_WIRE[idxF];
     
     
     
@@ -3045,8 +3055,8 @@ void outputReDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
     int diff = R_left.size() - rowinputsright.size();
     for(int i=0;i<lengthOfOp;i++)
     {
-        rowinputsleft[i] =getPool()->getWire();
-        assignWire(rowinputsleft[i],R_left[i+diff]);
+        rowinputsleft[i] =getPool(idxF)->getWire();
+	    assignWire(rowinputsleft[i], R_left[i + diff], idxF);
     }
     
     /*cout <<"last\n";
@@ -3064,54 +3074,54 @@ void outputReDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
     {
         //cout << "row: "<<row<<"\n";
         
-        assignWire(rowinputsleft[0],R_left[(lengthOfOp -1)-row]);
+	    assignWire(rowinputsleft[0], R_left[(lengthOfOp - 1) - row], idxF);
         //cout << "RL0 = R_L-"<<(lengthOfOp -1)-row<<"\n";
         
-        assignWire(carry,T);
+	    assignWire(carry, T, idxF);
         for(int col=0;col<lengthOfOp;col++)
         {
             //    cout << "col: "<<col<<"\n";
             
-            CASxor = clearWireForReuse(CASxor);
-            outputGateNoInvertOutput(6,T,rowinputsright[col],CASxor);
+	        CASxor = clearWireForReuse(CASxor, idxF);
+	        outputGateNoInvertOutput(6, T, rowinputsright[col], CASxor, idxF);
             
             
-            xorab = clearWireForReuse(xorab);
-            outputGateNoInvertOutput(6,CASxor,rowinputsleft[col],xorab);
+	        xorab = clearWireForReuse(xorab, idxF);
+	        outputGateNoInvertOutput(6, CASxor, rowinputsleft[col], xorab, idxF);
             
-            heldresults[col] = clearWireForReuse(heldresults[col] );
-            outputGateNoInvertOutput(6,xorab,carry,heldresults[col] );
+	        heldresults[col] = clearWireForReuse(heldresults[col], idxF);
+	        outputGateNoInvertOutput(6, xorab, carry, heldresults[col], idxF);
             
-            andn2 = clearWireForReuse(andn2);
-            outputGateNoInvertOutput(6,carry,CASxor,andn2);
+	        andn2 = clearWireForReuse(andn2, idxF);
+	        outputGateNoInvertOutput(6, carry, CASxor, andn2, idxF);
             
-            andn1 = clearWireForReuse(andn1);
-            outputGateNoInvertOutput(8,xorab,andn2,andn1);
+	        andn1 = clearWireForReuse(andn1, idxF);
+	        outputGateNoInvertOutput(8, xorab, andn2, andn1, idxF);
             
-            carry = clearWireForReuse(carry);
-            outputGateNoInvertOutput(6,CASxor,andn1,carry);
-            
-            
+            carry = clearWireForReuse(carry, idxF);
+	        outputGateNoInvertOutput(6, CASxor, andn1, carry, idxF);
             
             
             
-            if(andn2->refs == 0) clearWireForReuse(andn2);
-            if(andn1->refs == 0) clearWireForReuse(andn1);
-            if(xorab->refs == 0) clearWireForReuse(xorab);
+            
+            
+	        if (andn2->refs == 0) clearWireForReuse(andn2, idxF);
+	        if (andn1->refs == 0) clearWireForReuse(andn1, idxF);
+	        if (xorab->refs == 0) clearWireForReuse(xorab, idxF);
         }
         
         
         
         for(int i=0;i<lengthOfOp-1;i++)
         {
-            assignWire(rowinputsleft[i+1],heldresults[i]);
+	        assignWire(rowinputsleft[i + 1], heldresults[i], idxF);
             // cout << "RL"<<i+1<<" = held-"<<i+1<<"\n";
         }
         
         
         
         T = heldresults[lengthOfOp-1];
-        T = invertWireNoInvertOutput(T);
+	    T = invertWireNoInvertOutput(T, idxF);
         quotient[lengthOfOp-row-1] = T;
         //  cout << "outing: "<< lengthOfOp-row-1<<"\n";
     }
@@ -3131,17 +3141,17 @@ void outputReDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
         zerosright.resize(origlengthx+1);
         
         //expand 0 array
-        zerosright[origlengthx] = ZERO_WIRE;
+        zerosright[origlengthx] = ZERO_WIRE[idxF];
         
         //cout << "fsize: "<<zerosright.size()<<" "<<quotient.size()<<" "<<resultsubDest.size()<<"\n";
         
-        outputSubtract(&zerosright,&quotient,resultsubDest);
+	    outputSubtract(&zerosright, &quotient, resultsubDest, idxF);
         
-        Wire * result = outputGateNoInvertOutput(6,ifsubtractl,ifsubtractr);
+	    Wire * result = outputGateNoInvertOutput(6, ifsubtractl, ifsubtractr, idxF);
         
         for(int i_out=0;i_out<origlengthx+1;i_out++)
         {
-            assignWireCond(quotient[i_out],resultsubDest[i_out], result);
+	        assignWireCond(quotient[i_out], resultsubDest[i_out], result, idxF);
         }
         
        
@@ -3151,12 +3161,12 @@ void outputReDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
             destv[i] = quotient[i];
         }*/
         
-        ws = getPool()->getWires(destv.size());
+        ws = getPool(idxF)->getWires(destv.size());
         
         for(int i=0;i<destv.size();i++)
         {
             destv[i] = ws->wires[i];
-            assignWire(destv[i],quotient[i]);
+	        assignWire(destv[i], quotient[i], idxF);
         }
         
     }
@@ -3168,11 +3178,11 @@ void outputReDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
         
         //cout << "sizes: "<<heldresults.size()<<" "<<R_right.size()<<" "<<addDest.size()<<"\n";
         
-        outputAddition(&heldresults,&R_right,addDest);
+	    outputAddition(&heldresults, &R_right, addDest, idxF);
         
         for(int i=0;i<heldresults.size();i++)
         {
-            assignWireCond(heldresults[i],addDest[i],heldresults[destv.size()]);
+	        assignWireCond(heldresults[i], addDest[i], heldresults[destv.size()], idxF);
         }
         
         
@@ -3182,13 +3192,13 @@ void outputReDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
         zerosright.resize(origlengthx+1);
         
         //expand 0 array
-        zerosright[origlengthx] = ZERO_WIRE;
+        zerosright[origlengthx] = ZERO_WIRE[idxF];
         
-        outputSubtract(&zerosright,&heldresults,resultsubDest);
+	    outputSubtract(&zerosright, &heldresults, resultsubDest, idxF);
         
         for(int i_out=0;i_out<origlengthx+1;i_out++)
         {
-            assignWireCond(heldresults[i_out],resultsubDest[i_out], ifsubtractl);
+	        assignWireCond(heldresults[i_out], resultsubDest[i_out], ifsubtractl, idxF);
         }
         
         /*for(int i=0;i<destv.size();i++)
@@ -3196,12 +3206,12 @@ void outputReDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
             destv[i] = heldresults[i]; //remainder[i];
         }*/
         
-        ws = getPool()->getWires(destv.size());
+        ws = getPool(idxF)->getWires(destv.size());
         
         for(int i=0;i<destv.size();i++)
         {
             destv[i] = ws->wires[i];
-            assignWire(destv[i],heldresults[i]);
+	        assignWire(destv[i], heldresults[i], idxF);
         }
      
         
@@ -3237,42 +3247,45 @@ void outputReDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
 bool seeoutput=false;
 
 
-void makeONEandZERO(ostream & mos)
+void makeONEandZERO(ostream & mos, int idxF)
 {
     
-    one_wire_l = currentbasewire;
-    writeGate(15,currentbasewire++,0,0,&mos);
+	one_wire_l[idxF] = currentbasewire[idxF];
+	writeGate(15, currentbasewire[idxF]++, 0, 0, &mos, idxF);
     
-    zero_wire_l = currentbasewire;
-    writeGate(0,currentbasewire++,0,0,&mos);
+	zero_wire_l[idxF] = currentbasewire[idxF];
+	writeGate(0, currentbasewire[idxF]++, 0, 0, &mos, idxF);
     
     
-    ONE_WIRE = new Wire();
-    ONE_WIRE->state = ONE;
-    ONE_WIRE->wireNumber = one_wire_l;
+	ONE_WIRE[idxF] = new Wire();
+	ONE_WIRE[idxF]->state = ONE;
+	ONE_WIRE[idxF]->wireNumber = one_wire_l[idxF];
     
-    ZERO_WIRE = new Wire();
-    ZERO_WIRE->state = ZERO;
-    ZERO_WIRE->wireNumber = zero_wire_l;
+	ZERO_WIRE[idxF] = new Wire();
+	ZERO_WIRE[idxF]->state = ZERO;
+	ZERO_WIRE[idxF]->wireNumber = zero_wire_l[idxF];
 }
 
-void makeWireContainValueNoONEZEROcopy(Wire * w, bool isFnInp, bool isFnOut)
-{
-
-    
-    
+void makeWireContainValueNoONEZEROcopy(Wire * w, int idxF)
+{   
     if(w->other == 0 || w->state == UNKNOWN)
     {
         if(w->state == UNKNOWN_INVERT)
         {
-            writeGate(6,w->wireNumber,w->wireNumber,ONE_WIRE->wireNumber);
+	        writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
             w->state = UNKNOWN;
         }
         
         return;
     }
     
-	writeCopy(w->wireNumber, w->other->wireNumber, isFnInp, isFnOut);
+	writeCopy(w->wireNumber, w->other->wireNumber, idxF);
+	if (isPrintDuploGC)
+	{
+		w->prevWireNumber[0] = w->other->wireNumber;
+		w->prevWireNumber[1] = w->other->prevWireNumber[0];
+		
+	}
     
     //if(seeoutput) cout << "CP MWCOa "<< w->wireNumber<<" "<<w->other->wireNumber<<"\n";
     
@@ -3292,7 +3305,7 @@ void makeWireContainValueNoONEZEROcopy(Wire * w, bool isFnInp, bool isFnOut)
     
     if(w->state == UNKNOWN_INVERT)
     {
-        writeGate(6,w->wireNumber,w->wireNumber,ONE_WIRE->wireNumber);
+	    writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
         w->state = UNKNOWN;
     }
     
@@ -3307,7 +3320,7 @@ int MWCV_lastnum_dest;
 int MWCV_lastnum_from;
 bool MWCV_isFirstLine;
 
-void makeWireContainValueNoONEZEROcopyTiny(Wire * w, bool isFnInp, bool isFnOut)
+void makeWireContainValueNoONEZEROcopyTiny(Wire * w, int idxF)
 {
     if(w->other == 0 || w->state == UNKNOWN)
     {
@@ -3325,7 +3338,7 @@ void makeWireContainValueNoONEZEROcopyTiny(Wire * w, bool isFnInp, bool isFnOut)
                 MWCV_isFirstLine=true;
             }
             
-            writeGate(6,w->wireNumber,w->wireNumber,ONE_WIRE->wireNumber);
+	        writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
             w->state = UNKNOWN;
         }
         return;
@@ -3384,7 +3397,7 @@ void makeWireContainValueNoONEZEROcopyTiny(Wire * w, bool isFnInp, bool isFnOut)
         MWCV_isFirstLine=true;
         MWCV_amt=0;
         
-        writeGate(6,w->wireNumber,w->wireNumber,ONE_WIRE->wireNumber);
+	    writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
         w->state = UNKNOWN;
     }
 }
@@ -3403,11 +3416,11 @@ void makeWireContainValueNoONEZEROcopyTinyEnd()
 
 
 
-Wire * clearWireForReuse(Wire * w)
+Wire * clearWireForReuse(Wire * w, int idxF)
 {
     if(w->refs > 0)
     {
-        return pool.getWire();
+	    return pool[idxF].getWire();
     }
     
     w->state = ZERO;
@@ -3420,15 +3433,23 @@ Wire * clearWireForReuse(Wire * w)
     return w;
 }
 
-void makeWireContainValue(Wire * w,bool isFnInp, bool isFnOut)
+void makeWireContainValue(Wire * w, int idxF)
 {
     if(w->state == ONE)
     {
-	    writeCopy(w->wireNumber, one_wire_l, isFnInp, isFnOut);
+	    writeCopy(w->wireNumber, one_wire_l[idxF], idxF);
+	    if (isPrintDuploGC)
+	    {
+		    w->prevWireNumber[0] = one_wire_l[idxF];		
+	    }
     }
     if(w->state == ZERO)
     {
-	    writeCopy(w->wireNumber, zero_wire_l, isFnInp, isFnOut);
+	    writeCopy(w->wireNumber, zero_wire_l[idxF], idxF);
+	    if (isPrintDuploGC)
+	    {
+		    w->prevWireNumber[0] = zero_wire_l[idxF];		
+	    }
     }
     
     
@@ -3437,7 +3458,15 @@ void makeWireContainValue(Wire * w,bool isFnInp, bool isFnOut)
         return;
     }
     
-	writeCopy(w->wireNumber, w->other->wireNumber, isFnInp, isFnOut);
+	writeCopy(w->wireNumber, w->other->wireNumber, idxF);
+	
+	if (isPrintDuploGC)
+	{
+		w->prevWireNumber[0] = w->other->wireNumber;
+		w->prevWireNumber[1] = w->other->prevWireNumber[0];
+		
+	}
+	
     //if(seeoutput) cout << "CP MWCOb "<< w->wireNumber<<" "<<w->other->wireNumber<<"\n";
     
     if(w->state == UNKNOWN_INVERT_OTHER_WIRE)
@@ -3456,18 +3485,25 @@ void makeWireContainValue(Wire * w,bool isFnInp, bool isFnOut)
     
     if(w->state == UNKNOWN_INVERT)
     {
-        writeGate(6,w->wireNumber,w->wireNumber,ONE_WIRE->wireNumber);
+	    writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
         w->state = UNKNOWN;
     }
     
     
 }
 
-void makeWireNotOther(Wire * w)
+void makeWireNotOther(Wire * w, int idxF)
 {
     if(w->other != 0)
     {
-        writeCopy(w->wireNumber,w->other->wireNumber);
+	    writeCopy(w->wireNumber, w->other->wireNumber, idxF);
+	    
+	    if (isPrintDuploGC)
+	    {
+		    w->prevWireNumber[0] = w->other->wireNumber;
+		    w->prevWireNumber[1] = w->other->prevWireNumber[0];
+		
+	    }
         
         if(w->state == UNKNOWN_INVERT_OTHER_WIRE)
         {
@@ -3482,20 +3518,20 @@ void makeWireNotOther(Wire * w)
     if(w->state == UNKNOWN_INVERT)
     {
         w->state = UNKNOWN;
-        writeGate(6,w->wireNumber,w->wireNumber,ONE_WIRE->wireNumber);
+	    writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
         return;
     }
     
 }
 
-Wire * outputGate(short table, Wire * a, Wire * b)
+Wire * outputGate(short table, Wire * a, Wire * b, int idxF)
 {
     /*if(table == 9)
     {
         cout << "9 gate\n";
     }*/
     
-    Wire * dest = pool.getWire();
+	Wire * dest = pool[idxF].getWire();
     
     if(shortCut(a,b,table,dest))
     {
@@ -3507,10 +3543,10 @@ Wire * outputGate(short table, Wire * a, Wire * b)
         cout << "gate\n";
     }*/
     
-    return addGate(table,a,b,dest);
+	return addGate(table, a, b, dest, idxF);
 }
 
-void outputGate(short table, Wire * a, Wire * b, Wire * dest)
+void outputGate(short table, Wire * a, Wire * b, Wire * dest, int idxF)
 {
     /*if(table == 9)
     {
@@ -3528,17 +3564,17 @@ void outputGate(short table, Wire * a, Wire * b, Wire * dest)
     }*/
 
     
-    addGate(table,a,b,dest);
+	addGate(table, a, b, dest, idxF);
 }
 
-Wire * outputGateNoInvertOutput(short table, Wire * a, Wire * b)
+Wire * outputGateNoInvertOutput(short table, Wire * a, Wire * b, int idxF)
 {
     /*if(table == 9)
     {
         cout << "9 gate\n";
     }*/
     
-    Wire * dest = pool.getWire();
+    Wire * dest = pool[idxF].getWire();
     
     if(shortCutNoInvertOutput(a,b,table,dest))
     {
@@ -3550,10 +3586,10 @@ Wire * outputGateNoInvertOutput(short table, Wire * a, Wire * b)
         cout << "gate\n";
     }*/
     
-    return addGate(table,a,b,dest);
+	return addGate(table, a, b, dest, idxF);
 }
 
-void outputGateNoInvertOutput(short table, Wire * a, Wire * b, Wire * dest)
+	void outputGateNoInvertOutput(short table, Wire * a, Wire * b, Wire * dest, int idxF)
 {
     /*if(table == 9)
     {
@@ -3570,29 +3606,25 @@ void outputGateNoInvertOutput(short table, Wire * a, Wire * b, Wire * dest)
         cout << "gate\n";
     }*/
     
-    addGate(table,a,b,dest);
+	addGate(table, a, b, dest, idxF);
 }
 
 
 void outputFunctionCall(int num)
 {
-	writeFunctionCall(num, os);	
-
+    writeFunctionCall(num, os);
 }
 
-
-void outputFunctionCallDP(int num){
-	
+void outputFunctionCallDP(int num, string localInp, string globalInp)
+{
 	//duplo
-	if (isPrintDuploGC)
+	if (isPrintDuploGC && isMainFunc)
 	{
-		strDuploGC.append("IN: " + strDpInFunc + "\n");
-		strDuploGC.append("FN " + to_string(num) + "\n");
-		strDuploGC.append("OUT: ");
-		strDpInFunc = "";
+		//strDuploGC.append("Local Inp: " + localInp + "\n");			
+		strDuploGC.append("Global Inp: " + globalInp + "\n");	
+		strDuploGC.append("FN " + to_string(num) + "\n");	
 	}
 }
-
 
 long co_nonxorgates=0;
 long co_xorgates=0;
@@ -3627,7 +3659,7 @@ void setPrintIOTypes(bool value)
 }
 
 
-void addComplexOp(short op, int length, int starta, int startb, int startdest, vector<Wire *> a, vector<Wire *> b, vector<Wire *> dest, Wire * carry, int isend)
+void addComplexOp(short op, int length, int starta, int startb, int startdest, vector<Wire *> a, vector<Wire *> b, vector<Wire *> dest, Wire * carry, int isend, int idxF)
 {
     //cout << "testingcomplexop\n";
     
@@ -3641,7 +3673,7 @@ void addComplexOp(short op, int length, int starta, int startb, int startdest, v
         //clear wire
         if(temp->refs > 0)
         {
-            clearReffedWire(temp);
+	        clearReffedWire(temp, idxF);
         }
         if(temp->state == UNKNOWN_OTHER_WIRE || temp->state == UNKNOWN_INVERT_OTHER_WIRE )
         {
@@ -3670,7 +3702,7 @@ void addComplexOp(short op, int length, int starta, int startb, int startdest, v
                      carryw,isend);
 }
 
-void addComplexOpSingleDestBit(short op, int length, int starta, int startb, int startdest, vector<Wire *> a, vector<Wire *> b, vector<Wire *> dest, Wire * carry, int isend)
+void addComplexOpSingleDestBit(short op, int length, int starta, int startb, int startdest, vector<Wire *> a, vector<Wire *> b, vector<Wire *> dest, Wire * carry, int isend, int idxF)
 {
     //cout << "testingcomplexop\n";
     
@@ -3685,7 +3717,7 @@ void addComplexOpSingleDestBit(short op, int length, int starta, int startb, int
         //clear wire
         if(temp->refs > 0)
         {
-            clearReffedWire(temp);
+	        clearReffedWire(temp, idxF);
         }
         if(temp->state == UNKNOWN_OTHER_WIRE || temp->state == UNKNOWN_INVERT_OTHER_WIRE )
         {
@@ -3810,7 +3842,7 @@ void writeComplexGate(short op, int dest, int x, int y, int length, int carryadd
 	}  
 }
 
-void writeGate(short table, int d, int x, int y)
+void writeGate(short table, int d, int x, int y, int idxF)
 {
     
     outbuffer[0] = d;
@@ -3836,11 +3868,11 @@ void writeGate(short table, int d, int x, int y)
 			strDuploGC.append("1 1 " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
 		else if (table == 0)
 		{
-			strDuploZeroOne.append("2 1 0 0 " + to_string(d) + " XOR\n");
+			strDuploZeroOne[idxF].append("2 1 0 0 " + to_string(d) + " XOR\n");
 		}
 		else if(table == 15)
 		{
-			strDuploZeroOne.append("2 1 0 0 " + to_string(d) + " NXOR\n");
+			strDuploZeroOne[idxF].append("2 1 0 0 " + to_string(d) + " NXOR\n");
 		}
 		//else if(table==4)
 			
@@ -3850,7 +3882,7 @@ void writeGate(short table, int d, int x, int y)
 
 
 
-void writeGate(short table, int d, int x, int y, ostream * os)
+void writeGate(short table, int d, int x, int y, ostream * os, int idxF)
 {
     
     outbuffer[0] = d;
@@ -3875,17 +3907,17 @@ void writeGate(short table, int d, int x, int y, ostream * os)
 			strDuploGC.append("1 1 " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
 		else if (table == 0)
 		{
-			strDuploZeroOne.append("2 1 0 0 " + to_string(d) + " XOR\n");
+			strDuploZeroOne[idxF].append("2 1 0 0 " + to_string(d) + " XOR\n");
 		}
 		else if(table == 15)
 		{
-			strDuploZeroOne.append("2 1 0 0 " + to_string(d) + " NXOR\n");
+			strDuploZeroOne[idxF].append("2 1 0 0 " + to_string(d) + " NXOR\n");
 		}
 		else
 			strDuploGC.append("2 1 " + to_string(x) + " " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
 }
 
-void writeCopy(int to, int from, bool isFNInp, bool isFNOut)
+void writeCopy(int to, int from, int idxF)
 {
     outbuffer[0] = 0;
     outbuffer[1] = 0x300;
@@ -3896,14 +3928,13 @@ void writeCopy(int to, int from, bool isFNInp, bool isFNOut)
     co_xorgates++;
 	
 	//duplo
-	if (isPrintDuploGC && !isFNInp && !isFNOut)
-		strDuploGC.append("2 1 " + to_string(from) + " " + to_string(zero_wire_l) + " " + to_string(to) + " XOR\n");
+	if(isPrintDuploGC && !isMainFunc)
+		strDuploGC.append("2 1 " + to_string(from) + " " + to_string(zero_wire_l[idxF]) + " " + to_string(to) + " XOR \n");
 	
-	if (isPrintDuploGC && isFNInp && !isFNOut)
-		strDpInFunc.append(to_string(from) + " ");
+	//if (isPrintDuploGC && isMainFunc)
+	//	strDuploGC.append("CP " + to_string(from) + " " + to_string(to) + "\n");
 	
-	if (isPrintDuploGC && !isFNInp && isFNOut)
-		strDuploGC.append(to_string(to) + " ");
+	
 }
 
 void writeFunctionCall(int function, ostream * os)
@@ -3916,7 +3947,9 @@ void writeFunctionCall(int function, ostream * os)
     if(seeoutput) cout << os<< " FN "<<function<<"\n";
     co_xorgates++;
 	
-
+//duplo
+	if (isPrintDuploGC && !isMainFunc)
+		strDuploGC.append("FN " + to_string(function) + "\n");	
 	
 }
 
@@ -4119,7 +4152,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
             v->FillInType(false);
             v->FillInDepth(0);
             setSizes(v->wv,0);
-            currentbasewire = v->assignPermWires(currentbasewire);
+	        currentbasewiremain = v->assignPermWires(currentbasewiremain);
             
             for(int i=0;i<v->size();i++)
             {
@@ -4164,7 +4197,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
             v->FillInType(false);
             v->FillInDepth(0);
             setSizes(v->wv,0);
-            currentbasewire = v->assignPermWires(currentbasewire);
+	        currentbasewiremain = v->assignPermWires(currentbasewiremain);
             for(int i=0;i<v->size();i++)
             {
                 getWire(i,v->wv)->state = ZERO;
@@ -4222,7 +4255,14 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
     }
 
     string odir = outputFilePrefix;
-    
+	zero_wire_l.resize(functions);
+	ONE_WIRE.resize(functions);
+	ZERO_WIRE.resize(functions);
+	one_wire_l.resize(functions);
+	currentbasewire.resize(functions);
+	pool.resize(functions);
+	strDuploZeroOne.resize(functions);
+	
 
     //output header file
     ofstream mos;
@@ -4314,6 +4354,9 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
     //output number of functions
     streampos functionpos = mos.tellp();
     ibuffer[0] = functions;
+	
+
+	
     mos.write((char *)(&ibuffer[0]),4);
     
     //saving space for totalneededwires
@@ -4380,7 +4423,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
             }
         }
     }
-    makeONEandZERO(mos);
+    
     FunctionVariable * vf = (FunctionVariable *) ((*vc)["FUNC_VAR_$$_main"]);
 	//don't call main function at the first time 
     writeFunctionCall(vf->functionNumber,&mos);
@@ -4438,28 +4481,34 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
     }
 
 
-
+	int idxFunc=0;
 
     for(int i=0;i<pln->nodeList.size();i++)
     {
         if(isFunctionDeclarationNode(pln->nodeList[i]))
         {
-            FunctionVariable * v = (FunctionVariable *) ((*vc)["FUNC_VAR_$$_"+isTermNode(isFunctionDeclarationNode(pln->nodeList[i])->name)->var]);
-           
+	        if (idxFunc == functions - 1)
+		        currentbasewire[idxFunc] = currentbasewiremain;
+	        else
+		        currentbasewire[idxFunc] = 0;
+		        
+	        FunctionVariable * v = (FunctionVariable *) ((*vc)["FUNC_VAR_$$_"+isTermNode(isFunctionDeclarationNode(pln->nodeList[i])->name)->var]);
+            if(v->args != 0)
+            {
+	            currentbasewire[idxFunc] = v->assignPermWires(currentbasewire[idxFunc]);
+                setSizes(v->args,0);
+            }
 
             if(v->return_var != 0)
             {
-                currentbasewire = v->assignPermWires(currentbasewire);
+	            currentbasewire[idxFunc] = v->assignPermWires(currentbasewire[idxFunc]);
                 setSizes(v->return_var,0);
             }
-	        if (v->args != 0)
-	        {
-		        currentbasewire = v->assignPermWires(currentbasewire);
-		        setSizes(v->args, 0);
-	        }
+	        pool[idxFunc].assignWireNumbers(currentbasewire[idxFunc]);
+	        idxFunc++;
+	       
         }
     }
-    
     
     
     FindIfContainsProcs ficptraversal;
@@ -4470,8 +4519,8 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
     
     int prevlargest=0;
     maxWireValue = 0;
-    pool.assignWireNumbers(currentbasewire);
-
+	
+    
 
     //determining recusion and
     vector<vector<Node *> > function_callers;
@@ -4600,6 +4649,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
             {
 	            
 	            //duplo
+	            isMainFunc = false;
 	            int startInpWire = -1;
 	            int startOutWire = -1;
 	            if (v->sizereturn() != 0)
@@ -4609,7 +4659,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 		            startInpWire = getWire(0, v->argsv[0]->wv)->wireNumber;
 	            
 		          
-	            int cur = pool.largestsize;
+	            int cur = pool[I].largestsize;
 	            if (isPrintDuploGC) {
 		            strDuploGC.append("\nFN " + to_string(I) +  " " + 
 															   to_string(v->sizeparam()) + " " +
@@ -4633,7 +4683,11 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
                     }
                 }
                 
-                selectedNode->circuitOutput(vct,tm);
+	            makeONEandZERO(mos,I);
+	            if (isPrintDuploGC) {
+		            strDuploGC.append(strDuploZeroOne[I]+"\n");		            
+	            }
+	            selectedNode->circuitOutput(vct, tm, I);
 	            
 	             //duplo
 	            if (isPrintDuploGC) {
@@ -4641,10 +4695,10 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 	            
 		            if (premfunctions != 0 && I == 0)
 		            {
-			            strDuploGC.insert(posforNumWire, to_string(pool.largestsize - cur + v->sizeparam() + v->sizereturn()) + "\n" + strDuploZeroOne + "\n");
+			            strDuploGC.insert(posforNumWire, to_string(pool[I].largestsize - cur + v->sizeparam() + v->sizereturn()) + "\n");
 			        }
 		            else
-			            strDuploGC.insert(posforNumWire, to_string(pool.largestsize - cur + v->sizeparam() + v->sizereturn()) + "\n");
+			            strDuploGC.insert(posforNumWire, to_string(pool[I].largestsize - cur + v->sizeparam() + v->sizereturn()) + "\n");
 	            
 		            strDuploGC.append("--end FN " + to_string(I) + "--\n");
 	            }
@@ -4654,15 +4708,16 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
             }
             else
             {
+	            isMainFunc = true;
 	            if (isPrintDuploGC) {
 		            strDuploGC.append("\nFN " + to_string(I) +  "\n");
 		            if (premfunctions == 0)
 		            {
-			            strDuploGC.append(strDuploZeroOne + "\n");
+			           // strDuploGC.append(strDuploZeroOne + "\n");
 		            }		           
 	            }
-	            
-                selectedNode->circuitOutput(vc,tm);
+	           // makeONEandZERO(mos, I);
+                selectedNode->circuitOutput(vc,tm, I);
                 if(seeoutput) cout << "printing output\n";
                 
                 Variable * v;
@@ -4680,7 +4735,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
                         for(int j=0;j<v->size();j++)
                         {
                             Wire * w = getWire(j,v->wv);
-                            makeWireContainValue(w);
+	                        makeWireContainValue(w, I);
                             /*int shouldbethisoutputwirenum = outputwirenumvec[currentoutvecindex++];
                             if(w->wireNumber != shouldbethisoutputwirenum)
                             {
@@ -4691,13 +4746,13 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
                 }
             }
             
-            getPool()->freeIfNoRefs();
-            pool.printUsedPoolState();
+            getPool(I)->freeIfNoRefs();
+            pool[I].printUsedPoolState();
             
-            prevlargest = pool.largestsize;
+            prevlargest = pool[I].largestsize;
             
-            pool.freeAll();
-            pool.assignWireNumbers(prevlargest+1);
+            pool[I].freeAll();
+            pool[I].assignWireNumbers(prevlargest+1);
             
             closeOutputFile();
         }
@@ -4792,13 +4847,13 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
             for(int i=0;i<16;i++)
             {
                 
-                Wire * Dest, *a= pool.getWire(), *b = pool.getWire();
+                Wire * Dest, *a= pool[idxF].getWire(), *b = pool[idxF].getWire();
                 
                 a->state = ONE;
                 b->state =  UNKNOWN_OTHER_WIRE;
                 
                 a = b;
-                Dest =a;//=pool.getWire();
+                Dest =a;//=pool[idxF].getWire();
                 
                 bool isshort;
                 isshort = shortCut(a,b,i,Dest);
@@ -4824,13 +4879,13 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
                 
                 Dest->freeRefs();
 
-                pool.freeIfNoRefs();
+                pool[idxF].freeIfNoRefs();
                 cout << "\n";
             }
         }
 
         
-        pool.freeIfNoRefs();
+        pool[idxF].freeIfNoRefs();
     }*/
     
     
@@ -4845,7 +4900,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
             {
                 
                 
-                Wire Dest,a, *b = pool.getWire();
+                Wire Dest,a, *b = pool[idxF].getWire();
                 
                 a.state = intToState(l);
                 b->state = intToState(k);
@@ -4887,7 +4942,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
                 
                 Dest.freeRefs();
                 
-                pool.freeIfNoRefs();
+                pool[idxF].freeIfNoRefs();
                 cout << "\n";
             }
         }
@@ -4898,22 +4953,22 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
         
         
         
-        pool.freeIfNoRefs();
+        pool[idxF].freeIfNoRefs();
     }*/
     
     
     
-    /*WireSet * ws = pool.getWires(32);
+    /*WireSet * ws = pool[idxF].getWires(32);
     
     
     ws->wires[31]->locked = true;
     cout << "end of function\n";
     
-    pool.freeIfNoRefs();
+    pool[idxF].freeIfNoRefs();
     cout << "used wires\n";
-    pool.printUsedPoolState();
+    pool[idxF].printUsedPoolState();
     cout << "free wires\n";
-    pool.printFreePoolState();*/
+    pool[idxF].printFreePoolState();*/
    
   
 
