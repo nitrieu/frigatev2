@@ -21,21 +21,16 @@ function int f2(int a, int b)
   return a^b;
 }
 
-function int f3(int a, int b)
-{
-  
-  return a|b;
-}
-
 
 function void main()
 {
    int c;
 int d;
 c=f1(input1, input2,input2);
-for(int i=0; i<2; i++) /* wiresize / 32 */
+
+ for(int i=0; i<2; i++) /* wiresize / 32 */
    {
-d=f2(input1, input2);
+    d=f2(input1, c);
 }
-output1=f3(c,d);
+output1=f2(c,d);
 }

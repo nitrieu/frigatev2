@@ -4242,13 +4242,13 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
                     getWire(k+v->argsv[j]->wv->startwirenum,v->argsv[j]->wv)->state = UNKNOWN;
                 }
             }
-            if(v->returnv != 0)
-            {
-                for(int l=0;l< v->returnv->size();l++)
-                {
-                    getWire(l+v->returnv->wv->startwirenum,v->returnv->wv)->state = UNKNOWN;
-                }
-            }
+//            if(v->returnv != 0)
+//            {
+//                for(int l=0;l< v->returnv->size();l++)
+//                {
+//                    getWire(l+v->returnv->wv->startwirenum,v->returnv->wv)->state = UNKNOWN;
+//                }
+//            }
             
             v->functionNumber = functions++;
         }
@@ -4487,6 +4487,8 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
     {
         if(isFunctionDeclarationNode(pln->nodeList[i]))
         {
+	        
+	      //  idxFunc = functions - 1;
 	        if (idxFunc == functions - 1)
 		        currentbasewire[idxFunc] = currentbasewiremain;
 	        else
@@ -4629,6 +4631,8 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 	//duplo	
 	Node * selectedNode;
     //output each function
+	
+	idxFunc = 0;
     for(int I=0;I<premfunctions;I++)
     {
        selectedNode = functions_in_order[I];
@@ -4637,6 +4641,8 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
         
         if(isFunctionDeclarationNode(selectedNode))
         {
+	      // idxFunc = functions - 1;
+	        
             if(seeoutput) std::cout <<"output function... " << isTermNode(isFunctionDeclarationNode(selectedNode)->name)->var<<endl;
             
             FunctionVariable * v = (FunctionVariable *) ((*vc)["FUNC_VAR_$$_"+isTermNode(isFunctionDeclarationNode(selectedNode)->name)->var]);
@@ -4659,7 +4665,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 		            startInpWire = getWire(0, v->argsv[0]->wv)->wireNumber;
 	            
 		          
-	            int cur = pool[I].largestsize;
+	            int cur = pool[idxFunc].largestsize ;
 	            if (isPrintDuploGC) {
 		            strDuploGC.append("\nFN " + to_string(I) +  " " + 
 															   to_string(v->sizeparam()) + " " +
@@ -4683,11 +4689,11 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
                     }
                 }
                 
-	            makeONEandZERO(mos,I);
+	            makeONEandZERO(mos, idxFunc);
 	            if (isPrintDuploGC) {
-		            strDuploGC.append(strDuploZeroOne[I]+"\n");		            
+		            strDuploGC.append(strDuploZeroOne[idxFunc] + "\n");		            
 	            }
-	            selectedNode->circuitOutput(vct, tm, I);
+	            selectedNode->circuitOutput(vct, tm, idxFunc);
 	            
 	             //duplo
 	            if (isPrintDuploGC) {
@@ -4695,10 +4701,10 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 	            
 		            if (premfunctions != 0 && I == 0)
 		            {
-			            strDuploGC.insert(posforNumWire, to_string(pool[I].largestsize - cur + v->sizeparam() + v->sizereturn()) + "\n");
+			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].largestsize - cur + v->sizeparam() + v->sizereturn()) + "\n");
 			        }
 		            else
-			            strDuploGC.insert(posforNumWire, to_string(pool[I].largestsize - cur + v->sizeparam() + v->sizereturn()) + "\n");
+			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].largestsize - cur + v->sizeparam() + v->sizereturn()) + "\n");
 	            
 		            strDuploGC.append("--end FN " + to_string(I) + "--\n");
 	            }
@@ -4716,8 +4722,8 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 			           // strDuploGC.append(strDuploZeroOne + "\n");
 		            }		           
 	            }
-	           // makeONEandZERO(mos, I);
-                selectedNode->circuitOutput(vc,tm, I);
+	            makeONEandZERO(mos, idxFunc);
+	            selectedNode->circuitOutput(vc, tm, idxFunc);
                 if(seeoutput) cout << "printing output\n";
                 
                 Variable * v;
@@ -4735,7 +4741,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
                         for(int j=0;j<v->size();j++)
                         {
                             Wire * w = getWire(j,v->wv);
-	                        makeWireContainValue(w, I);
+	                        makeWireContainValue(w, idxFunc);
                             /*int shouldbethisoutputwirenum = outputwirenumvec[currentoutvecindex++];
                             if(w->wireNumber != shouldbethisoutputwirenum)
                             {
@@ -4746,14 +4752,15 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
                 }
             }
             
-            getPool(I)->freeIfNoRefs();
-            pool[I].printUsedPoolState();
+	        getPool(idxFunc)->freeIfNoRefs();
+	        pool[idxFunc].printUsedPoolState();
             
-            prevlargest = pool[I].largestsize;
+	        prevlargest = pool[idxFunc].largestsize;
             
-            pool[I].freeAll();
-            pool[I].assignWireNumbers(prevlargest+1);
-            
+	        pool[idxFunc].freeAll();
+	        pool[idxFunc].assignWireNumbers(prevlargest + 1);
+	        
+	        idxFunc++;
             closeOutputFile();
         }
     }

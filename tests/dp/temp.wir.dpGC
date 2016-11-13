@@ -1,0 +1,44 @@
+2 2 28
+2 2 2 
+
+FN 2
+
+FN 0 6 8 2 14 16
+2 1 0 0 16 NXOR
+2 1 0 0 17 XOR
+
+2 1 8 10 18 AND
+2 1 9 11 19 AND
+2 1 18 12 22 XOR
+2 1 19 13 23 XOR
+2 1 22 17 14 XOR 
+2 1 23 17 15 XOR 
+--end FN 0--
+
+FN 1 4 6 2 10 10
+2 1 0 0 12 NXOR
+2 1 0 0 13 XOR
+
+2 1 6 8 14 XOR
+2 1 7 9 15 XOR
+2 1 14 13 10 XOR 
+2 1 15 13 11 XOR 
+--end FN 1--
+
+FN 2
+Global Inp: 0 1 2 3 2 3 
+FN 0
+Global OUT: 6 7 
+
+Global Inp: 0 1 6 7 
+FN 1
+Global OUT: 8 9 
+
+Global Inp: 0 1 6 7 
+FN 1
+Global OUT: 8 9 
+
+Global Inp: 6 7 8 9 
+FN 1
+Global OUT: 4 5 
+
