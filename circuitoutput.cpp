@@ -18,6 +18,7 @@ string strDuploGC;
 ofstream fDuploGC;
 vector<string> strDuploZeroOne;
 bool isMainFunc = false;
+uint32_t functions_call = 0;
 
 void printDuploGC(bool value)
 {
@@ -3620,9 +3621,10 @@ void outputFunctionCallDP(int num, string localInp, string globalInp)
 	//duplo
 	if (isPrintDuploGC && isMainFunc)
 	{
-		//strDuploGC.append("Local Inp: " + localInp + "\n");			
-		strDuploGC.append("Global Inp: " + globalInp + "\n");	
-		strDuploGC.append("FN " + to_string(num) + "\n");	
+		//strDuploGC.append("Local Inp: " + localInp + "\n");
+		functions_call++;
+		strDuploGC.append("FN " + to_string(num+1) + "\n");	
+		strDuploGC.append(globalInp + "\n");	
 	}
 }
 
@@ -3948,8 +3950,8 @@ void writeFunctionCall(int function, ostream * os)
     co_xorgates++;
 	
 //duplo
-	if (isPrintDuploGC && !isMainFunc)
-		strDuploGC.append("FN " + to_string(function) + "\n");	
+	//if (isPrintDuploGC && !isMainFunc)
+		//strDuploGC.append("FN " + to_string(function) + "\n");	
 	
 }
 
@@ -4042,6 +4044,8 @@ string toTable(int i)
 
 #include <algorithm>
 uint32_t functions = 0;
+
+
 int getNumberOfFunctions()
 {
     return functions;
@@ -4501,11 +4505,11 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
                 setSizes(v->args,0);
             }
 
-            if(v->return_var != 0)
-            {
-	            currentbasewire[idxFunc] = v->assignPermWires(currentbasewire[idxFunc]);
-                setSizes(v->return_var,0);
-            }
+            //if(v->return_var != 0)
+          //  {
+	     //       currentbasewire[idxFunc] = v->assignPermWires(currentbasewire[idxFunc]);
+          //      setSizes(v->return_var,0);
+        //    }
 	        pool[idxFunc].assignWireNumbers(currentbasewire[idxFunc]);
 	        idxFunc++;
 	       
@@ -4667,7 +4671,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 		          
 	            int cur = pool[idxFunc].largestsize ;
 	            if (isPrintDuploGC) {
-		            strDuploGC.append("\nFN " + to_string(I) +  " " + 
+		            strDuploGC.append("\nFN " + to_string(I+1) +  " " + 
 															   to_string(v->sizeparam()) + " " +
 															   to_string(startInpWire) + " " +
 	            											to_string(v->sizereturn()) + " " +
@@ -4691,7 +4695,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
                 
 	            makeONEandZERO(mos, idxFunc);
 	            if (isPrintDuploGC) {
-		            strDuploGC.append(strDuploZeroOne[idxFunc] + "\n");		            
+		            strDuploGC.append(strDuploZeroOne[idxFunc]);		            
 	            }
 	            selectedNode->circuitOutput(vct, tm, idxFunc);
 	            
@@ -4706,7 +4710,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 		            else
 			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].largestsize - cur + v->sizeparam() + v->sizereturn()) + "\n");
 	            
-		            strDuploGC.append("--end FN " + to_string(I) + "--\n");
+		            strDuploGC.append("--end FN " + to_string(I+1) + "--\n");
 	            }
 	            //end-duplo
                 
@@ -4716,7 +4720,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
             {
 	            isMainFunc = true;
 	            if (isPrintDuploGC) {
-		            strDuploGC.append("\nFN " + to_string(I) +  "\n");
+		            strDuploGC.append("\nFN " + to_string(I+1) +  "\n\n");
 		            if (premfunctions == 0)
 		            {
 			           // strDuploGC.append(strDuploZeroOne + "\n");
@@ -4810,7 +4814,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 	//duplo
 	if (isPrintDuploGC)
 	{			
-		fDuploGC << selectedNode->gatesFromNode  << " " << vf->functionNumber << " " << prevlargest << "\n";
+		fDuploGC << vf->functionNumber+1 << " " << functions_call << " " << functions_call << "// #numberFunction #layer  #numberComponent\n";
 		for (int sp = 0; sp < parties; sp++)
 		{
 			string s = "input" + to_string(sp + 1);
@@ -4820,6 +4824,8 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 				//cout << "v->size()in" << v->size() << "\n";
 				fDuploGC << v->size() << " ";
 			}
+			else
+				fDuploGC <<"0 ";
 		}
 
 		for (int sp = 0; sp < parties; sp++)
@@ -4831,8 +4837,10 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 				//cout << "v->size()out" << v->size() << "\n";
 				fDuploGC << v->size() << " ";
 			}
+			else
+				fDuploGC <<"0 ";
 		}
-		fDuploGC << "\n\n";	
+		fDuploGC << "//#input_eval #input_const #output_eval #output_const\n\n";	
 		
 		fDuploGC << strDuploGC;
 		fDuploGC.close();

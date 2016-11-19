@@ -2507,7 +2507,7 @@ CORV  AssignNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
     unlockCORV(rightcorv);
     
     getPool(idxF)->freeIfNoRefs();
-	appendDuploGC("Global OUT: " + strDPGlobalOut + "\n\n", isMainFunction());
+	appendDuploGC(strDPGlobalOut + "\n\n", isMainFunction()); //"Global OUT: " + 
     
     return leftcorv;
 }
@@ -3885,7 +3885,8 @@ CORV  FunctionCallNode::circuitOutput(VariableContext * vc, TypeMap * tm, int id
     
     if(funcvar->functionNode->gatesFromNode != 0 || funcvar->functionNode->gatesFromNodeXor != 0)
     {
-        outputFunctionCall(funcvar->functionNumber);
+	   // appendDuploGC("--"+to_string(funcvar->getVarDepth())+"\n", true);
+       outputFunctionCall(funcvar->functionNumber);
 	    outputFunctionCallDP(funcvar->functionNumber, strDPLocalInput, strDPGlobalInput);
     }
     
