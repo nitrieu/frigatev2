@@ -4519,7 +4519,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
     ofstream mos;
     mos.open(odir+"_cul.mfrig", ios::out|ios::binary);
 	if(isPrintDuploGC)
-		fDuploGC.open(odir + ".dpGC");
+		fDuploGC.open(odir + ".GC");
     
     
     uint32_t ibuffer[50];
@@ -4758,8 +4758,12 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
           //      setSizes(v->return_var,0);
         //    }
 	        makeONEandZERO(mos, idxFunc);
-	        pool[idxFunc].assignWireNumbers(currentbasewire[idxFunc]);
-	        idxFunc++;
+	        if (idxFunc == functions - 1)
+		        pool[idxFunc].assignWireNumbers(currentbasewiremain);
+	        else
+		        pool[idxFunc].assignWireNumbers(currentbasewire[idxFunc]);
+
+			idxFunc++;
 	       
         }
     }

@@ -47,6 +47,11 @@ int2x t0;
 return x;
 }
 
+function int res(int x[4])
+{
+return x[0];
+}
+
 function void main()
 {
    int c[4];
@@ -56,5 +61,5 @@ function void main()
     {
         c=fLoop(c);
     }
-    output1 = c[0];
+    output1 = res(c);
 }
