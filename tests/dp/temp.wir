@@ -13,8 +13,8 @@ typedef uint_t wiresize*2 int2x
 
 function int f2(int b, int c)
 {
- int d;
-d=b&c;
+
+ int d=b&c;
 int f=b|c;
 int e;
   return e|d;

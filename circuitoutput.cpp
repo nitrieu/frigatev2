@@ -3362,11 +3362,12 @@ void makeONEandZERO(ostream & mos, int idxF)
 {
     
 	one_wire_l[idxF] = currentbasewire[idxF];
-	writeGate(15, currentbasewire[idxF]++, 0, 0, &mos, idxF);
+	writeGate(15, currentbasewire[idxF], 0, 0, &mos, idxF);
+	currentbasewire[idxF]++;
     
 	zero_wire_l[idxF] = currentbasewire[idxF];
-	writeGate(0, currentbasewire[idxF]++, 0, 0, &mos, idxF);
-    
+	writeGate(0, currentbasewire[idxF], 0, 0, &mos, idxF);
+	currentbasewire[idxF]++;
     
 	ONE_WIRE[idxF] = new Wire();
 	ONE_WIRE[idxF]->state = ONE;
@@ -4756,6 +4757,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 	     //       currentbasewire[idxFunc] = v->assignPermWires(currentbasewire[idxFunc]);
           //      setSizes(v->return_var,0);
         //    }
+	        makeONEandZERO(mos, idxFunc);
 	        pool[idxFunc].assignWireNumbers(currentbasewire[idxFunc]);
 	        idxFunc++;
 	       
@@ -4939,7 +4941,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
                     }
                 }
                 
-	            makeONEandZERO(mos, idxFunc);
+	            //makeONEandZERO(mos, idxFunc);
 	            if (isPrintDuploGC) {
 		            strDuploGC.append(strDuploZeroOne[idxFunc]);		            
 	            }
@@ -4972,7 +4974,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 			           // strDuploGC.append(strDuploZeroOne + "\n");
 		            }		           
 	            }
-	            makeONEandZERO(mos, idxFunc);
+	           // makeONEandZERO(mos, idxFunc);
 	            selectedNode->circuitOutput(vc, tm, idxFunc);
                 if(seeoutput) cout << "printing output\n";
                 

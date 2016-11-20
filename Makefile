@@ -10,7 +10,7 @@ all: $(COMPILERO)
 #	./frigate ./tests/validationtest.wir -i -i_validation -nowarn    
 #	./battleship ./tests/validationtest.wir -i_validation
 #	./frigate ~/Desktop/temp.wir
-	./frigate ./tests/temp.wir -i -i_io    
+#	./frigate ./tests/temp.wir -i -i_io    
 
 interp: $(COMPILERO)
 	$(GPP)  $(OP) -o battleship interpretermain.cpp $(COMPILERO)
