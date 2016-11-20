@@ -1,6 +1,6 @@
 
 #COMPILERCCP = types.cpp error.cpp ast.cpp
-COMPILERO = parse_driver.o scanner.o parser.o types.o error.o ast.o defines.o includes.o exprtest.o circuito.o wire.o variable.o wirepool.o typegenerate.o interpreter.o
+COMPILERO = parse_driver.o scanner.o parser.o types.o error.o ast.o defines.o includes.o exprtest.o circuito.o wire.o variable.o wirepool.o typegenerate.o interpreter.o circuit.o
 OP =  -std=c++11 -g -O3      
 GPP = g++
 
@@ -63,6 +63,9 @@ circuito.o: circuitoutput.h circuitoutput.cpp ast.o types.o types.o wire.o wirep
 
 wire.o: wire.h wire.cpp
 	$(GPP)  $(OP) -c -o wire.o wire.cpp
+
+circuit.o: circuit.h circuit-parser.cpp
+	$(GPP)  $(OP) -c -o circuit.o circuit-parser.cpp
 
 typegenerate.o: typegenerate.h typegenerate.cpp ast.h
 	$(GPP)  $(OP) -c -o typegenerate.o typegenerate.cpp

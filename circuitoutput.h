@@ -51,6 +51,7 @@ void decreaseDepth();
 void printwirevec(vector<Wire *> & v);
 
 void clearReffedWire(Wire * w, int idxF);
+void clearReffedWireForFn(Wire * w, int idxF);
 Wire * clearWireForReuse(Wire * w, int idxF);
 
 void outputFunctionCall(int num);
@@ -89,6 +90,7 @@ string getFunctionPrefix();
 //messyAssign assings from c to pattern
 void messyAssignAndCopy(CORV & c, Variable * pattern, int idxF);
 void messyAssignAndCopy(Variable * cvar, Variable * pattern, int idxF);
+void messyAssignAndCopyForFn(Variable * cvar, Variable * pattern, int idxF);
 void messyMakeWireContainValueNoONEZEROcopy(Variable * pattern, int idxF);
 
 Wire * invertWireNoInvertOutput(Wire * w2, int idxF);
@@ -106,7 +108,9 @@ void outputGateNoInvertOutput(short table, Wire * a, Wire * b, Wire * dest, int 
 Wire * outputGate(bool inOut, int party);
 void makeWireNotOther(Wire * w, int idxF);
 void makeWireContainValueNoONEZEROcopy(Wire * w, int idxF);
+void makeWireContainValueNoONEZEROcopyForFn(Wire * w, int idxF);
 void makeWireContainValue(Wire * w, int idxF);
+void makeWireContainValueForFn(Wire * w, int idxF);
 
 void makeWireContainValueNoONEZEROcopyTiny(Wire * w, int idxF);
 
@@ -116,6 +120,7 @@ Wire * get_ONE_WIRE(int idxF);
 Wire * get_ZERO_WIRE(int idxF);
 void assignWire(Wire *  w1, Wire * w2, int idxF);
 void assignWireCond(Wire *  w1, Wire * w2, Wire * w3, int idxF); //w3 is whether to assign or not
+void assignWireCondForFn(Wire *  w1, Wire * w2, Wire * w3, int idxF);
 
 void pushOutputFile(string s);
 void popOutputFile();

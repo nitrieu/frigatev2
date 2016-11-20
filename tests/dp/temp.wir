@@ -10,27 +10,26 @@ typedef uint_t wiresize*2 int2x
 
 
 
-function int f1(int a, int b,int c)
+
+function int f2(int b, int c)
 {
-  
-  return a&b^c;
+ int d;
+d=b&c;
+int f=b|c;
+int e;
+  return e|d;
 }
-function int f2(int a, int b)
+
+function int f3(int b, int c)
 {
-  
-  return a^b;
+  int d;
+d=f2(b,c);
+  return d;
 }
+
 
 
 function void main()
 {
-   int c;
-int d;
-c=f1(input1, input2,input2);
-
- for(int i=0; i<2; i++) /* wiresize / 32 */
-   {
-    d=f2(input1, c);
-}
-output1=f2(c,d);
+output1=f3(input1, input2);
 }

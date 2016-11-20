@@ -15,10 +15,11 @@ bool useTinyOutput = false;
 //duplo
 bool isPrintDuploGC = false;
 string strDuploGC;
+vector<string> strDuploFn;
 ofstream fDuploGC;
 vector<string> strDuploZeroOne;
 bool isMainFunc = false;
-uint32_t functions_call = 0;
+uint32_t functions_call_in_main = 0;
 
 void printDuploGC(bool value)
 {
@@ -378,6 +379,54 @@ void messyAssignAndCopy(Variable * cvar, Variable * pattern , int idxF)
     }
 }
 
+void messyAssignAndCopyForFn(Variable * cvar, Variable * pattern, int idxF)
+{
+	if (cvar->v_enum == Intv)
+	{
+		IntVariable * intv = (IntVariable *) cvar;
+		IntVariable * dest = (IntVariable *) pattern;
+        
+		int intvsize = intv->wires.size();
+        
+		for (int i = 0; i < dest->wires.size(); i++)
+		{
+			if (i < intvsize)
+			{
+				assignWire(dest->wires[i], intv->wires[i], idxF);
+				makeWireContainValueNoONEZEROcopyForFn(dest->wires[i], idxF);
+			}
+			else
+			{
+				assignWire(dest->wires[i], get_ZERO_WIRE(idxF), idxF);
+			}
+		}
+	}
+	else if (cvar->v_enum == Arrayv)
+	{
+		ArrayVariable * arrayv = (ArrayVariable *) cvar;
+		ArrayVariable * dest = (ArrayVariable *) pattern;
+        
+		for (int i = 0; i < dest->av.size(); i++)
+		{
+			messyAssignAndCopyForFn(arrayv->av[i], dest->av[i], idxF);
+		}
+	}
+	else if (cvar->v_enum == Structv)
+	{
+		StructVariable * structv = (StructVariable *) cvar;
+		StructVariable * dest = (StructVariable *) pattern;
+        
+		for (std::unordered_map<string, Variable *>::iterator it = structv->map.begin(); it != structv->map.end(); ++it)
+		{
+			Variable * v =  (Variable *)(it->second);
+			messyAssignAndCopyForFn(v, dest->map[(string)(it->first)], idxF);
+		}
+	}
+	else
+	{
+		cout << "undefined type in messy messyAssignAndCopy\n";
+	}
+}
 
 //messyCopy assumes the wv in c.var are not correct and does not use them.
 //also assumes pattern is correctly constructed and c.var is patterned after pattern correctly BUT the individual variables might be incorrect lengths (i.e. are from constants)
@@ -719,6 +768,38 @@ void clearReffedWire(Wire * w, int idxF)
     }
 }
 
+void clearReffedWireForFn(Wire * w, int idxF)
+{
+	if (w->refs == 0)
+		return;
+    
+	Wire * newwire = pool[idxF].getWire();
+	//writeCopy(newwire->wireNumber, w->wireNumber, idxF);
+	
+	if (isPrintDuploGC)
+	{
+		newwire->prevWireNumber[0] = w->wireNumber;
+		newwire->prevWireNumber[1] = w->prevWireNumber[0];
+		
+	}
+    
+	for (int i = w->refsToMeSize - 1; i >= 0; i--)
+	{
+		Wire * temp = w->refsToMe[i];
+		w->removeRef(temp);
+		w->refs--;
+		newwire->addRef(temp);
+		temp->other = newwire;
+		newwire->refs++;
+	}
+	newwire->state = w->state;
+    
+	if (w->refs > 0)
+	{
+		cout << "refs still > than 0\n";
+	}
+}
+
 /*
 might be broken
 void clearOtherdWire(Wire * w1)
@@ -836,6 +917,35 @@ void assignWireCond(Wire *  w1, Wire * w2, Wire * w3, int idxF)
         w1->other = 0;
         cout << "other in assign cond is not 0\n";*/
     }
+    
+	outputGate(6, w1, and1o, w1, idxF);
+}
+
+//assigns w2 to w1 if w3 is true
+void assignWireCondForFn(Wire *  w1, Wire * w2, Wire * w3, int idxF)
+{
+	if (w1 == w2)
+	{
+		return;
+	}
+    
+
+
+	Wire * xor1o = outputGate(6, w2, w1, idxF);
+	Wire * and1o = outputGate(8, xor1o, w3, idxF);
+    
+	if (w1->refs > 0)
+	{
+		clearReffedWire(w1, idxF);
+	}
+	else if (w1->other != 0)
+	{
+	    //cout << "other in assign cond is not 0\n";
+		makeWireContainValueForFn(w1, idxF);
+		/*clearOtherdWire(w1);
+		w1->other = 0;
+		cout << "other in assign cond is not 0\n";*/
+	}
     
 	outputGate(6, w1, and1o, w1, idxF);
 }
@@ -3313,7 +3423,51 @@ void makeWireContainValueNoONEZEROcopy(Wire * w, int idxF)
    
 }
 
-
+void makeWireContainValueNoONEZEROcopyForFn(Wire * w, int idxF)
+{   
+	if (w->other == 0 || w->state == UNKNOWN)
+	{
+		if (w->state == UNKNOWN_INVERT)
+		{
+			writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+			w->state = UNKNOWN;
+		}
+        
+		return;
+	}
+    
+	//writeCopy(w->wireNumber, w->other->wireNumber, idxF);
+	if (isPrintDuploGC)
+	{
+		w->prevWireNumber[0] = w->other->wireNumber;
+		w->prevWireNumber[1] = w->other->prevWireNumber[0];
+		
+	}
+    
+    //if(seeoutput) cout << "CP MWCOa "<< w->wireNumber<<" "<<w->other->wireNumber<<"\n";
+    
+	if (w->state == UNKNOWN_INVERT_OTHER_WIRE)
+	{
+		w->state = UNKNOWN_INVERT;
+		w->other->refs--; w->other->removeRef(w);
+		w->other = 0;
+	}
+	else
+	{
+		w->state = UNKNOWN;
+		w->other->refs--; w->other->removeRef(w);
+		w->other = 0;
+	}
+    
+    
+	if (w->state == UNKNOWN_INVERT)
+	{
+		writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+		w->state = UNKNOWN;
+	}
+    
+   
+}
 int MWCV_base_dest;
 int MWCV_base_from;
 int MWCV_amt=0;
@@ -3493,6 +3647,65 @@ void makeWireContainValue(Wire * w, int idxF)
     
 }
 
+void makeWireContainValueForFn(Wire * w, int idxF)
+{
+	if (w->state == ONE)
+	{
+		//writeCopy(w->wireNumber, one_wire_l[idxF], idxF);
+		if (isPrintDuploGC)
+		{
+			w->prevWireNumber[0] = one_wire_l[idxF];		
+		}
+	}
+	if (w->state == ZERO)
+	{
+		//writeCopy(w->wireNumber, zero_wire_l[idxF], idxF);
+		if (isPrintDuploGC)
+		{
+			w->prevWireNumber[0] = zero_wire_l[idxF];		
+		}
+	}
+    
+    
+	if (w->other == 0 || w->state == UNKNOWN)
+	{
+		return;
+	}
+    
+	//writeCopy(w->wireNumber, w->other->wireNumber, idxF);
+	
+	if (isPrintDuploGC)
+	{
+		w->prevWireNumber[0] = w->other->wireNumber;
+		w->prevWireNumber[1] = w->other->prevWireNumber[0];
+		
+	}
+	
+    //if(seeoutput) cout << "CP MWCOb "<< w->wireNumber<<" "<<w->other->wireNumber<<"\n";
+    
+	if (w->state == UNKNOWN_INVERT_OTHER_WIRE)
+	{
+		w->state = UNKNOWN_INVERT;
+		w->other->refs--; w->other->removeRef(w);
+		w->other = 0;
+	}
+	else
+	{
+		w->state = UNKNOWN;
+		w->other->refs--; w->other->removeRef(w);
+		w->other = 0;
+	}
+    
+    
+	if (w->state == UNKNOWN_INVERT)
+	{
+		writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+		w->state = UNKNOWN;
+	}
+    
+    
+}
+
 void makeWireNotOther(Wire * w, int idxF)
 {
     if(w->other != 0)
@@ -3622,10 +3835,20 @@ void outputFunctionCallDP(int num, string localInp, string globalInp)
 	if (isPrintDuploGC && isMainFunc)
 	{
 		//strDuploGC.append("Local Inp: " + localInp + "\n");
-		functions_call++;
-		strDuploGC.append("FN " + to_string(num+1) + "\n");	
+		functions_call_in_main++;
+		strDuploGC.append("FN " + to_string(num + 1) + "\n");	
 		strDuploGC.append(globalInp + "\n");	
 	}
+	if (isPrintDuploGC && !isMainFunc)
+	{
+		//strDuploGC.append("Local Inp: " + localInp + "\n");
+		//functions_call_in_main++;
+		//strDuploGC.append("FN " + to_string(num + 1) + "\n");	
+		//strDuploGC.append(globalInp + "\n");	
+		strDuploGC.append("++ FN " + to_string(num + 1) + "\n");	
+		strDuploGC.append("++ " + globalInp + "\n");
+	}
+	
 }
 
 long co_nonxorgates=0;
@@ -3847,39 +4070,49 @@ void writeComplexGate(short op, int dest, int x, int y, int length, int carryadd
 void writeGate(short table, int d, int x, int y, int idxF)
 {
     
-    outbuffer[0] = d;
-    outbuffer[1] = table;
-    outbuffer[2] = x;
-    outbuffer[3] = y;
-    os->write((char *)(&outbuffer[0]),16);
-    if(seeoutput) cout <<os<< " "<< d <<" "<<table<<" "<<x << " "<<y<<"\n";
+	outbuffer[0] = d;
+	outbuffer[1] = table;
+	outbuffer[2] = x;
+	outbuffer[3] = y;
+	os->write((char *)(&outbuffer[0]), 16);
+	if (seeoutput) cout << os << " " << d << " " << table << " " << x << " " << y << "\n";
 	
-    if(table == 6)
-    {
-        co_xorgates++;
-    }
-    else
-    {
-        co_nonxorgates++;
-    }
+	if (table == 6)
+	{
+		co_xorgates++;
+	}
+	else
+	{
+		co_nonxorgates++;
+	}
 	
 	if (isPrintDuploGC) 
 		if (table == 3)//(invert passthrough a)
+		{
 			strDuploGC.append("1 1 " + to_string(x) + " " + to_string(d) + " " + toStrGate(table) + "\n");
+			strDuploFn[idxF].append("1 1 " + to_string(x) + " " + to_string(d) + " " + toStrGate(table) + "\n");
+
+		}
 		else if (table == 5)//(invert passthrough b)
+		{
 			strDuploGC.append("1 1 " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
+			strDuploFn[idxF].append("1 1 " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
+
+		}
 		else if (table == 0)
 		{
 			strDuploZeroOne[idxF].append("2 1 0 0 " + to_string(d) + " XOR\n");
 		}
-		else if(table == 15)
+		else if (table == 15)
 		{
 			strDuploZeroOne[idxF].append("2 1 0 0 " + to_string(d) + " NXOR\n");
 		}
 		//else if(table==4)
-			
 		else
+		{
 			strDuploGC.append("2 1 " + to_string(x) + " " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
+			strDuploFn[idxF].append("2 1 " + to_string(x) + " " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
+		}
 }
 
 
@@ -3887,36 +4120,46 @@ void writeGate(short table, int d, int x, int y, int idxF)
 void writeGate(short table, int d, int x, int y, ostream * os, int idxF)
 {
     
-    outbuffer[0] = d;
-    outbuffer[1] = table;
-    outbuffer[2] = x;
-    outbuffer[3] = y;
-    os->write((char *)(&outbuffer[0]),16);
-    if(seeoutput) cout <<os<< " "<< d <<" "<<table<<" "<<x << " "<<y<<"\n";
-    if(table == 6)
-    {
-        co_xorgates++;
-    }
-    else
-    {
-        co_nonxorgates++;
-    }
+	outbuffer[0] = d;
+	outbuffer[1] = table;
+	outbuffer[2] = x;
+	outbuffer[3] = y;
+	os->write((char *)(&outbuffer[0]), 16);
+	if (seeoutput) cout << os << " " << d << " " << table << " " << x << " " << y << "\n";
+	if (table == 6)
+	{
+		co_xorgates++;
+	}
+	else
+	{
+		co_nonxorgates++;
+	}
 	
 	if (isPrintDuploGC) 
 		if (table == 3)//(invert passthrough a)
+		{
 			strDuploGC.append("1 1 " + to_string(x) + " " + to_string(d) + " " + toStrGate(table) + "\n");
+			strDuploFn[idxF].append("1 1 " + to_string(x) + " " + to_string(d) + " " + toStrGate(table) + "\n");
+		}
 		else if (table == 5)//(invert passthrough b)
+		{
 			strDuploGC.append("1 1 " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
+			strDuploFn[idxF].append("1 1 " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
+		
+		}
 		else if (table == 0)
 		{
 			strDuploZeroOne[idxF].append("2 1 0 0 " + to_string(d) + " XOR\n");
 		}
-		else if(table == 15)
+		else if (table == 15)
 		{
 			strDuploZeroOne[idxF].append("2 1 0 0 " + to_string(d) + " NXOR\n");
 		}
 		else
+		{
 			strDuploGC.append("2 1 " + to_string(x) + " " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
+			strDuploFn[idxF].append("2 1 " + to_string(x) + " " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
+		}
 }
 
 void writeCopy(int to, int from, int idxF)
@@ -3930,9 +4173,11 @@ void writeCopy(int to, int from, int idxF)
     co_xorgates++;
 	
 	//duplo
-	if(isPrintDuploGC && !isMainFunc)
+	if (isPrintDuploGC && !isMainFunc)
+	{
 		strDuploGC.append("2 1 " + to_string(from) + " " + to_string(zero_wire_l[idxF]) + " " + to_string(to) + " XOR \n");
-	
+		strDuploFn[idxF].append("2 1 " + to_string(from) + " " + to_string(zero_wire_l[idxF]) + " " + to_string(to) + " XOR \n");
+	}
 	//if (isPrintDuploGC && isMainFunc)
 	//	strDuploGC.append("CP " + to_string(from) + " " + to_string(to) + "\n");
 	
@@ -4266,6 +4511,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 	currentbasewire.resize(functions);
 	pool.resize(functions);
 	strDuploZeroOne.resize(functions);
+	strDuploFn.resize(functions);
 	
 
     //output header file
@@ -4814,7 +5060,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 	//duplo
 	if (isPrintDuploGC)
 	{			
-		fDuploGC << vf->functionNumber+1 << " " << functions_call << " " << functions_call << "// #numberFunction #layer  #numberComponent\n";
+		fDuploGC << vf->functionNumber+1 << " " << functions_call_in_main << " " << functions_call_in_main << "// #numberfunction #layer  #numberComponent\n";
 		for (int sp = 0; sp < parties; sp++)
 		{
 			string s = "input" + to_string(sp + 1);
