@@ -246,7 +246,7 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 	} //done with reading the component
 	
 
-#if 0 //if duplo => print component
+#if 1 //if duplo => print component
 	fDuplo << num_functions << " " << num_layer << " " << num_component << "// #numberfunction #layer  #numberComponent\n";
 	fDuplo << num_const_inp_wires << " " << num_eval_inp_wires << " " << num_const_out_wires << " " << num_eval_out_wires << " //#input_eval #input_const #output_eval #output_const\n\n";	
 	for (int i = 0; i < num_functions - 1; i++)
@@ -380,7 +380,8 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 			}
 			
 		}
-#endif
+#endif
+
 }
 
 

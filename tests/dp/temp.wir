@@ -1,27 +1,30 @@
-#define wiresize 4
+#define wiresize 2
 #parties 2
 
 typedef uint_t wiresize int
-typedef uint_t wiresize*2 int2x
 
 #input 1 int
 #input 2 int
 #output 1 int
 
-
-
-
-function int f2(int b, int c)
-{
-int a=10;
-int d=a+b;
-  return d&c;
+function int f1(int b, int c)
+{ 
+return b&c;
 }
 
-
+function int f2(int b, int c)
+{ 
+return b|c;
+}
 
 
 function void main()
 {
-output1=f2(input1, input2);
+int d;
+d= f1(input1,input2);
+for(int i=0; i<3; i++) 
+   {
+      d=f2(d,input2);
+   }
+  output1 = f2(input1,d);
 }
