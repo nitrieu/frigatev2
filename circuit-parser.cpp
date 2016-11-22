@@ -419,8 +419,9 @@ void frigate_read_text_circuit(const char* circuit_file)
 
 
 //Sbox
-Circuit sBoxYale_parse_circuit(char raw_circuit[]){ 
+Circuit sBoxYale_parse(char raw_circuit[]){ 
 	Circuit sBox;
+	
 	raw_circuit = strchr(raw_circuit, '\n') + 1; // Jan 18 +  09
 	raw_circuit = strchr(raw_circuit, '\n') + 1; // Straight-line program for AES sbox 
 	raw_circuit = strchr(raw_circuit, '\n') + 1; // Joan Boyar and Rene Peralta
@@ -430,6 +431,12 @@ Circuit sBoxYale_parse_circuit(char raw_circuit[]){
 	raw_circuit = strchr(raw_circuit, '\n') + 1;// arithmetic is over GF2
 	raw_circuit = strchr(raw_circuit, '\n') + 1;
 	raw_circuit = strchr(raw_circuit, '\n') + 1;// begin top linear transformation 
+	raw_circuit = strchr(raw_circuit, ' ') + 1;// y14 = x3 + x5;
+	raw_circuit = strchr(raw_circuit, ' ') + 1;//y14 = x3 + x5;
+	
+	std::string type_string(raw_circuit);
+	string wire = type_string.substr(0, type_string.find(" ")); // token is "scott"
+	
 	
 	return sBox;
 }
@@ -443,7 +450,8 @@ Circuit read_text_sBoxYale()
 
 	std::string str(circuit_file);
 
-	fDuplo.open(str + "GC");
+	ofstream fSbox;
+	fSbox.open(str + "GC");
 	if (file == NULL) {
 		printf("ERROR: Could not open text circuit: %s\n", circuit_file);
 		exit(EXIT_FAILURE);
@@ -464,7 +472,7 @@ Circuit read_text_sBoxYale()
 		exit(EXIT_FAILURE);
 	}
 	fclose(file);
-	Circuit sBox= sBoxYale_parse_circuit(data.get());
-	fDuplo.close();
+	Circuit sBox = sBoxYale_parse(data.get());
+	fSbox.close();
 	return sBox;
 }

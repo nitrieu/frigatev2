@@ -144,7 +144,7 @@ void processArgs(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
     
-	//read_text_sBoxYale();
+	
     ///process args
     processArgs(argc,argv);
     
@@ -198,6 +198,8 @@ int main(int argc, char *argv[])
 	
 	
 	//ofstream fDuploGC;
+	read_text_sBoxYale();
+	
 	string fileGC = file + ".GC";
 	char * S = new char[fileGC.length() + 1];
 	strcpy(S, fileGC.c_str());
