@@ -24,9 +24,9 @@ public:
 class Circuit {
 public:
   std::vector<Gate> gates;
-  uint32_t num_wires;
-  uint32_t num_inp_wires;
-  uint32_t num_out_wires;
+  uint32_t num_wires=0;
+  uint32_t num_inp_wires=0;
+  uint32_t num_out_wires=0;
 	uint32_t inp_wires_start=0;
 	uint32_t out_wires_start;
 	uint32_t idxCircuit;

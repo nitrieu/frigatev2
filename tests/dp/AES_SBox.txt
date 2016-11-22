@@ -79,8 +79,8 @@
   // end GF16 inversion
   t41 = t40 + t37;
   t42 = t29 + t33;
-  t43 =  t29 + t40;
-  t44 =  t33 + t37;
+  t43 = t29 + t40;
+  t44 = t33 + t37;
   t45 = t42 + t41;
   z0 = t44 X y15;
   z1 = t37 X y6;
@@ -130,5 +130,4 @@
   s4 = t51 + t66;
   s5 = t47 + t65;
   s1 = t64 XNOR s3; 
-  s2 = t55 XNOR t67; 
-
+  s2 = t55 XNOR t67;

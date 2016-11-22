@@ -2,11 +2,13 @@
 
 #include <iostream>
 #include <memory>
-
+#include <sstream>
+#include <iostream>
 using namespace std;
 //For Frigate
 vector<Circuit> circuits;
 ofstream fDuplo;
+ofstream fSbox;
 
 //Parse the gate description given a char array of the description file.
 Circuit duploParseCircuit(char raw_circuit[]) {
@@ -417,10 +419,33 @@ void frigate_read_text_circuit(const char* circuit_file)
 	fDuplo.close();
 }
 
-
+void print_wires(std::unordered_map<string, uint32_t> wires)
+{
+	for (const auto& i : wires) {
+		std::cout << "Key:[" << i.first << "] Value:[" << i.second << "]\n";
+	}
+}
 //Sbox
 Circuit sBoxYale_parse(char raw_circuit[]){ 
 	Circuit sBox;
+	std::unordered_map<string, uint32_t> wires;
+	string line, left_wire, right_wire, out_wire, gate;
+	int pos, pos_wire, curr_wire_num = 0, curr_gate_num=0;
+	std::string delimiter = "\n";
+
+	sBox.num_inp_wires = 8;
+	sBox.num_out_wires = 8;
+	sBox.inp_wires_start = 0;
+	sBox.out_wires_start = 8;
+
+	for (int i = 0; i < sBox.num_inp_wires; i++)
+	{
+		wires.emplace("x"+to_string(i), i); //input wires
+		wires.emplace("s"+to_string(i), i+8); //output wires
+		curr_wire_num+=2;
+	}
+
+	print_wires(wires);
 	
 	raw_circuit = strchr(raw_circuit, '\n') + 1; // Jan 18 +  09
 	raw_circuit = strchr(raw_circuit, '\n') + 1; // Straight-line program for AES sbox 
@@ -431,13 +456,77 @@ Circuit sBoxYale_parse(char raw_circuit[]){
 	raw_circuit = strchr(raw_circuit, '\n') + 1;// arithmetic is over GF2
 	raw_circuit = strchr(raw_circuit, '\n') + 1;
 	raw_circuit = strchr(raw_circuit, '\n') + 1;// begin top linear transformation 
-	raw_circuit = strchr(raw_circuit, ' ') + 1;// y14 = x3 + x5;
-	raw_circuit = strchr(raw_circuit, ' ') + 1;//y14 = x3 + x5;
 	
-	std::string type_string(raw_circuit);
-	string wire = type_string.substr(0, type_string.find(" ")); // token is "scott"
+	std::istringstream type_string(raw_circuit);
+	while (getline(type_string, line) && !type_string.eof()) {
+		cout << "\n" << line << "\n";//y14 = x3 + x5;
+		//line.erase(0,  2); // remove " " at the first line
+		line.erase(0, line.find_first_not_of(' '));  
+		if (line.at(0) != '/')
+		{
+			pos_wire = line.find(" "); //out_wire
+			out_wire = line.substr(0, pos_wire); //y14
+			cout << out_wire << " ";
+			if (wires.find(out_wire) == wires.end()) //check whether wires exits
+			{
+				wires.emplace(out_wire, curr_wire_num); //sBox.num_wires start from 1
+				++curr_wire_num;
+			}
+			
+			line.erase(0, pos_wire + 3); // ' = '
+			
+			pos_wire = line.find(" "); //right_wire
+			right_wire = line.substr(0, pos_wire); //x3
+			cout << right_wire << " ";
+
+			if (wires.find(right_wire) == wires.end()) //check whether wires exits
+			{
+				wires.emplace(right_wire, curr_wire_num); //sBox.num_wires start from 1
+				++curr_wire_num;
+			}
+			line.erase(0, pos_wire + 1);
+
+			pos_wire = line.find(" "); //gate
+			gate = line.substr(0, pos_wire); //+
+			cout << gate << " ";
+
+			if (gate == "+") 
+				gate = "XOR";
+			else if (gate == "X")
+				gate = "AND";
+			else if (gate == "XNOR")
+				gate = "XNOR";
+			else
+				exit(1);
+
+			line.erase(0, pos_wire + 1);
+
+			pos_wire = line.find(";"); //left_wire
+			left_wire = line.substr(0, pos_wire); //x5
+			cout << left_wire << " ";
+
+			if (wires.find(left_wire) != wires.end()) //check whether wires exits
+			{
+				wires.emplace(left_wire, curr_wire_num); //sBox.num_wires start from 1
+				++curr_wire_num;
+			}
+
+			sBox.gates.emplace_back(Gate());
+			sBox.gates[curr_gate_num].type = gate;
+			sBox.gates[curr_gate_num].left_wire =  wires[left_wire];
+			sBox.gates[curr_gate_num].right_wire =  wires[right_wire];
+			sBox.gates[curr_gate_num].out_wire = wires[out_wire];
+			++curr_gate_num;
+		}
+	}	
+	sBox.num_wires = curr_wire_num;
 	
-	
+	fSbox << "FN " <<  sBox.gates.size() << " " << sBox.num_wires << " //#gate #wires \n";
+	for (int i = 0; i < sBox.gates.size(); i++)
+	{
+		fSbox << "2 1 " << sBox.gates[curr_gate_num].left_wire  << " " << sBox.gates[curr_gate_num].right_wire  << " "
+						 << sBox.gates[curr_gate_num].out_wire << " " << sBox.gates[curr_gate_num].type << "\n"; 
+	}
 	return sBox;
 }
 
@@ -450,7 +539,7 @@ Circuit read_text_sBoxYale()
 
 	std::string str(circuit_file);
 
-	ofstream fSbox;
+	
 	fSbox.open(str + "GC");
 	if (file == NULL) {
 		printf("ERROR: Could not open text circuit: %s\n", circuit_file);
