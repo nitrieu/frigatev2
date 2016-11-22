@@ -1,17 +1,36 @@
-#define wiresize 2
+#define wiresize 4
+#define wiresize1 256
 #parties 2
 
+
 typedef uint_t wiresize int
-typedef uint_t wiresize*2 int2x
+typedef uint_t 9 int2
 
 #input 1 int
-#input 2 int
 #output 1 int
 
+function int f1(int b)
+{ 
+int sbox[15]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14};
 
+	 int rs;
+	 for(int i=0;i<wiresize;i++)
+	{
+             
+		for(int j=0;j<15;j++)
+		{
+
+			  if(sbox[j]{i})
+			{    
+                            rs{i}=rs{i}|(b{i}==j{i});
+			}
+                }
+	}
+return rs;
+}
 
 function void main()
 {
-   
-output1=input1^input2;
+  output1 = f1(input1);
 }
+

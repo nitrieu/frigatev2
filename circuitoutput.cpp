@@ -3358,16 +3358,18 @@ void outputReDivideSigned(vector<Wire *> * leftv,vector<Wire *> * rightv, vector
 bool seeoutput=false;
 
 
-void makeONEandZERO(ostream & mos, int idxF)
+void makeONEandZERO(ostream & mos, int idxF, bool isMain)
 {
     
 	one_wire_l[idxF] = currentbasewire[idxF];
 	writeGate(15, currentbasewire[idxF], 0, 0, &mos, idxF);
-	currentbasewire[idxF]++;
+	if(!isMain)
+		currentbasewire[idxF]++;
     
 	zero_wire_l[idxF] = currentbasewire[idxF];
 	writeGate(0, currentbasewire[idxF], 0, 0, &mos, idxF);
-	currentbasewire[idxF]++;
+	if (!isMain)
+		currentbasewire[idxF]++;
     
 	ONE_WIRE[idxF] = new Wire();
 	ONE_WIRE[idxF]->state = ONE;
@@ -4757,10 +4759,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 	     //       currentbasewire[idxFunc] = v->assignPermWires(currentbasewire[idxFunc]);
           //      setSizes(v->return_var,0);
         //    }
-	        makeONEandZERO(mos, idxFunc);
-	        if (idxFunc == functions - 1)
-		        pool[idxFunc].assignWireNumbers(currentbasewiremain);
-	        else
+	        makeONEandZERO(mos, idxFunc, idxFunc == functions - 1);
 		        pool[idxFunc].assignWireNumbers(currentbasewire[idxFunc]);
 
 			idxFunc++;
@@ -4957,10 +4956,10 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 	            
 		            if (premfunctions != 0 && I == 0)
 		            {
-			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].largestsize - cur + v->sizeparam() + v->sizereturn()) + "\n");
+			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].wireNumberValue) + "\n");
 			        }
 		            else
-			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].largestsize - cur + v->sizeparam() + v->sizereturn()) + "\n");
+			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].wireNumberValue) + "\n");
 	            
 		            strDuploGC.append("--end FN " + to_string(I+1) + "--\n");
 	            }

@@ -144,6 +144,7 @@ void processArgs(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
     
+	//read_text_sBoxYale();
     ///process args
     processArgs(argc,argv);
     
@@ -194,10 +195,13 @@ int main(int argc, char *argv[])
     gettimeofday(&t1, 0);
     long long elapsed = (t1.tv_sec-t0.tv_sec)*1000000LL + t1.tv_usec-t0.tv_usec;
     if(printCompileTime) cout << "compiler:\ttime(s): "<< (elapsed*1.0)/1000000 <<"\n";
+	
+	
 	//ofstream fDuploGC;
 	string fileGC = file + ".GC";
 	char * S = new char[fileGC.length() + 1];
 	strcpy(S, fileGC.c_str());
+	
 	frigate_read_text_circuit(S);
 
     if(runInterpreter)

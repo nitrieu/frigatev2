@@ -1,57 +1,103 @@
 #define wiresize 128
 #parties 2
-#define max_uint_t 255
-
+#define Nr 3
 
 typedef uint_t 8 uint8_t
+typedef uint_t wiresize uint128_t
 
-#input 1 uint8_t
-#input 2 uint8_t
-#output 1 uint8_t
+#input 1 uint128_t
+#input 2 uint128_t
+#output 1 uint128_t
 
-
-
-function uint8_t gf_mulinv(uint8_t x)  /* calculate multiplicative inverse*/
+function uint8_t sbox(uint8_t idx)
 {
+return idx; /*use Yale sbox here*/
+}
 
-	uint8_t rs;
-
-	if(x==0){
-
-		uint8_t atb = 1;  uint8_t i = 0; uint8_t z;
-
-		for(uint8_t j=0;j<max_uint_t;j++)
-		{
-
-		}
-
-		rs= x;
-	}
-	else
-	{
-		rs= 0;
-	}
-	return rs;
-
-} /* gf_mulinv */
-
-function uint8_t rj_sbox(uint8_t x)
-{  
-	 uint8_t y;
-	 uint8_t sb;
-
-	 sb = gf_mulinv(x);
-	 y = gf_mulinv(x);
-
-         y = (y<<1)|(y>>7);   sb = sb^y;  y = (y<<1)|(y>>7);   sb = sb^y; 
-         y = (y<<1)|(y>>7);   sb = sb^y;   y = (y<<1)|(y>>7);  sb = sb^y;
-
-    return (sb ^ 99);
+function uint128_t SubBytes(uint128_t buf)
+{
+    for(uint8_t i=0;i<16;i++)
+   {
+       buf{i*8:8} = sbox(buf{i*8:8});
+   }
+   return buf;
 } 
+
+function uint128_t ShiftRows(uint128_t buf)
+{
+    
+	uint8_t i;
+
+	/*shift 2nd row*/
+	i=buf{2*8:8}; 
+	buf{2*8:8}=buf{6*8:8};
+	buf{6*8:8}=buf{10*8:8};
+	buf{10*8:8}=buf{14*8:8};
+	buf{14*8:8}=i;
+
+	/*shift 3rd row*/
+	i=buf{3*8:8}; 
+	buf{3*8:8}=buf{11*8:8};
+	buf{11*8:8}=i;
+
+	i=buf{7*8:8}; 
+	buf{7*8:8}=buf{15*8:8};
+	buf{15*8:8}=i;
+
+	/*shift 4th row*/
+	i=buf{4*8:8}; 
+	buf{4*8:8}=buf{16*8:8};
+	buf{16*8:8}=buf{12*8:8};
+	buf{12*8:8}=buf{18*8:8};
+	buf{8*8:8}=i;
+
+return buf;
+} 
+
+
+function uint128_t MixColumns(uint128_t buf)
+{
+    for(uint8_t i=0; i < 4; i++) {
+        uint8_t a[4];
+        uint8_t b[4];
+        uint8_t h;
+        for(uint8_t c=0;c<4;c++) {
+                a[c] = buf{(4*i+c)*8:8};
+                h = (buf{(4*i+c)*8:8} >> 7); 
+                b[c] = buf{(4*i+c)*8:8} << 1; 
+                b[c] = b[c]^ 27 & h; /* Rijndael's Galois field */
+        }
+        buf{4*i*8:8} = b[0] ^ a[3] ^ a[2] ^ b[1] ^ a[1]; /* 2 * a0 + a3 + a2 + 3 * a1 */
+        buf{(4*i+1)*8:8} = b[1] ^ a[0] ^ a[3] ^ b[2] ^ a[2]; /* 2 * a1 + a0 + a3 + 3 * a2 */
+        buf{(4*i+2)*8:8} = b[2] ^ a[1] ^ a[0] ^ b[3] ^ a[3]; /* 2 * a2 + a1 + a0 + 3 * a3 */
+        buf{(4*i+3)*8:8} = b[3] ^ a[2] ^ a[1] ^ b[0] ^ a[0]; /* 2 * a3 + a2 + a1 + 3 * a0 */
+    }
+
+return buf;
+} 
+
+
+function uint128_t AddRoundKey(uint128_t buf, uint128_t key)
+{
+   return buf^key;
+} 
+
 
 function void main()
 {
 
+	uint128_t buff=input2;
+	uint128_t key=input1;
 
-output1=rj_sbox(input1);
+        for(uint8_t round=0;round<Nr;round++)
+	{
+		buff=SubBytes(buff);
+		buff=ShiftRows(buff);
+		buff=MixColumns(buff);
+                buff=AddRoundKey(buff,key);	
+	}
+		buff=SubBytes(buff);
+		buff=ShiftRows(buff);
+                buff=AddRoundKey(buff,key);
+
 }

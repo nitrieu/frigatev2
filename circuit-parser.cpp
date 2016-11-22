@@ -202,7 +202,6 @@ Circuit duploParseCircuit(char raw_circuit[]) {
 }
 
 
-
 void frigate_ParseComposedCircuit(char raw_circuit[]) {	
 	
 
@@ -385,7 +384,6 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 }
 
 
-
 void frigate_read_text_circuit(const char* circuit_file)
 {
 	FILE* file;
@@ -417,4 +415,56 @@ void frigate_read_text_circuit(const char* circuit_file)
 	fclose(file);
 	frigate_ParseComposedCircuit(data.get());
 	fDuplo.close();
+}
+
+
+//Sbox
+Circuit sBoxYale_parse_circuit(char raw_circuit[]){ 
+	Circuit sBox;
+	raw_circuit = strchr(raw_circuit, '\n') + 1; // Jan 18 +  09
+	raw_circuit = strchr(raw_circuit, '\n') + 1; // Straight-line program for AES sbox 
+	raw_circuit = strchr(raw_circuit, '\n') + 1; // Joan Boyar and Rene Peralta
+	raw_circuit = strchr(raw_circuit, '\n') + 1;
+	raw_circuit = strchr(raw_circuit, '\n') + 1; // input is X0 + ..,X7  
+	raw_circuit = strchr(raw_circuit, '\n') + 1; //output is S0 + ...,S7
+	raw_circuit = strchr(raw_circuit, '\n') + 1;// arithmetic is over GF2
+	raw_circuit = strchr(raw_circuit, '\n') + 1;
+	raw_circuit = strchr(raw_circuit, '\n') + 1;// begin top linear transformation 
+	
+	return sBox;
+}
+
+Circuit read_text_sBoxYale()
+{
+	FILE* file;
+	size_t file_size;
+	const char* circuit_file = "tests/dp/AES_SBox.txt";
+	file = fopen(circuit_file, "r");
+
+	std::string str(circuit_file);
+
+	fDuplo.open(str + "GC");
+	if (file == NULL) {
+		printf("ERROR: Could not open text circuit: %s\n", circuit_file);
+		exit(EXIT_FAILURE);
+	}
+	fseek(file, 0, SEEK_END);
+	file_size = ftell(file);
+	rewind(file);
+
+	std::unique_ptr<char[]> data(new char[file_size + 1]);
+	size_t size = fread(data.get(), 1, file_size, file);
+	if (size != file_size) {
+		printf("ERROR while loading file from frigate: %s\n", circuit_file);
+		exit(EXIT_FAILURE);
+	}
+	data[file_size] = EOF;
+	if (ferror(file)) {
+		printf("ERROR: fread() error\n");
+		exit(EXIT_FAILURE);
+	}
+	fclose(file);
+	Circuit sBox= sBoxYale_parse_circuit(data.get());
+	fDuplo.close();
+	return sBox;
 }
