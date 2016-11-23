@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
 	
 	
 	//ofstream fDuploGC;
-	read_text_sBoxYale();
+	//read_text_sBoxYale();
 	
 	string fileGC = file + ".GC";
 	char * S = new char[fileGC.length() + 1];
