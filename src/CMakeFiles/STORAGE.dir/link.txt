@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../build/obj/libSTORAGE.a  CMakeFiles/STORAGE.dir/util/storage.cpp.o
+/usr/bin/ranlib ../build/obj/libSTORAGE.a

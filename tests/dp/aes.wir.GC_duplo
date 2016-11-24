@@ -12425,7 +12425,7 @@ FN 3 128 128 541//# FN id num_inp_wires num_out_wires num_wires //non-free-gate:
 2 1 127 257 255 XOR
 --end FN 3 -- 
 
-FN 4 128 128 531//# FN id num_inp_wires num_out_wires num_wires //non-free-gate: 0
+FN 4 128 128 293//# FN id num_inp_wires num_out_wires num_wires //non-free-gate: 0
 2 1 0 0 256 NXOR
 2 1 0 0 257 XOR
 2 1 16 257 258 XOR
@@ -12630,7 +12630,7 @@ FN 4 128 128 531//# FN id num_inp_wires num_out_wires num_wires //non-free-gate:
 2 1 127 257 255 XOR
 --end FN 4 -- 
 
-FN 5 128 128 631//# FN id num_inp_wires num_out_wires num_wires //non-free-gate: 0
+FN 5 128 128 393//# FN id num_inp_wires num_out_wires num_wires //non-free-gate: 0
 2 1 0 0 256 NXOR
 2 1 0 0 257 XOR
 2 1 0 257 282 XOR
@@ -13819,7 +13819,7 @@ FN 5 128 128 631//# FN id num_inp_wires num_out_wires num_wires //non-free-gate:
 2 1 127 257 255 XOR
 --end FN 5 -- 
 
-FN 6 256 128 880//# FN id num_inp_wires num_out_wires num_wires //non-free-gate: 0
+FN 6 256 128 642//# FN id num_inp_wires num_out_wires num_wires //non-free-gate: 0
 2 1 0 0 384 NXOR
 2 1 0 0 385 XOR
 2 1 0 128 514 XOR

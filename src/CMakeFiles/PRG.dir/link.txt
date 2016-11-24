@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../build/obj/libPRG.a  CMakeFiles/PRG.dir/prg/random.cpp.o CMakeFiles/PRG.dir/prg/aes-ni.cpp.o
+/usr/bin/ranlib ../build/obj/libPRG.a

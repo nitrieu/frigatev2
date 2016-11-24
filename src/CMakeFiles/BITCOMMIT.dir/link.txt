@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../build/obj/libBITCOMMIT.a  CMakeFiles/BITCOMMIT.dir/commit/bit-commit-scheme-rec.cpp.o CMakeFiles/BITCOMMIT.dir/commit/bit-commit-scheme-snd.cpp.o CMakeFiles/BITCOMMIT.dir/commit/bit-commit-scheme.cpp.o
+/usr/bin/ranlib ../build/obj/libBITCOMMIT.a

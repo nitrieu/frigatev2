@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../build/obj/libGARBLING.a  CMakeFiles/GARBLING.dir/garbling/garbling-handler.cpp.o CMakeFiles/GARBLING.dir/garbling/garbled-circuit.cpp.o CMakeFiles/GARBLING.dir/garbling/const-garbled-circuit.cpp.o CMakeFiles/GARBLING.dir/garbling/eval-garbled-circuit.cpp.o
+/usr/bin/ranlib ../build/obj/libGARBLING.a

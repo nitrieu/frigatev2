@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../build/obj/libBCH.a  CMakeFiles/BCH.dir/commit/bch.c.o
+/usr/bin/ranlib ../build/obj/libBCH.a

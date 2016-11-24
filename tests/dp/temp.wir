@@ -10,21 +10,15 @@ typedef uint_t wiresize*2 int2
 #output 1 int
 
 function int f0(int x, int y)
-{ 
-return x|y;
+{
+return x&y;
 }
 
-function int f1(int x, int y)
-{ 
-int a=f0(x,y);
-int e=x|y;
-int c=f0(x,y);
-int b=a&c;
-return b;
-}
 function void main()
 {
-int d=f0(input1, input2);
- output1 = f1(d, input2);
+ int d = f0(input1, input2);
+int b = f0(d, input2);
+int c = f0(b, d);
+output1=f0(d, input2);
 }
 
