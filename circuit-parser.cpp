@@ -615,7 +615,7 @@ Circuit sBoxYale_parse(char raw_circuit[]){
 					gate = "AND";
 					sBox.num_non_free_gates++;
 				}else if (gate == "XNOR")
-					gate = "XNOR";
+					gate = "NXOR";
 				else
 					exit(1);
 
