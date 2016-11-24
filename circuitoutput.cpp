@@ -500,6 +500,80 @@ void messyAssignAndCopy(CORV & c, Variable * pattern, int idxF)
         cout << "undefined type in messy messyAssignAndCopy\n";
     }
 }
+string messyAssignAndCopyForFn(CORV & c, Variable * pattern, int idxF)
+{
+	string rs;
+	if (c.var == 0)
+	{
+	    //IntVariable * intv = (IntVariable *) c.var;
+		IntVariable * dest = (IntVariable *) pattern;
+        
+		int intvsize = c.vec.size();
+        
+		for (int i = 0; i < dest->wires.size(); i++)
+		{
+			if (i < intvsize)
+			{
+				assignWire(dest->wires[i], c.vec[i], idxF);
+				makeWireContainValueNoONEZEROcopyForFn(dest->wires[i], idxF);
+				rs.append(to_string(dest->wires[i]->wireNumber) + " ");
+			}
+			else
+			{
+				assignWire(dest->wires[i], get_ZERO_WIRE(idxF), idxF);
+			}
+		}
+		return rs;
+	}
+    
+	if (c.var->v_enum == Intv)
+	{
+		IntVariable * intv = (IntVariable *) c.var;
+		IntVariable * dest = (IntVariable *) pattern;
+        
+		int intvsize = intv->wires.size();
+        
+		for (int i = 0; i < dest->wires.size(); i++)
+		{
+			if (i < intvsize)
+			{
+				assignWire(dest->wires[i], intv->wires[i], idxF);
+				makeWireContainValueNoONEZEROcopyForFn(dest->wires[i], idxF);
+				rs.append(to_string(dest->wires[i]->wireNumber) + " ");
+			}
+			else
+			{
+				assignWire(dest->wires[i], get_ZERO_WIRE(idxF), idxF);
+			}
+		}
+	}
+	else if (c.var->v_enum == Arrayv)
+	{
+		ArrayVariable * arrayv = (ArrayVariable *) c.var;
+		ArrayVariable * dest = (ArrayVariable *) pattern;
+        
+		for (int i = 0; i < dest->av.size(); i++)
+		{
+			messyAssignAndCopyForFn(arrayv->av[i], dest->av[i], idxF);
+		}
+	}
+	else if (c.var->v_enum == Structv)
+	{
+		StructVariable * structv = (StructVariable *) c.var;
+		StructVariable * dest = (StructVariable *) pattern;
+        
+		for (std::unordered_map<string, Variable *>::iterator it = structv->map.begin(); it != structv->map.end(); ++it)
+		{
+			Variable * v =  (Variable *)(it->second);
+			messyAssignAndCopyForFn(v, dest->map[(string)(it->first)], idxF);
+		}
+	}
+	else
+	{
+		cout << "undefined type in messy messyAssignAndCopy\n";
+	}
+	return rs;
+}
 
 void putVariableToVector(CORV & c)
 {
@@ -3469,7 +3543,6 @@ void makeWireContainValueNoONEZEROcopyForFn(Wire * w, int idxF)
 		w->state = UNKNOWN;
 	}
     
-   
 }
 int MWCV_base_dest;
 int MWCV_base_from;
@@ -4924,9 +4997,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 	            if (isPrintDuploGC) {
 		            strDuploGC.append("\nFN " + to_string(I+1) +  " " + 
 															   to_string(v->sizeparam()) + " " +
-															   to_string(startInpWire) + " " +
-	            											to_string(v->sizereturn()) + " " +
-															to_string(startOutWire) + " ");		            
+	            											to_string(v->sizereturn()) + " " );		            
 	            }
 	            
 
@@ -4956,10 +5027,10 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 	            
 		            if (premfunctions != 0 && I == 0)
 		            {
-			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].wireNumberValue) + "\n");
+			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].wireNumberValue) + " //# FN id num_inp_wires num_out_wires num_wires \n");
 			        }
 		            else
-			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].wireNumberValue) + "\n");
+			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].wireNumberValue) + " //# FN id num_inp_wires num_out_wires num_wires \n");
 	            
 		            strDuploGC.append("--end FN " + to_string(I+1) + "--\n");
 	            }
@@ -5065,7 +5136,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 	//duplo
 	if (isPrintDuploGC)
 	{			
-		fDuploGC << vf->functionNumber+1 << " " << functions_call_in_main << " " << functions_call_in_main << "// #numberfunction #layer  #numberComponent\n";
+		fDuploGC << vf->functionNumber+1 << " " << functions_call_in_main << " " << functions_call_in_main << " // #numberfunction #layer  #numberComponent\n";
 		for (int sp = 0; sp < parties; sp++)
 		{
 			string s = "input" + to_string(sp + 1);
@@ -5091,7 +5162,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 			else
 				fDuploGC <<"0 ";
 		}
-		fDuploGC << "//#input_eval #input_const #output_eval #output_const\n\n";	
+		fDuploGC << " //#input_eval #input_const #output_eval #output_const\n\n";	
 		
 		fDuploGC << strDuploGC;
 		fDuploGC.close();

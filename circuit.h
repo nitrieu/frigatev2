@@ -30,17 +30,18 @@ public:
 	uint32_t inp_wires_start=0;
 	uint32_t out_wires_start;
 	uint32_t idxCircuit;
-	Circuit & operator=(const Circuit &cc)
-	{
-		num_wires = cc.num_wires;
-		num_inp_wires =  cc.num_inp_wires;
-		num_out_wires =  cc.num_out_wires;
-		inp_wires_start =  cc.inp_wires_start;
-		out_wires_start = cc.out_wires_start;
-		idxCircuit = cc.idxCircuit;
-		gates = cc.gates;
-		return *this;
-	}
+	uint32_t num_non_free_gates = 0;
+//	Circuit & operator=(const Circuit &cc)
+//	{
+//		num_wires = cc.num_wires;
+//		num_inp_wires =  cc.num_inp_wires;
+//		num_out_wires =  cc.num_out_wires;
+//		inp_wires_start =  cc.inp_wires_start;
+//		out_wires_start = cc.out_wires_start;
+//		idxCircuit = cc.idxCircuit;
+//		gates = cc.gates;
+//		return *this;
+//	}
 };
 
 

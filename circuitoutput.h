@@ -89,6 +89,7 @@ string getFunctionPrefix();
 
 //messyAssign assings from c to pattern
 void messyAssignAndCopy(CORV & c, Variable * pattern, int idxF);
+string messyAssignAndCopyForFn(CORV & c, Variable * pattern, int idxF);
 void messyAssignAndCopy(Variable * cvar, Variable * pattern, int idxF);
 void messyAssignAndCopyForFn(Variable * cvar, Variable * pattern, int idxF);
 void messyMakeWireContainValueNoONEZEROcopy(Variable * pattern, int idxF);

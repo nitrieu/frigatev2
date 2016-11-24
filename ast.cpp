@@ -17,7 +17,7 @@ unsigned long startTimeb, endTimeb;
 
 
 using namespace std;
-
+bool isFunctionCall;
 
 Type * binaryTypeCheckNoStructNoArray(Node *left,Node *right,VariableContext * vc, TypeMap * tm, string op)
 {
@@ -2453,7 +2453,7 @@ CORV  AssignNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 	        {
 		        if (expr->nodeName == "FunctionCallNode")
 		        {
-			        makeWireContainValueNoONEZEROcopyForFn(w1, idxF);
+			        makeWireContainValueNoONEZEROcopyForFn(w1, idxF) ;
 		        }
 		        else
 			        makeWireContainValueNoONEZEROcopy(w1, idxF);
@@ -3804,7 +3804,7 @@ CORV  DotOperatorNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idx
 CORV  FunctionCallNode::circuitOutput(VariableContext * vc, TypeMap * tm, int idxF)
 {
     
-    
+	isFunctionCall = true;
     
     string name = isTermNode(function_name)->var;
     FunctionVariable * funcvar = (FunctionVariable *)((*vc)["FUNC_VAR_$$_"+name]);
@@ -4206,8 +4206,20 @@ CORV  VarDeclarationNode::circuitOutput(VariableContext * vc, TypeMap * tm, int 
        
             
             CORV rv = dn->init_expression->circuitOutput(vc,tm, idxF);
-
-	        messyAssignAndCopy(rv, v, idxF);
+	     
+	        
+	        if (dn->init_expression->nodeName == "FunctionCallNode")
+	        {
+		        string strDPGlobalOut= messyAssignAndCopyForFn(rv, v, idxF);
+		        if (isMainFunction())
+			        appendDuploGC(strDPGlobalOut + "\n\n", true); //"Global OUT: " +     	
+		        else
+			        appendDuploGC("++ " + strDPGlobalOut + "\n", true); //"Global OUT: " +
+	        }
+	        else
+	        {
+		        messyAssignAndCopy(rv, v, idxF);
+	        }
 
             if(rv.var != 0)
             {

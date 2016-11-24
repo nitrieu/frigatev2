@@ -152,10 +152,7 @@ function void main()
 	uint128_t keyEx[11];
 
 	keyEx=KeyExpansion(input1);
-	buff=SubBytes(input2);
-	buff=ShiftRows(buff);
-	buff=MixColumns(buff);
-        buff=AddRoundKey(buff,keyEx[0]);
+	buff=AddRoundKey(input2,keyEx[0]);
 
         for(uint8_t i=1;i<Nr;i++)
 	{
@@ -166,6 +163,6 @@ function void main()
 	}
 		buff=SubBytes(buff);
 		buff=ShiftRows(buff);
-                buff=AddRoundKey(buff,keyEx[10]);
+         output1=AddRoundKey(buff,keyEx[Nr]);
 
 }
