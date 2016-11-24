@@ -1,5 +1,5 @@
 printing IO type wire numbers:
-input1 0 to 31
-input2 0 to 31
-output1 0 to 5
+input1 0 to 63
+input2 0 to 63
+output1 0 to 6
 

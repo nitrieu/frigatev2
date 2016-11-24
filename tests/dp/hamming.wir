@@ -1,6 +1,6 @@
-#define wiresize 32
-#define countersize 6 /* enough to count up to wiresize, unsigned*/
-#define iterations wiresize/32
+#define wiresize 64
+#define countersize 7 /* enough to count up to wiresize, unsigned*/
+#define iterations (wiresize/32)-1
 
 #parties 2
 
@@ -47,10 +47,10 @@ function void main()
    returntype hamming;
    hamming= getXOR(input1,input2);
 
-   for(counter_int i=0; i<iterations-1; i++) /* wiresize / 32 */
+   for(counter_int i=0; i<iterations; i++) /* wiresize / 32 */
    {
       hamming.d=getHam32(hamming.h{i*32:32},hamming.d);
    }
-  output1 = getHam32(hamming.h{(iterations-1)*32:32},hamming.d);
+  output1 = getHam32(hamming.h{(iterations)*32:32},hamming.d);
 
 }

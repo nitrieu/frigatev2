@@ -17,8 +17,7 @@ return x&y;
 function void main()
 {
  int d = f0(input1, input2);
-int b = f0(d, input2);
-int c = f0(b, d);
-output1=f0(d, input2);
+ d = f0(d, d);
+output1=d;
 }
 
