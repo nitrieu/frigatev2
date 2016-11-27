@@ -590,8 +590,8 @@ Circuit sBoxYale_parse(char raw_circuit[]) {
 
 	for (int i = 0; i < sBox.num_inp_wires; i++)
 	{
-		wires.emplace("x" + to_string(i), i); //input wires
-		wires.emplace("s" + to_string(i), i + 8); //output wires
+		wires.emplace("x" + to_string(i), 7-i); //input wires
+		wires.emplace("s" + to_string(i), 7-i + 8); //output wires
 		curr_wire_num += 2;
 	}
 

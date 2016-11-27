@@ -3460,7 +3460,10 @@ void makeWireContainValueNoONEZEROcopy(Wire * w, int idxF)
     {
         if(w->state == UNKNOWN_INVERT)
         {
-	        writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+	        //writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+	        Wire * temp = pool[idxF].getWire();
+	        writeGate(3, temp->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+	        writeGate(6, w->wireNumber, temp->wireNumber, ZERO_WIRE[idxF]->wireNumber, idxF);
             w->state = UNKNOWN;
         }
         
@@ -3493,8 +3496,11 @@ void makeWireContainValueNoONEZEROcopy(Wire * w, int idxF)
     
     if(w->state == UNKNOWN_INVERT)
     {
-	    writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+	    Wire * temp = pool[idxF].getWire();
+	    writeGate(3, temp->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+	    writeGate(6, w->wireNumber, temp->wireNumber, ZERO_WIRE[idxF]->wireNumber, idxF);
         w->state = UNKNOWN;
+	   // pool[idxF].freeIfNoRefs();
     }
     
    
@@ -3506,7 +3512,10 @@ void makeWireContainValueNoONEZEROcopyForFn(Wire * w, int idxF)
 	{
 		if (w->state == UNKNOWN_INVERT)
 		{
-			writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+			//writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+			Wire * temp = pool[idxF].getWire();
+			writeGate(6, temp->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+			writeGate(6, w->wireNumber, temp->wireNumber, ZERO_WIRE[idxF]->wireNumber, idxF);
 			w->state = UNKNOWN;
 		}
         
@@ -3539,7 +3548,10 @@ void makeWireContainValueNoONEZEROcopyForFn(Wire * w, int idxF)
     
 	if (w->state == UNKNOWN_INVERT)
 	{
-		writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+		//writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+		Wire * temp = pool[idxF].getWire();
+		writeGate(3, temp->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+		writeGate(6, w->wireNumber, temp->wireNumber, ZERO_WIRE[idxF]->wireNumber, idxF);
 		w->state = UNKNOWN;
 	}
     
@@ -3569,7 +3581,10 @@ void makeWireContainValueNoONEZEROcopyTiny(Wire * w, int idxF)
                 MWCV_isFirstLine=true;
             }
             
-	        writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+	       // writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+	        Wire * temp = pool[idxF].getWire();
+	        writeGate(3, temp->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+	        writeGate(6, w->wireNumber, temp->wireNumber, ZERO_WIRE[idxF]->wireNumber, idxF);
             w->state = UNKNOWN;
         }
         return;
@@ -3628,7 +3643,10 @@ void makeWireContainValueNoONEZEROcopyTiny(Wire * w, int idxF)
         MWCV_isFirstLine=true;
         MWCV_amt=0;
         
-	    writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+	   // writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+	    Wire * temp = pool[idxF].getWire();
+	    writeGate(3, temp->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+	    writeGate(6, w->wireNumber, temp->wireNumber, ZERO_WIRE[idxF]->wireNumber, idxF);
         w->state = UNKNOWN;
     }
 }
@@ -3716,7 +3734,10 @@ void makeWireContainValue(Wire * w, int idxF)
     
     if(w->state == UNKNOWN_INVERT)
     {
-	    writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+	   // writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+	    Wire * temp = pool[idxF].getWire();
+	    writeGate(3, temp->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+	    writeGate(6, w->wireNumber, temp->wireNumber, ZERO_WIRE[idxF]->wireNumber, idxF);
         w->state = UNKNOWN;
     }
     
@@ -3775,7 +3796,10 @@ void makeWireContainValueForFn(Wire * w, int idxF)
     
 	if (w->state == UNKNOWN_INVERT)
 	{
-		writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+		//writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+		Wire * temp = pool[idxF].getWire();
+		writeGate(3, temp->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+		writeGate(6, w->wireNumber, temp->wireNumber, ZERO_WIRE[idxF]->wireNumber, idxF);
 		w->state = UNKNOWN;
 	}
     
@@ -3808,7 +3832,10 @@ void makeWireNotOther(Wire * w, int idxF)
     if(w->state == UNKNOWN_INVERT)
     {
         w->state = UNKNOWN;
-	    writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+	    //writeGate(6, w->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+	    Wire * temp = pool[idxF].getWire();
+	    writeGate(3, temp->wireNumber, w->wireNumber, ONE_WIRE[idxF]->wireNumber, idxF);
+	    writeGate(6, w->wireNumber, temp->wireNumber, ZERO_WIRE[idxF]->wireNumber, idxF);
         return;
     }
     
@@ -5027,10 +5054,10 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 	            
 		            if (premfunctions != 0 && I == 0)
 		            {
-			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].wireNumberValue) + " //# FN id num_inp_wires num_out_wires num_wires \n");
+			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].wireNumberValue) + " " + to_string(pool[idxFunc].largestsize) + " " + to_string(pool[idxFunc].getWire()->wireNumber) + " //# FN id num_inp_wires num_out_wires num_wires  \n");
 			        }
 		            else
-			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].wireNumberValue) + " //# FN id num_inp_wires num_out_wires num_wires \n");
+			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].wireNumberValue)+ " " + to_string(pool[idxFunc].largestsize) + " " + to_string(pool[idxFunc].getWire()->wireNumber)+ " //# FN id num_inp_wires num_out_wires num_wires \n");
 	            
 		            strDuploGC.append("--end FN " + to_string(I+1) + "--\n");
 	            }
