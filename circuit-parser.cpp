@@ -661,7 +661,7 @@ Circuit sBoxYale_parse(char raw_circuit[]) {
 				left_wire = line.substr(0, pos_wire); //x5
 				//cout << left_wire << " ";
 
-				if (wires.find(left_wire) != wires.end()) //check whether wires exits
+				if (wires.find(left_wire) == wires.end()) //check whether wires exits
 				{
 					wires.emplace(left_wire, curr_wire_num); //sBox.num_wires start from 1
 					++curr_wire_num;
