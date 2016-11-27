@@ -52,6 +52,7 @@ Circuit duploParseCircuit(char raw_circuit[]) {
 			raw_circuit = strchr(raw_circuit, ' ') + 1; //FN
 			num_child_func = (uint32_t) atoi(raw_circuit) - 1;
 			uint32_t idx = num_child_func;
+			std::unordered_map<uint32_t, uint32_t > global_inp_out_wires;
 			raw_circuit = strchr(raw_circuit, '\n') + 1; //skip line
 			if (*raw_circuit != '+')
 			{
@@ -68,26 +69,20 @@ Circuit duploParseCircuit(char raw_circuit[]) {
 			for (uint32_t i = 0; i < circuits[num_child_func].num_inp_wires; i++)
 			{
 				child_wire = (uint32_t) atoi(raw_circuit);
-				circuit.gates.emplace_back(Gate());
-				circuit.gates[curr_gate_num].type = "XOR";
-				circuit.gates[curr_gate_num].left_wire = child_wire;
-				circuit.gates[curr_gate_num].right_wire = circuit.gates[1].out_wire;
-				circuit.gates[curr_gate_num].out_wire = circuits[num_child_func].inp_wires_start + i 
-														+ circuit.num_wires;
-				++curr_gate_num;
+				global_inp_out_wires.emplace(i, child_wire);
+//				circuit.gates.emplace_back(Gate());
+//				circuit.gates[curr_gate_num].type = "XOR";
+//				circuit.gates[curr_gate_num].left_wire = child_wire;
+//				circuit.gates[curr_gate_num].right_wire = circuit.gates[1].out_wire;
+//				circuit.gates[curr_gate_num].out_wire = circuits[num_child_func].inp_wires_start + i 
+//														+ circuit.num_wires;
+//				++curr_gate_num;
 				raw_circuit = strchr(raw_circuit, ' ') + 1;
 			}
 			raw_circuit = strchr(raw_circuit, '\n') + 1;
 			//cout << "num_child_func " << num_child_func << endl;
-			for (int j = 0; j < circuits[num_child_func].gates.size(); j++)
-			{
-				circuit.gates.emplace_back(Gate());
-				circuit.gates[curr_gate_num].type = circuits[num_child_func].gates[j].type;
-				circuit.gates[curr_gate_num].left_wire = circuits[num_child_func].gates[j].left_wire + circuit.num_wires;
-				circuit.gates[curr_gate_num].right_wire = circuits[num_child_func].gates[j].right_wire + circuit.num_wires;
-				circuit.gates[curr_gate_num].out_wire = circuits[num_child_func].gates[j].out_wire + circuit.num_wires;
-				++curr_gate_num;
-			}
+
+
 			if (*raw_circuit != '+')
 			{
 				fDuplo << "Error!\n";
@@ -100,15 +95,57 @@ Circuit duploParseCircuit(char raw_circuit[]) {
 			for (int i = 0; i < circuits[num_child_func].num_out_wires; i++)
 			{
 				child_wire = (uint32_t) atoi(raw_circuit);
-				circuit.gates.emplace_back(Gate());
-				circuit.gates[curr_gate_num].type = "XOR";
-				circuit.gates[curr_gate_num].left_wire = circuits[num_child_func].out_wires_start + i 
-														+ circuit.num_wires;
-				circuit.gates[curr_gate_num].right_wire = circuit.gates[1].out_wire;
-				circuit.gates[curr_gate_num].out_wire = child_wire;
-				++curr_gate_num;
+				global_inp_out_wires.emplace(i + circuits[num_child_func].num_inp_wires, child_wire);
+//				circuit.gates.emplace_back(Gate());
+//				circuit.gates[curr_gate_num].type = "XOR";
+//				circuit.gates[curr_gate_num].left_wire = circuits[num_child_func].out_wires_start + i 
+//														+ circuit.num_wires;
+//				circuit.gates[curr_gate_num].right_wire = circuit.gates[1].out_wire;
+//				circuit.gates[curr_gate_num].out_wire = child_wire;
+//				++curr_gate_num;
 				raw_circuit = strchr(raw_circuit, ' ') + 1;
 			}
+
+
+
+			int num_inp_out_wires = circuits[num_child_func].num_inp_wires + circuits[num_child_func].num_out_wires;
+			for (int j =0; j < circuits[num_child_func].gates.size(); j++) //skip zero/onegate =>j=2
+			{
+				circuit.gates.emplace_back(Gate());
+				circuit.gates[curr_gate_num].type = circuits[num_child_func].gates[j].type;
+				
+				//left_wire
+				if (circuits[num_child_func].gates[j].left_wire < num_inp_out_wires)
+					circuit.gates[curr_gate_num].left_wire = global_inp_out_wires[circuits[num_child_func].gates[j].left_wire];
+//				else if (circuits[num_child_func].gates[j].left_wire == num_inp_out_wires) //local zero gate
+//					circuit.gates[curr_gate_num].left_wire = circuit.gates[0].out_wire; //use global zero gate
+//				else if (circuits[num_child_func].gates[j].left_wire == num_inp_out_wires+1) //local one gate
+//					circuit.gates[curr_gate_num].left_wire = circuit.gates[1].out_wire;//use global one gate
+				else
+					circuit.gates[curr_gate_num].left_wire = circuits[num_child_func].gates[j].left_wire + circuit.num_wires;
+
+					//right_wire
+				if (circuits[num_child_func].gates[j].right_wire < num_inp_out_wires)
+					circuit.gates[curr_gate_num].right_wire = global_inp_out_wires[circuits[num_child_func].gates[j].right_wire];
+//				else if (circuits[num_child_func].gates[j].right_wire == num_inp_out_wires) //local zero gate
+//					circuit.gates[curr_gate_num].right_wire = circuit.gates[0].out_wire; //use global zero gate
+//				else if (circuits[num_child_func].gates[j].right_wire == num_inp_out_wires+1) //local one gate
+//					circuit.gates[curr_gate_num].right_wire = circuit.gates[1].out_wire;//use global one gate
+				else
+					circuit.gates[curr_gate_num].right_wire = circuits[num_child_func].gates[j].right_wire + circuit.num_wires;
+				
+				if (circuits[num_child_func].gates[j].out_wire < num_inp_out_wires)
+					circuit.gates[curr_gate_num].out_wire = global_inp_out_wires[circuits[num_child_func].gates[j].out_wire];
+//				else if (circuits[num_child_func].gates[j].out_wire == num_inp_out_wires) //local zero gate
+//					circuit.gates[curr_gate_num].out_wire = circuit.gates[0].out_wire; //use global zero gate
+//				else if (circuits[num_child_func].gates[j].out_wire == num_inp_out_wires+1) //local one gate
+//					circuit.gates[curr_gate_num].out_wire = circuit.gates[1].out_wire;//use global one gate
+				else
+					circuit.gates[curr_gate_num].out_wire = circuits[num_child_func].gates[j].out_wire + circuit.num_wires;
+
+				++curr_gate_num;
+			}
+			
 			if (circuits[num_child_func].num_wires > num_shift)
 				num_shift = circuits[num_child_func].num_wires;
 		}
@@ -387,7 +424,7 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 
 	Circuit main_circuit;
 	raw_circuit = strchr(raw_circuit, '\n') + 1; //FN main
-	vector <std::tuple<int, vector<int>, vector<int>>> functions;
+	vector <std::pair<int, std::unordered_map<int, int>>> functions;
 
 	uint32_t num_child_func = 0, child_wire, curr_gate_num, one_gate, zero_gate, num_shift = 0, num_non_free_gates = 0, max_wire = 0;
 	curr_gate_num = 0;
@@ -404,12 +441,12 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 			num_child_func = (uint32_t) atoi(raw_circuit) - 1;
 			raw_circuit = strchr(raw_circuit, '\n') + 1; //skip line
 			//cout << num_child_func << "\n";
-			vector<int> global_inp, global_out;
+			std::unordered_map<int,int> global_inp_out_wires;
 			for (uint32_t i = 0; i < circuits[num_child_func].num_inp_wires; i++)
 			{
 				child_wire = (uint32_t) atoi(raw_circuit);
 			//	cout << child_wire << " ";
-				global_inp.push_back(child_wire);
+				global_inp_out_wires.emplace(i, child_wire);
 				if (child_wire > max_wire)
 					max_wire = child_wire;
 				raw_circuit = strchr(raw_circuit, ' ') + 1;
@@ -419,13 +456,13 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 			{
 				child_wire = (uint32_t) atoi(raw_circuit);
 				//cout << child_wire << " ";
-				global_out.push_back(child_wire);
+				global_inp_out_wires.emplace(i + circuits[num_child_func].num_inp_wires, child_wire);
 				if (child_wire > max_wire)
 					max_wire = child_wire;
 				raw_circuit = strchr(raw_circuit, ' ') + 1;
 			}
 			//cout << "\n ";
-			functions.push_back(std::make_tuple(num_child_func, global_inp, global_out));
+			functions.push_back(std::make_pair(num_child_func, global_inp_out_wires));
 		}
 	}
 
@@ -454,16 +491,17 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 	for (int i = 0; i < functions.size(); i++)
 	{		
 		
-		for (uint32_t j = 0; j < circuits[std::get<0>(functions[i])].num_inp_wires; j++)
-		{
-			main_circuit.gates.emplace_back(Gate());
-			main_circuit.gates[curr_gate_num].type = "XOR";
-			main_circuit.gates[curr_gate_num].left_wire = std::get<1>(functions[i])[j];
-			main_circuit.gates[curr_gate_num].right_wire = 	zero_gate;
-			main_circuit.gates[curr_gate_num].out_wire = circuits[std::get<0>(functions[i])].inp_wires_start + j + main_circuit.num_wires;
-			++curr_gate_num;
-		}
+//		for (uint32_t j = 0; j < circuits[std::get<0>(functions[i])].num_inp_wires; j++)
+//		{
+//			main_circuit.gates.emplace_back(Gate());
+//			main_circuit.gates[curr_gate_num].type = "XOR";
+//			main_circuit.gates[curr_gate_num].left_wire = std::get<1>(functions[i])[j];
+//			main_circuit.gates[curr_gate_num].right_wire = 	zero_gate;
+//			main_circuit.gates[curr_gate_num].out_wire = circuits[std::get<0>(functions[i])].inp_wires_start + j + main_circuit.num_wires;
+//			++curr_gate_num;
+//		}
 
+		int num_inp_out_wires = circuits[std::get<0>(functions[i])].num_inp_wires + circuits[std::get<0>(functions[i])].num_out_wires;
 		for (int j = 0; j < circuits[std::get<0>(functions[i])].gates.size(); j++)
 		{
 			main_circuit.gates.emplace_back(Gate());
@@ -477,31 +515,44 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 			}
 				
 			main_circuit.gates[curr_gate_num].type = circuits[std::get<0>(functions[i])].gates[j].type;
-			main_circuit.gates[curr_gate_num].left_wire = circuits[std::get<0>(functions[i])].gates[j].left_wire + main_circuit.num_wires;
-			main_circuit.gates[curr_gate_num].right_wire = circuits[std::get<0>(functions[i])].gates[j].right_wire + main_circuit.num_wires;
-			main_circuit.gates[curr_gate_num].out_wire = circuits[std::get<0>(functions[i])].gates[j].out_wire + main_circuit.num_wires;
+			//left_wire
+			if (circuits[std::get<0>(functions[i])].gates[j].left_wire < num_inp_out_wires)
+				main_circuit.gates[curr_gate_num].left_wire = std::get<1>(functions[i])[circuits[std::get<0>(functions[i])].gates[j].left_wire];
+			else
+				main_circuit.gates[curr_gate_num].left_wire = circuits[std::get<0>(functions[i])].gates[j].left_wire + main_circuit.num_wires;
+			
+			//right_wire
+			if (circuits[std::get<0>(functions[i])].gates[j].right_wire < num_inp_out_wires)
+				main_circuit.gates[curr_gate_num].right_wire = std::get<1>(functions[i])[circuits[std::get<0>(functions[i])].gates[j].right_wire];
+			else
+				main_circuit.gates[curr_gate_num].right_wire = circuits[std::get<0>(functions[i])].gates[j].right_wire + main_circuit.num_wires;
+
+			if (circuits[std::get<0>(functions[i])].gates[j].out_wire < num_inp_out_wires)
+				main_circuit.gates[curr_gate_num].out_wire = std::get<1>(functions[i])[circuits[std::get<0>(functions[i])].gates[j].out_wire];
+			else
+				main_circuit.gates[curr_gate_num].out_wire = circuits[std::get<0>(functions[i])].gates[j].out_wire + main_circuit.num_wires;
 			++curr_gate_num;
 		}
-		for (int j = 0; j < circuits[std::get<0>(functions[i])].num_out_wires; j++)
-		{
-			main_circuit.gates.emplace_back(Gate());
-			main_circuit.gates[curr_gate_num].type = "XOR";
-			main_circuit.gates[curr_gate_num].left_wire = circuits[std::get<0>(functions[i])].out_wires_start + j 
-													+ main_circuit.num_wires; 
-			main_circuit.gates[curr_gate_num].right_wire = zero_gate;
-			main_circuit.gates[curr_gate_num].out_wire =  std::get<2>(functions[i])[j]; 
-			++curr_gate_num;
-		}
+//		for (int j = 0; j < circuits[std::get<0>(functions[i])].num_out_wires; j++)
+//		{
+//			main_circuit.gates.emplace_back(Gate());
+//			main_circuit.gates[curr_gate_num].type = "XOR";
+//			main_circuit.gates[curr_gate_num].left_wire = circuits[std::get<0>(functions[i])].out_wires_start + j 
+//													+ main_circuit.num_wires; 
+//			main_circuit.gates[curr_gate_num].right_wire = zero_gate;
+//			main_circuit.gates[curr_gate_num].out_wire =  std::get<2>(functions[i])[j]; 
+//			++curr_gate_num;
+//		}
 				if (circuits[std::get<0>(functions[i])].num_wires > num_shift)
 					num_shift = circuits[std::get<0>(functions[i])].num_wires;
 
 		//main_circuit.num_wires = main_circuit.num_wires + circuits[std::get<0>(functions[i])].num_wires;
 	}
-	main_circuit.num_wires = max_wire + num_shift;
+	main_circuit.num_wires = main_circuit.num_wires + num_shift;
 	fBristol << main_circuit.gates.size() << " " << main_circuit.num_wires << " " 
 										  << num_eval_inp_wires + num_const_inp_wires
 										  << " //#gates, #wires, #out_wires_start // " 
-										  << "# num_non_free_gates  = "  << num_non_free_gates << " \n"; //#gate #wires
+										  << "# num_non_free_gates  = "  << num_non_free_gates << " " << " \n"; //#gate #wires
 	fBristol << num_const_inp_wires << " " << num_eval_inp_wires 
 									<< " " << num_const_out_wires 
 									<< " " << num_const_out_wires + num_eval_out_wires 
