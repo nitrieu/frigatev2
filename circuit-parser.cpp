@@ -117,10 +117,10 @@ Circuit duploParseCircuit(char raw_circuit[]) {
 				//left_wire
 				if (circuits[num_child_func].gates[j].left_wire < num_inp_out_wires)
 					circuit.gates[curr_gate_num].left_wire = global_inp_out_wires[circuits[num_child_func].gates[j].left_wire];
-//				else if (circuits[num_child_func].gates[j].left_wire == num_inp_out_wires) //local zero gate
-//					circuit.gates[curr_gate_num].left_wire = circuit.gates[0].out_wire; //use global zero gate
-//				else if (circuits[num_child_func].gates[j].left_wire == num_inp_out_wires+1) //local one gate
-//					circuit.gates[curr_gate_num].left_wire = circuit.gates[1].out_wire;//use global one gate
+				//else if (circuits[num_child_func].gates[j].left_wire == circuits[num_child_func].gates[0].out_wire) //local zero gate
+				//	circuit.gates[curr_gate_num].left_wire = circuit.gates[0].out_wire; //use global zero gate
+			//	else if (circuits[num_child_func].gates[j].left_wire == circuits[num_child_func].gates[1].out_wire) //local one gate
+			//		circuit.gates[curr_gate_num].left_wire = circuit.gates[1].out_wire;//use global one gate
 				else
 					circuit.gates[curr_gate_num].left_wire = circuits[num_child_func].gates[j].left_wire + circuit.num_wires;
 
@@ -129,8 +129,8 @@ Circuit duploParseCircuit(char raw_circuit[]) {
 					circuit.gates[curr_gate_num].right_wire = global_inp_out_wires[circuits[num_child_func].gates[j].right_wire];
 //				else if (circuits[num_child_func].gates[j].right_wire == num_inp_out_wires) //local zero gate
 //					circuit.gates[curr_gate_num].right_wire = circuit.gates[0].out_wire; //use global zero gate
-//				else if (circuits[num_child_func].gates[j].right_wire == num_inp_out_wires+1) //local one gate
-//					circuit.gates[curr_gate_num].right_wire = circuit.gates[1].out_wire;//use global one gate
+	//			else if (circuits[num_child_func].gates[j].right_wire == num_inp_out_wires+1) //local one gate
+		//			circuit.gates[curr_gate_num].right_wire = circuit.gates[1].out_wire;//use global one gate
 				else
 					circuit.gates[curr_gate_num].right_wire = circuits[num_child_func].gates[j].right_wire + circuit.num_wires;
 				
@@ -318,16 +318,15 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 	
 	string strFunction[num_functions - 1];
 
-	fDuplo << num_functions << " " << num_layer << " " << num_component << " // #numberfunction #layer  #numberComponent\n";
-	fDuplo << num_const_inp_wires << " " << num_eval_inp_wires << " " << num_const_out_wires << " " << num_eval_out_wires << " //#input_eval #input_const #output_eval #output_const\n\n";	
+//	fDuplo << num_functions << " " << num_layer << " " << num_component << "\n";//" // #numberfunction #layer  #numberComponent\n";
+//	fDuplo << num_const_inp_wires << " " << num_eval_inp_wires << " " << num_const_out_wires << " " << num_eval_out_wires << "\n";//" //#input_eval #input_const #output_eval #output_const\n\n";	
 	for (int i = 0; i < num_functions - 1; i++)
 	{	
 
-		fDuplo << "FN " << circuits[i].idxCircuit << " " 
-						<< circuits[i].num_inp_wires << " " 
-						<< circuits[i].num_out_wires << " " 
-						<< circuits[i].num_wires << "//# FN id num_inp_wires num_out_wires num_wires //" 
-						<< "non-free-gate: " << circuits[i].num_non_free_gates << "\n";
+		//fDuplo << "FN " << circuits[i].idxCircuit << " " 
+//						<< circuits[i].num_inp_wires << " " 
+//						<< circuits[i].num_out_wires << " " 
+//						<< circuits[i].num_wires << "\n";//<< "//# FN id num_inp_wires num_out_wires num_wires //"  << "non-free-gate: " << circuits[i].num_non_free_gates << "\n";
 
 		for (int j = 0; j < circuits[i].gates.size(); j++)
 		{
@@ -348,74 +347,81 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 			}
 			
 		}	
-		fDuplo << strFunction[i];
-		fDuplo << "--end FN " << circuits[i].idxCircuit  << " -- \n\n";
+		//fDuplo << strFunction[i];
+		//fDuplo << "--end FN " << circuits[i].idxCircuit  << " -- \n\n";
 	}
-
+	raw_circuit = strchr(raw_circuit, '\n') + 1;
+	//raw_circuit = strchr(raw_circuit, '\n') + 1;
 	std::istringstream type_string(raw_circuit);
 	string line;
+//	while (getline(type_string, line) && !type_string.eof()) {
+//		fDuplo << line << "\n";
+//	}
+
+//	raw_circuit = strchr(raw_circuit, '\n') + 1;
+	int pos;
+	vector <std::tuple<int, string, string>> functions_duplo;
+	std::map<uint32_t, uint32_t> real_functions;
+	int num_function;
+	string input_func, output_func;
+	int idx_func=1;
+
 	while (getline(type_string, line) && !type_string.eof()) {
-		fDuplo << line << "\n";
+		
+		if (!line.empty() && line.at(0) == 'F') //FN 2
+		{
+			pos = line.find("\n"); //out_wire
+			line.erase(0, 3); // 'FN '
+			num_function = std::stoi(line.substr(0, pos)); //2		
+			
+			getline(type_string, input_func);
+			getline(type_string, output_func);	
+
+			if (real_functions.find(num_function) == real_functions.end()) {
+				real_functions.emplace(num_function, idx_func);
+				idx_func++;
+			}
+			functions_duplo.push_back(std::make_tuple(real_functions[num_function], input_func, output_func));	
+	
+		}
 	}
 
-
-//	int pos;
-//	vector <std::tuple<int, string, string>> functions;
-//	std::unordered_map<uint32_t, uint32_t> real_functions;
-//	int num_function;
-//	string input_func, output_func;
-//	int idx_func=1;
-//
-//	while (getline(type_string, line) && !type_string.eof()) {
-//		
-//		if (!line.empty() && line.at(0) == 'F') //FN 2
-//		{
-//			pos = line.find("\n"); //out_wire
-//			line.erase(0, 3); // 'FN '
-//			num_function = std::stoi(line.substr(0, pos)); //2		
-//			
-//			getline(type_string, input_func);
-//			getline(type_string, output_func);	
-//
-//			if (real_functions.find(num_function) == real_functions.end()) {
-//				real_functions.emplace(num_function, idx_func);
-//				idx_func++;
-//			}
-//			functions.push_back(std::make_tuple(real_functions[num_function], input_func, output_func));	
-//	
-//		}
-//	}
-
 	
-//	fDuplo << real_functions.size() << " " << functions.size() << " " << functions.size() << " // #numberfunction #layer  #numberComponent\n";
-//	fDuplo << num_const_inp_wires << " " << num_eval_inp_wires << " " << num_const_out_wires << " " << num_eval_out_wires << " //#input_eval #input_const #output_eval #output_const\n\n";
-//	
-//
-//	int id = 1;
-//	for (auto it = real_functions.begin(); it != real_functions.end(); ++it)
-//	{
-//		
-//		std::cout << " " << it->first << ":" << it->second;
-//
-//		fDuplo << "FN " << it->second  << " " 
-//					<< circuits[(it->first)-1].num_inp_wires << " " 
-//					<< circuits[(it->first)-1].num_out_wires << " " 
-//					<< circuits[(it->first)-1].num_wires << "//# FN id num_inp_wires num_out_wires num_wires \n";
-//	
-//		fDuplo << strFunction[it->first-1];
-//
-//		fDuplo << "--end FN " << it->second << " -- \n\n";
-//		id++;
+	fDuplo << real_functions.size() << " " << functions_duplo.size() << " " << functions_duplo.size() << "\n";//" // #numberfunction #layer  #numberComponent\n";
+	fDuplo << num_const_inp_wires << " " << num_eval_inp_wires << " " << num_const_out_wires << " " << num_eval_out_wires << "\n\n";// " //#input_eval #input_const #output_eval #output_const\n\n";
+	
+
+	int id = 1;
+
+//	for (int i = 0; i < real_functions.size(); ++i) {
+//		int a = real_functions[i].first;
 //	}
-//
-//	fDuplo << "FN " << real_functions.size() + 1 << "\n\n"; 
-//	
-//	for (int i = 0; i <  functions.size(); i++)
-//	{
-//		fDuplo << "FN " << std::get<0>(functions[i]) << "\n";
-//		fDuplo << std::get<1>(functions[i]) << "\n";
-//		fDuplo << std::get<2>(functions[i]) << "\n\n";
-//	}
+
+	for (auto it = real_functions.begin(); it != real_functions.end(); ++it)
+//	for (int i = 0; i <  real_functions.size(); i++)
+	{
+		
+		//std::cout << " " << it->first << ":" << it->second;
+
+		fDuplo << "FN " << it->second  << " "  
+					<< circuits[it->first - 1].num_inp_wires << " " 
+					<< circuits[it->first - 1].num_out_wires << " " 
+					<< circuits[it->first - 1].num_wires << "\n"; //# FN id num_inp_wires num_out_wires num_wires \n";
+	
+		fDuplo << strFunction[it->first - 1];
+
+		fDuplo << "--end FN " << it->second << " -- \n\n";
+		id++;
+	}
+
+	fDuplo << "FN " << real_functions.size() + 1 << "\n\n"; 
+	
+	for (int i = 0; i <  functions_duplo.size(); i++)
+	{
+		fDuplo << "FN " << std::get<0>(functions_duplo[i]) << "\n";
+		fDuplo << std::get<1>(functions_duplo[i]) << "\n";
+		fDuplo << std::get<2>(functions_duplo[i]) << "\n\n";
+	}
 
 
 //////////
@@ -468,25 +474,25 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 
 	main_circuit.num_wires = max_wire + 1;
 
-	one_gate = main_circuit.num_wires;
-	zero_gate = one_gate + 1;
-	main_circuit.num_wires += 2;
-
-	//add zero, one gate
-	main_circuit.gates.emplace_back(Gate());
-	main_circuit.gates[curr_gate_num].type = "NXOR";
-	main_circuit.gates[curr_gate_num].left_wire = 0;
-	main_circuit.gates[curr_gate_num].right_wire = 0;
-	main_circuit.gates[curr_gate_num].out_wire = one_gate;
-	++curr_gate_num;
-
-
-	main_circuit.gates.emplace_back(Gate());
-	main_circuit.gates[curr_gate_num].type = "XOR";
-	main_circuit.gates[curr_gate_num].left_wire = 0;
-	main_circuit.gates[curr_gate_num].right_wire = 0;
-	main_circuit.gates[curr_gate_num].out_wire = zero_gate;
-	++curr_gate_num;
+//	one_gate = main_circuit.num_wires;
+//	zero_gate = one_gate + 1;
+//	main_circuit.num_wires += 2;
+//
+//	//add zero, one gate
+//	main_circuit.gates.emplace_back(Gate());
+//	main_circuit.gates[curr_gate_num].type = "NXOR";
+//	main_circuit.gates[curr_gate_num].left_wire = 0;
+//	main_circuit.gates[curr_gate_num].right_wire = 0;
+//	main_circuit.gates[curr_gate_num].out_wire = one_gate;
+//	++curr_gate_num;
+//
+//
+//	main_circuit.gates.emplace_back(Gate());
+//	main_circuit.gates[curr_gate_num].type = "XOR";
+//	main_circuit.gates[curr_gate_num].left_wire = 0;
+//	main_circuit.gates[curr_gate_num].right_wire = 0;
+//	main_circuit.gates[curr_gate_num].out_wire = zero_gate;
+//	++curr_gate_num;
 
 	for (int i = 0; i < functions.size(); i++)
 	{		

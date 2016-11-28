@@ -32,7 +32,7 @@ uint8_t Rcon[11]={141,1,2,4,8,16,32,64,128, 27,54 };
 
 /* The first round key is the key itself.*/
 	
-for(uint8_t j=0; j < 15; j++)
+for(uint8_t j=0; j < 16; j++)
 	     { 
 		   RoundKey[0].a[j]=key.a[j];
 	    }
@@ -157,6 +157,12 @@ buf.a[i]=buf.a[i]^key.a[i];
 return buf;
 } 
 
+function uinit128_t getoutput(uinit128_t buf)
+{
+
+return buf;
+} 
+
 function void main()
 {
 
@@ -166,6 +172,7 @@ function void main()
 	keyEx=KeyExpansion(input2);
 	buff=AddRoundKey(input1,keyEx[0]);
 
+
         for(uint8_t i=1;i<Nr;i++)
 	{
 		buff=SubBytes(buff);
@@ -173,10 +180,11 @@ function void main()
 		buff=MixColumns(buff);
                 buff=AddRoundKey(buff,keyEx[i]);	
 	}		
+
 	buff=SubBytes(buff);
 		buff=ShiftRows(buff);
  
-               output1=AddRoundKey(buff,keyEx[Nr]);
+           output1=AddRoundKey(buff,keyEx[Nr]);
 
 
 }
