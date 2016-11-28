@@ -5031,6 +5031,7 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 	            uint32_t posforNumWire = strDuploGC.length();
 	            //end-duplo
 	            
+	        
 	            
                 VariableContext * vct = new VariableContext();
                 
@@ -5054,10 +5055,10 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 	            
 		            if (premfunctions != 0 && I == 0)
 		            {
-			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].wireNumberValue) + " " + to_string(pool[idxFunc].largestsize) + " " + to_string(pool[idxFunc].getWire()->wireNumber) + " //# FN id num_inp_wires num_out_wires num_wires  \n");
+			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].wireNumberValue) +" "+isTermNode(isFunctionDeclarationNode(selectedNode)->name)->var + "\n");
 			        }
 		            else
-			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].wireNumberValue)+ " " + to_string(pool[idxFunc].largestsize) + " " + to_string(pool[idxFunc].getWire()->wireNumber)+ " //# FN id num_inp_wires num_out_wires num_wires \n");
+			            strDuploGC.insert(posforNumWire, to_string(pool[idxFunc].wireNumberValue)+  " "+isTermNode(isFunctionDeclarationNode(selectedNode)->name)->var +"\n");
 	            
 		            strDuploGC.append("--end FN " + to_string(I+1) + "--\n");
 	            }

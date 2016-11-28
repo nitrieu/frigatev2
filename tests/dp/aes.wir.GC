@@ -2,7 +2,7 @@
 128 128 128 0  //#input_eval #input_const #output_eval #output_const
 
 
-FN 1 8 8 19 18 18 //# FN id num_inp_wires num_out_wires num_wires  
+FN 1 8 8 18 sbox
 2 1 0 0 16 NXOR
 2 1 0 0 17 XOR
 2 1 0 17 8 XOR 
@@ -15,7 +15,7 @@ FN 1 8 8 19 18 18 //# FN id num_inp_wires num_out_wires num_wires
 2 1 7 17 15 XOR 
 --end FN 1--
 
-FN 2 128 1408 3129 3128 3078 //# FN id num_inp_wires num_out_wires num_wires 
+FN 2 128 1408 3129 KeyExpansion
 2 1 0 0 1536 NXOR
 2 1 0 0 1537 XOR
 2 1 0 1537 1538 XOR 
@@ -4268,7 +4268,7 @@ FN 2 128 1408 3129 3128 3078 //# FN id num_inp_wires num_out_wires num_wires
 2 1 2945 1537 1535 XOR 
 --end FN 2--
 
-FN 3 128 128 299 298 266 //# FN id num_inp_wires num_out_wires num_wires 
+FN 3 128 128 299 SubBytes
 2 1 0 0 256 NXOR
 2 1 0 0 257 XOR
 ++ FN 1
@@ -4449,7 +4449,7 @@ FN 3 128 128 299 298 266 //# FN id num_inp_wires num_out_wires num_wires
 2 1 127 257 255 XOR 
 --end FN 3--
 
-FN 4 128 128 267 266 266 //# FN id num_inp_wires num_out_wires num_wires 
+FN 4 128 128 266 ShiftRows
 2 1 0 0 256 NXOR
 2 1 0 0 257 XOR
 2 1 8 257 258 XOR 
@@ -4710,7 +4710,7 @@ FN 4 128 128 267 266 266 //# FN id num_inp_wires num_out_wires num_wires
 2 1 127 257 255 XOR 
 --end FN 4--
 
-FN 5 128 128 398 397 268 //# FN id num_inp_wires num_out_wires num_wires 
+FN 5 128 128 398 MixColumns
 2 1 0 0 256 NXOR
 2 1 0 0 257 XOR
 2 1 0 257 282 XOR 
@@ -6539,7 +6539,7 @@ FN 5 128 128 398 397 268 //# FN id num_inp_wires num_out_wires num_wires
 2 1 127 257 255 XOR 
 --end FN 5--
 
-FN 6 256 128 427 426 394 //# FN id num_inp_wires num_out_wires num_wires 
+FN 6 256 128 427 AddRoundKey
 2 1 0 0 384 NXOR
 2 1 0 0 385 XOR
 2 1 0 128 394 XOR
@@ -6928,7 +6928,7 @@ FN 6 256 128 427 426 394 //# FN id num_inp_wires num_out_wires num_wires
 2 1 127 385 383 XOR 
 --end FN 6--
 
-FN 7 128 128 259 258 258 //# FN id num_inp_wires num_out_wires num_wires 
+FN 7 128 128 258 getoutput
 2 1 0 0 256 NXOR
 2 1 0 0 257 XOR
 2 1 0 257 128 XOR 

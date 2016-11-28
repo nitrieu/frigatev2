@@ -2,7 +2,7 @@
 2 2 2 0  //#input_eval #input_const #output_eval #output_const
 
 
-FN 1 4 2 12 11 10 //# FN id num_inp_wires num_out_wires num_wires  
+FN 1 4 2 12 f2
 2 1 0 0 6 NXOR
 2 1 0 0 7 XOR
 2 1 0 2 10 AND
@@ -11,7 +11,7 @@ FN 1 4 2 12 11 10 //# FN id num_inp_wires num_out_wires num_wires
 2 1 11 7 5 XOR 
 --end FN 1--
 
-FN 2 4 2 12 11 10 //# FN id num_inp_wires num_out_wires num_wires 
+FN 2 4 2 12 f3
 2 1 0 0 6 NXOR
 2 1 0 0 7 XOR
 2 1 0 2 10 AND
@@ -20,7 +20,7 @@ FN 2 4 2 12 11 10 //# FN id num_inp_wires num_out_wires num_wires
 2 1 11 7 5 XOR 
 --end FN 2--
 
-FN 3 4 2 13 12 12 //# FN id num_inp_wires num_out_wires num_wires 
+FN 3 4 2 12 f1
 2 1 0 0 6 NXOR
 2 1 0 0 7 XOR
 ++ FN 3
@@ -30,7 +30,7 @@ FN 3 4 2 13 12 12 //# FN id num_inp_wires num_out_wires num_wires
 2 1 9 7 5 XOR 
 --end FN 3--
 
-FN 4 6 2 18 17 16 //# FN id num_inp_wires num_out_wires num_wires 
+FN 4 6 2 18 f0
 2 1 0 0 8 NXOR
 2 1 0 0 9 XOR
 ++ FN 1

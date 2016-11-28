@@ -11,6 +11,8 @@ vector<Circuit> circuits;
 ofstream fDuplo;
 ofstream fBristol;
 ofstream fSbox;
+ofstream fFuncs;
+std::string dir;
 bool isAES = false;
 
 //Parse the gate description given a char array of the description file.
@@ -402,15 +404,23 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 	{
 		
 		//std::cout << " " << it->first << ":" << it->second;
+		string head_func;
 
-		fDuplo << "FN " << it->second  << " "  
-					<< circuits[it->first - 1].num_inp_wires << " " 
-					<< circuits[it->first - 1].num_out_wires << " " 
-					<< circuits[it->first - 1].num_wires << "\n"; //# FN id num_inp_wires num_out_wires num_wires \n";
-	
+		head_func.append("FN " + to_string(it->second)  + " "  
+					+ to_string(circuits[it->first - 1].num_inp_wires) + " " 
+					+ to_string(circuits[it->first - 1].num_out_wires) + " " 
+					+ to_string(circuits[it->first - 1].num_wires) + "\n"); //# FN id num_inp_wires num_out_wires num_wires \n";
+		
+		fDuplo << head_func;
 		fDuplo << strFunction[it->first - 1];
-
 		fDuplo << "--end FN " << it->second << " -- \n\n";
+
+		
+		fFuncs.open(dir + "_duplo_function_" + to_string(it->second));
+		fFuncs << head_func;
+		fFuncs << strFunction[it->first - 1];
+		fFuncs.close();
+
 		id++;
 	}
 
@@ -596,6 +606,7 @@ void frigate_read_text_circuit(const char* circuit_file)
 	file = fopen(circuit_file, "r");
 
 	std::string str(circuit_file);
+	dir = str;
 	if (strstr(str.c_str(), "aes"))
 		isAES = true;
 

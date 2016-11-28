@@ -31,6 +31,7 @@ public:
 	uint32_t out_wires_start;
 	uint32_t idxCircuit;
 	uint32_t num_non_free_gates = 0;
+	string circuit_name;
 //	Circuit & operator=(const Circuit &cc)
 //	{
 //		num_wires = cc.num_wires;

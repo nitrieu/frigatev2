@@ -1,29 +1,27 @@
-26 40 4 //#gates, #wires, #out_wires_start // # num_non_free_gates  = 8  
+24 38 4 //#gates, #wires, #out_wires_start // # num_non_free_gates  = 8  
 2 2 2 2 0  //#const_inputs #eval_inputs #total_outputs #const_outputs #eval_outputs
 
-2 1 0 0 8 NXOR
-2 1 0 0 9 XOR
-2 1 0 0 18 NXOR
-2 1 0 0 19 XOR
-2 1 0 0 34 NXOR
-2 1 0 0 35 XOR
-2 1 0 0 38 AND
-2 1 1 1 39 AND
-2 1 38 19 20 XOR
-2 1 39 19 21 XOR
-2 1 20 0 26 OR
-2 1 21 1 27 OR
-2 1 26 19 6 XOR
-2 1 27 19 7 XOR
-2 1 6 6 16 NXOR
-2 1 6 6 17 XOR
-2 1 6 0 20 AND
-2 1 7 1 21 AND
-2 1 20 17 4 XOR
-2 1 21 17 5 XOR
-2 1 6 6 16 NXOR
-2 1 6 6 17 XOR
-2 1 6 0 20 AND
-2 1 7 1 21 AND
-2 1 20 17 4 XOR
-2 1 21 17 5 XOR
+2 1 0 0 16 NXOR
+2 1 0 0 17 XOR
+2 1 0 0 32 NXOR
+2 1 0 0 33 XOR
+2 1 0 0 36 AND
+2 1 1 1 37 AND
+2 1 36 33 18 XOR
+2 1 37 33 19 XOR
+2 1 18 0 24 OR
+2 1 19 1 25 OR
+2 1 24 17 6 XOR
+2 1 25 17 7 XOR
+2 1 6 6 14 NXOR
+2 1 6 6 15 XOR
+2 1 6 0 18 AND
+2 1 7 1 19 AND
+2 1 18 15 4 XOR
+2 1 19 15 5 XOR
+2 1 6 6 14 NXOR
+2 1 6 6 15 XOR
+2 1 6 0 18 AND
+2 1 7 1 19 AND
+2 1 18 15 4 XOR
+2 1 19 15 5 XOR
