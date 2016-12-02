@@ -1,6 +1,7 @@
-#define wiresize 2
+#define wiresize 8
 #parties 2
 #define Nk 2
+#define aa 7
 
 typedef uint_t 2 uint8_t
 typedef uint_t wiresize int
@@ -9,37 +10,20 @@ typedef uint_t wiresize*2 int2
 #input 1 int
 #input 2 int
 #output 1 int
+#output 2 int
 
 
 
-function int f1(int x, int y)
+
+function int f0(int x)
 {
-int c= f3(x,y);
-return c;
-}
-function int f2(int x, int y)
-{
-return x&y;
-}
-
-function int f3(int x, int y)
-{
-return x&y;
-}
-
-
-function int f0(int x, int y, int z)
-{
-int a= f1(x,y);
-return a|x;
+x = (x << 1) ^ ((x & 128) ? 27 : 0);
+return x;
 }
 
 function void main()
 {
-int a = f0(input1,input1, input1);
-for(int i=1;i<3;i++)
-	{
-output1 = f2(a,input1);
-}
+output1 = f0(input1);
+
 }
 

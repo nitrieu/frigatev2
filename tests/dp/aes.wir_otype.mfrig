@@ -47,4 +47,20 @@ output1.a[12] 96 to 103
 output1.a[13] 104 to 111
 output1.a[14] 112 to 119
 output1.a[15] 120 to 127
+output2.a[0] 0 to 7
+output2.a[1] 8 to 15
+output2.a[2] 16 to 23
+output2.a[3] 24 to 31
+output2.a[4] 32 to 39
+output2.a[5] 40 to 47
+output2.a[6] 48 to 55
+output2.a[7] 56 to 63
+output2.a[8] 64 to 71
+output2.a[9] 72 to 79
+output2.a[10] 80 to 87
+output2.a[11] 88 to 95
+output2.a[12] 96 to 103
+output2.a[13] 104 to 111
+output2.a[14] 112 to 119
+output2.a[15] 120 to 127
 

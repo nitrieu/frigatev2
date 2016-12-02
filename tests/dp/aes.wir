@@ -15,6 +15,7 @@ typedef struct_t uinit128_t
 #input 1 uinit128_t
 #input 2 uinit128_t
 #output 1 uinit128_t
+#output 2 uinit128_t
 
 function uint8_t sbox(uint8_t idx)
 {
@@ -134,7 +135,9 @@ function uinit128_t MixColumns(uinit128_t buf)
         uint8_t b[4];
         for(uint8_t c=0;c<4;c++) {
                 a[c] = buf.a[4*i+c];
-                b[c] = (buf.a[4*i+c] << 1)^ (27 * ((buf.a[4*i+c] >> 7)&1)); /* Rijndael's Galois field */
+                b[c] = (buf.a[4*i+c] << 1);
+		if((buf.a[4*i+c]&128)==128)
+			b[c] =b[c]^27;
         }
         buf.a[4*i] = b[0] ^ a[3] ^ a[2] ^ b[1] ^ a[1]; /* 2 * a0 + a3 + a2 + 3 * a1 */
         buf.a[4*i+1] = b[1] ^ a[0] ^ a[3] ^ b[2] ^ a[2]; /* 2 * a1 + a0 + a3 + 3 * a2 */
@@ -144,8 +147,6 @@ function uinit128_t MixColumns(uinit128_t buf)
 
 return buf;
 } 
-
-
 
 
 function uinit128_t AddRoundKey(uinit128_t buf, uinit128_t key)
