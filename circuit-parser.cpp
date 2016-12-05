@@ -36,11 +36,17 @@ Circuit duploParseCircuit(char raw_circuit[]) {
 	raw_circuit = strchr(raw_circuit, ' ') + 1; // #number total wires
 	circuit.num_wires = (uint32_t) atoi(raw_circuit);
 	
+	raw_circuit = strchr(raw_circuit, ' ') + 1; // #name
+	char type[4];
+	memcpy(type, raw_circuit, 4 * sizeof(char));
+	std::string type_string(type);
+	circuit.circuit_name = type_string;
+	
 	raw_circuit = strchr(raw_circuit, '\n') + 1; //Skip this line
 
 	int curr_gate_num = 0;
 	uint32_t num_inputs = 0, left_wire_idx, right_wire_idx, out_wire_idx, num_child_func = 0, child_wire, num_shift = 0;
-	char type[4];
+	
 
 
 	while (*raw_circuit != '-') {
@@ -351,7 +357,16 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 		}	
 		//fDuplo << strFunction[i];
 		//fDuplo << "--end FN " << circuits[i].idxCircuit  << " -- \n\n";
+
+//	ofstream fFuncs1;
+//	fFuncs1.open(dir + "_duplo_function_test"+to_string(i));
+//		fFuncs1 << circuits[i].circuit_name << endl;
+//	fFuncs1 << circuits[i].num_non_free_gates << endl;
+//	fFuncs1 << strFunction[i];
+//	fFuncs1.close();
 	}
+
+
 	raw_circuit = strchr(raw_circuit, '\n') + 1;
 	//raw_circuit = strchr(raw_circuit, '\n') + 1;
 	std::istringstream type_string(raw_circuit);
@@ -390,7 +405,7 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 
 	
 	fDuplo << real_functions.size() << " " << functions_duplo.size() << " " << functions_duplo.size() << "\n";//" // #numberfunction #layer  #numberComponent\n";
-	fDuplo << num_const_inp_wires << " " << num_eval_inp_wires << " " << num_const_out_wires << " " << num_eval_out_wires << "\n\n";// " //#input_eval #input_const #output_eval #output_const\n\n";
+	fDuplo << num_const_inp_wires << " " << num_eval_inp_wires << " " << num_const_out_wires << " " << num_const_out_wires << " " << num_eval_out_wires << "\n\n";// " //#input_eval #input_const #output_eval #output_const\n\n";
 	
 
 	int id = 1;
@@ -415,8 +430,9 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 		fDuplo << strFunction[it->first - 1];
 		fDuplo << "--end FN " << it->second << " -- \n\n";
 
-		
+		auto aa = to_string(it->second);		
 		fFuncs.open(dir + "_duplo_function_" + to_string(it->second));
+		//fFuncs << circuits[it->first - 1].circuit_name << " " << circuits[it->first - 1].num_non_free_gates <<  endl;
 		fFuncs << head_func;
 		fFuncs << strFunction[it->first - 1];
 		fFuncs.close();
@@ -571,9 +587,9 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 										  << "# num_non_free_gates  = "  << num_non_free_gates << " " << " \n"; //#gate #wires
 	fBristol << num_const_inp_wires << " " << num_eval_inp_wires 
 									<< " " << num_const_out_wires 
-									<< " " << num_const_out_wires + num_eval_out_wires 
+									<< " " << num_const_out_wires  
 									 << " " << num_eval_out_wires 
-									 << "  //#const_inputs #eval_inputs #total_outputs #const_outputs #eval_outputs\n\n";	 //#input_eval #input_const #output_eval
+									 << "  //#const_inputs #eval_inputs #total_outputs* #const_outputs #eval_outputs\n\n";	 //#input_eval #input_const #output_eval
 
 
 	

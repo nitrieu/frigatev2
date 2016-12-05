@@ -131,18 +131,25 @@ return buf;
 function uinit128_t MixColumns(uinit128_t buf)
 {
     for(uint8_t i=0; i < 4; i++) {
-        uint8_t a[4];
+        uint8_t a;
         uint8_t b[4];
+	uint8_t h;
         for(uint8_t c=0;c<4;c++) {
-                a[c] = buf.a[4*i+c];
                 b[c] = (buf.a[4*i+c] << 1);
-		if((buf.a[4*i+c]&128)==128)
-			b[c] =b[c]^27;
+
+		h=(buf.a[4*i+c]>>7);
+		b[c]{0}=b[c]{0}^(h{0});
+		b[c]{1}=b[c]{1}^(h{0});
+		b[c]{3}=b[c]{3}^(h{0});
+		b[c]{4}=b[c]{4}^(h{0});
+			
         }
-        buf.a[4*i] = b[0] ^ a[3] ^ a[2] ^ b[1] ^ a[1]; /* 2 * a0 + a3 + a2 + 3 * a1 */
-        buf.a[4*i+1] = b[1] ^ a[0] ^ a[3] ^ b[2] ^ a[2]; /* 2 * a1 + a0 + a3 + 3 * a2 */
-        buf.a[4*i+2] = b[2] ^ a[1] ^ a[0] ^ b[3] ^ a[3]; /* 2 * a2 + a1 + a0 + 3 * a3 */
-        buf.a[4*i+3] = b[3] ^ a[2] ^ a[1] ^ b[0] ^ a[0]; /* 2 * a3 + a2 + a1 + 3 * a0 */
+	a=buf.a[4*i] ^ buf.a[4*i+1] ^ buf.a[4*i+2] ^ buf.a[4*i+3];
+
+        buf.a[4*i] = b[0] ^ b[1] ^ a ^ buf.a[4*i]; /* 2 * a0 + a3 + a2 + 3 * a1 */
+        buf.a[4*i+1] = b[1] ^ b[2] ^ a ^ buf.a[4*i+1]; /* 2 * a1 + a0 + a3 + 3 * a2 */
+        buf.a[4*i+2] = b[2] ^ b[3] ^ a ^ buf.a[4*i+2]; /* 2 * a2 + a1 + a0 + 3 * a3 */
+        buf.a[4*i+3] = b[3]  ^ b[0] ^ a ^ buf.a[4*i+3]; /* 2 * a3 + a2 + a1 + 3 * a0 */
     }
 
 return buf;
