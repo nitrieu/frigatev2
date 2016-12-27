@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iostream>
 #include <string.h>
+#include <algorithm>
 using namespace std;
 //For Frigate
 vector<Circuit> circuits;
@@ -14,6 +15,14 @@ ofstream fSbox;
 ofstream fFuncs;
 std::string dir;
 bool isAES = false;
+
+template <typename T1, typename T2>
+	struct less_second {
+		typedef pair<T1, T2> type;
+		bool operator ()(type const& a, type const& b) const {
+			return a.second < b.second;
+		}
+	};
 
 //Parse the gate description given a char array of the description file.
 Circuit duploParseCircuit(char raw_circuit[]) {
@@ -410,12 +419,12 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 
 	int id = 1;
 
-//	for (int i = 0; i < real_functions.size(); ++i) {
-//		int a = real_functions[i].first;
-//	}
+	//sort by value
+	vector<pair<uint32_t, uint32_t> > mapcopy(real_functions.begin(), real_functions.end());
+	sort(mapcopy.begin(), mapcopy.end(), less_second<uint32_t, uint32_t>());
 
-	for (auto it = real_functions.begin(); it != real_functions.end(); ++it)
-//	for (int i = 0; i <  real_functions.size(); i++)
+	
+	for (auto it = mapcopy.begin(); it != mapcopy.end(); ++it)
 	{
 		
 		//std::cout << " " << it->first << ":" << it->second;

@@ -171,6 +171,25 @@ function uinit128_t getoutput(uinit128_t buf)
 return buf;
 } 
 
+function uinit128_t Round(uinit128_t buff, uinit128_t keyEx)
+{
+	buff=SubBytes(buff);
+	buff=ShiftRows(buff);
+	buff=MixColumns(buff);
+        buff=AddRoundKey(buff,keyEx);
+
+return buff;
+}
+
+function uinit128_t AfterRound(uinit128_t buff, uinit128_t keyEx)
+{
+	buff=SubBytes(buff);
+	buff=ShiftRows(buff); 
+        buff=AddRoundKey(buff,keyEx);
+
+return buff;
+}
+
 function void main()
 {
 
@@ -181,15 +200,16 @@ function void main()
 	buff=AddRoundKey(input1,keyEx[0]);
 
 
-        for(uint8_t i=1;i<Nr;i++)
+         for(uint8_t i=1;i<Nr;i++)
 	{
-		buff=SubBytes(buff);
+buff=SubBytes(buff);
 		buff=ShiftRows(buff);
 		buff=MixColumns(buff);
-                buff=AddRoundKey(buff,keyEx[i]);	
+                buff=AddRoundKey(buff,keyEx[i]);
 	}		
-
-	buff=SubBytes(buff);
+		
+ 
+        buff=SubBytes(buff);
 		buff=ShiftRows(buff);
  
            output1=AddRoundKey(buff,keyEx[Nr]);
