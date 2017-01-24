@@ -276,6 +276,7 @@ Circuit duploParseCircuit(char raw_circuit[]) {
 	}
 
 	circuit.num_wires += num_shift;
+	circuit.num_gates = curr_gate_num;
 	  
 	return circuit;
 }
@@ -433,7 +434,10 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 		head_func.append("FN " + to_string(it->second)  + " "  
 					+ to_string(circuits[it->first - 1].num_inp_wires) + " " 
 					+ to_string(circuits[it->first - 1].num_out_wires) + " " 
-					+ to_string(circuits[it->first - 1].num_wires) + "\n"); //# FN id num_inp_wires num_out_wires num_wires \n";
+					+ to_string(circuits[it->first - 1].num_wires) + " " 
+					+ to_string(circuits[it->first - 1].num_non_free_gates) + " " 
+					+ to_string(circuits[it->first - 1].num_gates) + " " 
+					+ "\n"); //# FN id num_inp_wires num_out_wires num_wires \n";
 		
 		fDuplo << head_func;
 		fDuplo << strFunction[it->first - 1];
@@ -780,11 +784,121 @@ Circuit sBoxYale_parse(char raw_circuit[]) {
 	return sBox;
 }
 
+//Sbox
+Circuit sBoxYale113_parse(char raw_circuit[]) { 
+	Circuit sBox;
+	std::unordered_map<string, uint32_t> wires;
+	string line, left_wire, right_wire, out_wire, gate;
+	int pos, pos_wire, curr_wire_num = 0, curr_gate_num = 0;
+	std::string delimiter = "\n";
+
+	sBox.num_inp_wires = 8;
+	sBox.num_out_wires = 8;
+	sBox.inp_wires_start = 0;
+	sBox.out_wires_start = 8;
+
+	for (int i = 0; i < sBox.num_inp_wires; i++)
+	{
+		wires.emplace("U" + to_string(i), 7 - i); //input wires
+		wires.emplace("S" + to_string(i), 7 - i + 8); //output wires
+		curr_wire_num += 2;
+	}
+
+	//print_wires(wires);
+	
+	raw_circuit = strchr(raw_circuit, '\n') + 1; // 113 gates
+	raw_circuit = strchr(raw_circuit, '\n') + 1; // 8 inputs 
+	raw_circuit = strchr(raw_circuit, '\n') + 1; // U0 U1 U2 U3 U4 U5 U6 U7 
+	raw_circuit = strchr(raw_circuit, '\n') + 1; //8 outputs
+	raw_circuit = strchr(raw_circuit, '\n') + 1; // S3 S7 S0 S6 S4 S1 S2 S5 
+	raw_circuit = strchr(raw_circuit, '\n') + 1; //begin
+	
+	std::istringstream type_string(raw_circuit);
+	int cnt_gate = 0;
+	while (curr_gate_num != 113 && !type_string.eof() && getline(type_string, line)) {
+		if (!line.empty())
+		{
+			//cout << "\n" << line << "\n";//y14 = x3 + x5;
+			//line.erase(0,  2); // remove " " at the first line
+			//line.erase(0, line.find_first_not_of(' '));  
+			if (line.at(0) != '/')
+			{
+				pos_wire = line.find(" "); //out_wire
+				out_wire = line.substr(0, pos_wire); //y14
+				//cout << out_wire << " ";
+				if (wires.find(out_wire) == wires.end()) //check whether wires exits
+				{
+					wires.emplace(out_wire, curr_wire_num); //sBox.num_wires start from 1
+					++curr_wire_num;
+				}
+			
+				line.erase(0, pos_wire + 3); // ' = '
+			
+				pos_wire = line.find(" "); //right_wire
+				right_wire = line.substr(0, pos_wire); //x3
+				//cout << right_wire << " ";
+
+				if (wires.find(right_wire) == wires.end()) //check whether wires exits
+				{
+					wires.emplace(right_wire, curr_wire_num); //sBox.num_wires start from 1
+					++curr_wire_num;
+				}
+				line.erase(0, pos_wire + 1);
+
+				pos_wire = line.find(" "); //gate
+				gate = line.substr(0, pos_wire); //+
+				//cout << gate << " ";
+
+				if (gate == "+") 
+					gate = "XOR";
+				else if (gate == "x")
+				{
+					gate = "AND";
+					sBox.num_non_free_gates++;
+				}
+				else if (gate == "#")
+					gate = "NXOR";
+				else
+					exit(1);
+
+				line.erase(0, pos_wire + 1);
+
+				pos_wire = line.find(";"); //left_wire
+				left_wire = line.substr(0, pos_wire); //x5
+				//cout << left_wire << " ";
+
+				if (wires.find(left_wire) == wires.end()) //check whether wires exits
+				{
+					wires.emplace(left_wire, curr_wire_num); //sBox.num_wires start from 1
+					++curr_wire_num;
+				}
+
+				sBox.gates.emplace_back(Gate());
+				sBox.gates[curr_gate_num].type = gate;
+				sBox.gates[curr_gate_num].left_wire =  wires[left_wire];
+				sBox.gates[curr_gate_num].right_wire =  wires[right_wire];
+				sBox.gates[curr_gate_num].out_wire = wires[out_wire];
+				++curr_gate_num;
+			}
+		}	
+	}
+	sBox.num_wires = curr_wire_num;
+	
+	fSbox << "FN " <<  sBox.gates.size() << " " << sBox.num_wires << " //#gate #wires \n";
+	for (int i = 0; i < sBox.gates.size(); i++)
+	{
+		fSbox << "2 1 " << sBox.gates[i].left_wire  << " " << sBox.gates[i].right_wire  << " "
+						 << sBox.gates[i].out_wire << " " << sBox.gates[i].type << "\n"; 
+	}
+	return sBox;
+}
+
 Circuit read_text_sBoxYale()
 {
 	FILE* file;
 	size_t file_size;
-	const char* circuit_file = "tests/dp/AES_SBox.txt";
+	const char* circuit_file = "tests/dp/SLP_AES_113.txt";
+	//const char* circuit_file = "tests/dp/AES_Sbox.txt";
 	file = fopen(circuit_file, "r");
 
 	std::string str(circuit_file);
@@ -811,7 +925,7 @@ Circuit read_text_sBoxYale()
 		exit(EXIT_FAILURE);
 	}
 	fclose(file);
-	Circuit sBox = sBoxYale_parse(data.get());
+	Circuit sBox = sBoxYale113_parse(data.get());
 	fSbox.close();
 	return sBox;
 }
