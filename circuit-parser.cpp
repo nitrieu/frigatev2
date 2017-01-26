@@ -106,6 +106,7 @@ Circuit duploParseCircuit(char raw_circuit[]) {
 				fDuplo << "Output Function: " << circuit.idxCircuit << "\n";
 				fDuplo << "Syntax: " <<  "call function " << circuits[num_child_func].idxCircuit << " in  function " << circuit.idxCircuit;
 				fDuplo.close();
+				
 				exit(1);
 			}
 			raw_circuit = strchr(raw_circuit, ' ') + 1;
@@ -388,7 +389,7 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 //	raw_circuit = strchr(raw_circuit, '\n') + 1;
 	int pos;
 	vector <std::tuple<int, string, string>> functions_duplo;
-	std::map<uint32_t, uint32_t> real_functions;
+	std::map<int, int> real_functions;
 	int num_function;
 	string input_func, output_func;
 	int idx_func=1;
@@ -449,6 +450,7 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 		fFuncs << head_func;
 		fFuncs << strFunction[it->first - 1];
 		fFuncs.close();
+		cout << "function" << it->second << ".close()\n"; 
 
 		id++;
 	}
@@ -461,7 +463,8 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 		fDuplo << std::get<1>(functions_duplo[i]) << "\n";
 		fDuplo << std::get<2>(functions_duplo[i]) << "\n\n";
 	}
-
+	fDuplo.close();
+	cout << "fDuplo.close()\n"; 
 
 //////////
 ///Bristol format
@@ -625,6 +628,8 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 		}
 			
 	}
+	fBristol.close();
+	cout << "fBristol.close()\n"; 
 }
 
 
@@ -662,8 +667,8 @@ void frigate_read_text_circuit(const char* circuit_file)
 	}
 	fclose(file);
 	frigate_ParseComposedCircuit(data.get());
-	fDuplo.close();
-	fBristol.close();
+	
+	
 }
 
 void print_wires(std::unordered_map<string, uint32_t> wires)
