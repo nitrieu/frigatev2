@@ -10,11 +10,13 @@ using namespace std;
 //For Frigate
 vector<Circuit> circuits;
 ofstream fDuplo;
-ofstream fBristol;
+ofstream fBirstolDup;
+ofstream fBirstol;
 ofstream fSbox;
 ofstream fFuncs;
 std::string dir;
 bool isAES = false;
+bool isBristolDup, isBristol;
 
 template <typename T1, typename T2>
 	struct less_second {
@@ -106,7 +108,6 @@ Circuit duploParseCircuit(char raw_circuit[]) {
 				fDuplo << "Output Function: " << circuit.idxCircuit << "\n";
 				fDuplo << "Syntax: " <<  "call function " << circuits[num_child_func].idxCircuit << " in  function " << circuit.idxCircuit;
 				fDuplo.close();
-				
 				exit(1);
 			}
 			raw_circuit = strchr(raw_circuit, ' ') + 1;
@@ -389,7 +390,7 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 //	raw_circuit = strchr(raw_circuit, '\n') + 1;
 	int pos;
 	vector <std::tuple<int, string, string>> functions_duplo;
-	std::map<int, int> real_functions;
+	std::map<uint32_t, uint32_t> real_functions;
 	int num_function;
 	string input_func, output_func;
 	int idx_func=1;
@@ -450,8 +451,7 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 		fFuncs << head_func;
 		fFuncs << strFunction[it->first - 1];
 		fFuncs.close();
-		cout << "function" << it->second << ".close()\n"; 
-
+		cout << "fFuncs("<< it->second <<").close()\n";
 		id++;
 	}
 
@@ -464,177 +464,251 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 		fDuplo << std::get<2>(functions_duplo[i]) << "\n\n";
 	}
 	fDuplo.close();
-	cout << "fDuplo.close()\n"; 
+	cout << "fDuplo.close()\n";
 
 //////////
-///Bristol format
+///Bristol format 
 /////////	
 
-	Circuit main_circuit;
-	raw_circuit = strchr(raw_circuit, '\n') + 1; //FN main
-	vector <std::pair<int, std::unordered_map<int, int>>> functions;
-
-	uint32_t num_child_func = 0, child_wire, curr_gate_num, one_gate, zero_gate, num_shift = 0, num_non_free_gates = 0, max_wire = 0;
-	curr_gate_num = 0;
-
-	while (*raw_circuit != EOF) {
-		if (*raw_circuit == '\n') {
-			raw_circuit = strchr(raw_circuit, '\n') + 1;
-			continue;
-		}
-
-		if (*raw_circuit == 'F')
-		{
-			raw_circuit = strchr(raw_circuit, ' ') + 1; //
-			num_child_func = (uint32_t) atoi(raw_circuit) - 1;
-			raw_circuit = strchr(raw_circuit, '\n') + 1; //skip line
-			//cout << num_child_func << "\n";
-			std::unordered_map<int,int> global_inp_out_wires;
-			for (uint32_t i = 0; i < circuits[num_child_func].num_inp_wires; i++)
-			{
-				child_wire = (uint32_t) atoi(raw_circuit);
-			//	cout << child_wire << " ";
-				global_inp_out_wires.emplace(i, child_wire);
-				if (child_wire > max_wire)
-					max_wire = child_wire;
-				raw_circuit = strchr(raw_circuit, ' ') + 1;
-			}
-		//	cout << "\n ";
-			for (int i = 0; i < circuits[num_child_func].num_out_wires; i++)
-			{
-				child_wire = (uint32_t) atoi(raw_circuit);
-				//cout << child_wire << " ";
-				global_inp_out_wires.emplace(i + circuits[num_child_func].num_inp_wires, child_wire);
-				if (child_wire > max_wire)
-					max_wire = child_wire;
-				raw_circuit = strchr(raw_circuit, ' ') + 1;
-			}
-			//cout << "\n ";
-			functions.push_back(std::make_pair(num_child_func, global_inp_out_wires));
-		}
-	}
-
-	main_circuit.num_wires = max_wire + 1;
-
-//	one_gate = main_circuit.num_wires;
-//	zero_gate = one_gate + 1;
-//	main_circuit.num_wires += 2;
-//
-//	//add zero, one gate
-//	main_circuit.gates.emplace_back(Gate());
-//	main_circuit.gates[curr_gate_num].type = "NXOR";
-//	main_circuit.gates[curr_gate_num].left_wire = 0;
-//	main_circuit.gates[curr_gate_num].right_wire = 0;
-//	main_circuit.gates[curr_gate_num].out_wire = one_gate;
-//	++curr_gate_num;
-//
-//
-//	main_circuit.gates.emplace_back(Gate());
-//	main_circuit.gates[curr_gate_num].type = "XOR";
-//	main_circuit.gates[curr_gate_num].left_wire = 0;
-//	main_circuit.gates[curr_gate_num].right_wire = 0;
-//	main_circuit.gates[curr_gate_num].out_wire = zero_gate;
-//	++curr_gate_num;
-
-	for (int i = 0; i < functions.size(); i++)
-	{		
-		
-//		for (uint32_t j = 0; j < circuits[std::get<0>(functions[i])].num_inp_wires; j++)
-//		{
-//			main_circuit.gates.emplace_back(Gate());
-//			main_circuit.gates[curr_gate_num].type = "XOR";
-//			main_circuit.gates[curr_gate_num].left_wire = std::get<1>(functions[i])[j];
-//			main_circuit.gates[curr_gate_num].right_wire = 	zero_gate;
-//			main_circuit.gates[curr_gate_num].out_wire = circuits[std::get<0>(functions[i])].inp_wires_start + j + main_circuit.num_wires;
-//			++curr_gate_num;
-//		}
-
-		int num_inp_out_wires = circuits[std::get<0>(functions[i])].num_inp_wires + circuits[std::get<0>(functions[i])].num_out_wires;
-		for (int j = 0; j < circuits[std::get<0>(functions[i])].gates.size(); j++)
-		{
-			main_circuit.gates.emplace_back(Gate());
-
-			if (circuits[std::get<0>(functions[i])].gates[j].type == "AND" || 
-				circuits[std::get<0>(functions[i])].gates[j].type == "NAND" ||
-				circuits[std::get<0>(functions[i])].gates[j].type == "OR" ||
-				circuits[std::get<0>(functions[i])].gates[j].type == "NOR")
-			{
-				num_non_free_gates++;
-			}
-				
-			main_circuit.gates[curr_gate_num].type = circuits[std::get<0>(functions[i])].gates[j].type;
-			//left_wire
-			if (circuits[std::get<0>(functions[i])].gates[j].left_wire < num_inp_out_wires)
-				main_circuit.gates[curr_gate_num].left_wire = std::get<1>(functions[i])[circuits[std::get<0>(functions[i])].gates[j].left_wire];
-			else
-				main_circuit.gates[curr_gate_num].left_wire = circuits[std::get<0>(functions[i])].gates[j].left_wire + main_circuit.num_wires;
+	if (isBristolDup || isBristol)
+	{
 			
-			//right_wire
-			if (circuits[std::get<0>(functions[i])].gates[j].right_wire < num_inp_out_wires)
-				main_circuit.gates[curr_gate_num].right_wire = std::get<1>(functions[i])[circuits[std::get<0>(functions[i])].gates[j].right_wire];
-			else
-				main_circuit.gates[curr_gate_num].right_wire = circuits[std::get<0>(functions[i])].gates[j].right_wire + main_circuit.num_wires;
+		Circuit main_circuit;
+		raw_circuit = strchr(raw_circuit, '\n') + 1; //FN main
+		vector <std::pair<int, std::unordered_map<int, int>>> functions;
 
-			if (circuits[std::get<0>(functions[i])].gates[j].out_wire < num_inp_out_wires)
-				main_circuit.gates[curr_gate_num].out_wire = std::get<1>(functions[i])[circuits[std::get<0>(functions[i])].gates[j].out_wire];
-			else
-				main_circuit.gates[curr_gate_num].out_wire = circuits[std::get<0>(functions[i])].gates[j].out_wire + main_circuit.num_wires;
-			++curr_gate_num;
+		uint32_t num_child_func = 0, child_wire, curr_gate_num, one_gate, zero_gate, num_shift = 0, num_non_free_gates = 0, max_wire = 0;
+		curr_gate_num = 0;
+
+		while (*raw_circuit != EOF) {
+			if (*raw_circuit == '\n') {
+				raw_circuit = strchr(raw_circuit, '\n') + 1;
+				continue;
+			}
+
+			if (*raw_circuit == 'F')
+			{
+				raw_circuit = strchr(raw_circuit, ' ') + 1; //
+				num_child_func = (uint32_t) atoi(raw_circuit) - 1;
+				raw_circuit = strchr(raw_circuit, '\n') + 1; //skip line
+				//cout << num_child_func << "\n";
+				std::unordered_map<int, int> global_inp_out_wires;
+				for (uint32_t i = 0; i < circuits[num_child_func].num_inp_wires; i++)
+				{
+					child_wire = (uint32_t) atoi(raw_circuit);
+		//	cout << child_wire << " ";
+					global_inp_out_wires.emplace(i, child_wire);
+					if (child_wire > max_wire)
+						max_wire = child_wire;
+					raw_circuit = strchr(raw_circuit, ' ') + 1;
+				}
+		//	cout << "\n ";
+				for (int i = 0; i < circuits[num_child_func].num_out_wires; i++)
+				{
+					child_wire = (uint32_t) atoi(raw_circuit);
+					//cout << child_wire << " ";
+					global_inp_out_wires.emplace(i + circuits[num_child_func].num_inp_wires, child_wire);
+					if (child_wire > max_wire)
+						max_wire = child_wire;
+					raw_circuit = strchr(raw_circuit, ' ') + 1;
+				}
+				//cout << "\n ";
+				functions.push_back(std::make_pair(num_child_func, global_inp_out_wires));
+			}
 		}
-//		for (int j = 0; j < circuits[std::get<0>(functions[i])].num_out_wires; j++)
-//		{
-//			main_circuit.gates.emplace_back(Gate());
-//			main_circuit.gates[curr_gate_num].type = "XOR";
-//			main_circuit.gates[curr_gate_num].left_wire = circuits[std::get<0>(functions[i])].out_wires_start + j 
-//													+ main_circuit.num_wires; 
-//			main_circuit.gates[curr_gate_num].right_wire = zero_gate;
-//			main_circuit.gates[curr_gate_num].out_wire =  std::get<2>(functions[i])[j]; 
-//			++curr_gate_num;
-//		}
-				if (circuits[std::get<0>(functions[i])].num_wires > num_shift)
-					num_shift = circuits[std::get<0>(functions[i])].num_wires;
 
-		//main_circuit.num_wires = main_circuit.num_wires + circuits[std::get<0>(functions[i])].num_wires;
-	}
-	main_circuit.num_wires = main_circuit.num_wires + num_shift;
-	fBristol << main_circuit.gates.size() << " " << main_circuit.num_wires << " " 
-										  << num_eval_inp_wires + num_const_inp_wires
-										  << " //#gates, #wires, #out_wires_start // " 
-										  << "# num_non_free_gates  = "  << num_non_free_gates << " " << " \n"; //#gate #wires
-	fBristol << num_const_inp_wires << " " << num_eval_inp_wires 
-									<< " " << num_const_out_wires 
-									<< " " << num_const_out_wires  
-									 << " " << num_eval_out_wires 
-									 << "  //#const_inputs #eval_inputs #total_outputs* #const_outputs #eval_outputs\n\n";	 //#input_eval #input_const #output_eval
+		main_circuit.num_wires = max_wire + 1;
+
+		//	one_gate = main_circuit.num_wires;
+		//	zero_gate = one_gate + 1;
+		//	main_circuit.num_wires += 2;
+		//
+		//	//add zero, one gate
+		//	main_circuit.gates.emplace_back(Gate());
+		//	main_circuit.gates[curr_gate_num].type = "NXOR";
+		//	main_circuit.gates[curr_gate_num].left_wire = 0;
+		//	main_circuit.gates[curr_gate_num].right_wire = 0;
+		//	main_circuit.gates[curr_gate_num].out_wire = one_gate;
+		//	++curr_gate_num;
+		//
+		//
+		//	main_circuit.gates.emplace_back(Gate());
+		//	main_circuit.gates[curr_gate_num].type = "XOR";
+		//	main_circuit.gates[curr_gate_num].left_wire = 0;
+		//	main_circuit.gates[curr_gate_num].right_wire = 0;
+		//	main_circuit.gates[curr_gate_num].out_wire = zero_gate;
+		//	++curr_gate_num;
+
+		for (int i = 0; i < functions.size(); i++)
+		{		
+		
+			//		for (uint32_t j = 0; j < circuits[std::get<0>(functions[i])].num_inp_wires; j++)
+			//		{
+			//			main_circuit.gates.emplace_back(Gate());
+			//			main_circuit.gates[curr_gate_num].type = "XOR";
+			//			main_circuit.gates[curr_gate_num].left_wire = std::get<1>(functions[i])[j];
+			//			main_circuit.gates[curr_gate_num].right_wire = 	zero_gate;
+			//			main_circuit.gates[curr_gate_num].out_wire = circuits[std::get<0>(functions[i])].inp_wires_start + j + main_circuit.num_wires;
+			//			++curr_gate_num;
+			//		}
+
+			int num_inp_out_wires = circuits[std::get<0>(functions[i])].num_inp_wires + circuits[std::get<0>(functions[i])].num_out_wires;
+			for (int j = 0; j < circuits[std::get<0>(functions[i])].gates.size(); j++)
+			{
+				main_circuit.gates.emplace_back(Gate());
+
+				if (circuits[std::get<0>(functions[i])].gates[j].type == "AND" || 
+					circuits[std::get<0>(functions[i])].gates[j].type == "NAND" ||
+					circuits[std::get<0>(functions[i])].gates[j].type == "OR" ||
+					circuits[std::get<0>(functions[i])].gates[j].type == "NOR")
+				{
+					num_non_free_gates++;
+				}
+				
+				main_circuit.gates[curr_gate_num].type = circuits[std::get<0>(functions[i])].gates[j].type;
+				//left_wire
+				if (circuits[std::get<0>(functions[i])].gates[j].left_wire < num_inp_out_wires)
+					main_circuit.gates[curr_gate_num].left_wire = std::get<1>(functions[i])[circuits[std::get<0>(functions[i])].gates[j].left_wire];
+				else
+					main_circuit.gates[curr_gate_num].left_wire = circuits[std::get<0>(functions[i])].gates[j].left_wire + main_circuit.num_wires;
+			
+		//right_wire
+				if (circuits[std::get<0>(functions[i])].gates[j].right_wire < num_inp_out_wires)
+					main_circuit.gates[curr_gate_num].right_wire = std::get<1>(functions[i])[circuits[std::get<0>(functions[i])].gates[j].right_wire];
+				else
+					main_circuit.gates[curr_gate_num].right_wire = circuits[std::get<0>(functions[i])].gates[j].right_wire + main_circuit.num_wires;
+
+				if (circuits[std::get<0>(functions[i])].gates[j].out_wire < num_inp_out_wires)
+					main_circuit.gates[curr_gate_num].out_wire = std::get<1>(functions[i])[circuits[std::get<0>(functions[i])].gates[j].out_wire];
+				else
+					main_circuit.gates[curr_gate_num].out_wire = circuits[std::get<0>(functions[i])].gates[j].out_wire + main_circuit.num_wires;
+				++curr_gate_num;
+			}
+			//		for (int j = 0; j < circuits[std::get<0>(functions[i])].num_out_wires; j++)
+			//		{
+			//			main_circuit.gates.emplace_back(Gate());
+			//			main_circuit.gates[curr_gate_num].type = "XOR";
+			//			main_circuit.gates[curr_gate_num].left_wire = circuits[std::get<0>(functions[i])].out_wires_start + j 
+			//													+ main_circuit.num_wires; 
+			//			main_circuit.gates[curr_gate_num].right_wire = zero_gate;
+			//			main_circuit.gates[curr_gate_num].out_wire =  std::get<2>(functions[i])[j]; 
+			//			++curr_gate_num;
+			//		}
+			if (circuits[std::get<0>(functions[i])].num_wires > num_shift)
+				num_shift = circuits[std::get<0>(functions[i])].num_wires;
+
+						//main_circuit.num_wires = main_circuit.num_wires + circuits[std::get<0>(functions[i])].num_wires;
+		}
+		main_circuit.num_wires = main_circuit.num_wires + num_shift;
+
+		//////////
+		///Bristol format for duplo test
+		/////////	
+		if (isBristolDup)
+		{
+			
+			fBirstolDup.open(dir + "_bristol");
+
+			fBirstolDup << main_circuit.gates.size() << " " << main_circuit.num_wires << " " 
+												  << num_eval_inp_wires + num_const_inp_wires
+												  << " //#gates, #wires, #out_wires_start // " 
+												  << "# num_non_free_gates  = "  << num_non_free_gates << " " << " \n"; //#gate #wires
+			fBirstolDup << num_const_inp_wires << " " << num_eval_inp_wires 
+											<< " " << num_const_out_wires 
+											<< " " << num_const_out_wires  
+											 << " " << num_eval_out_wires 
+											 << "  //#const_inputs #eval_inputs #total_outputs* #const_outputs #eval_outputs\n\n";	 //#input_eval #input_const #output_eval
 
 
 	
-	for (int j = 0; j < main_circuit.gates.size(); j++)
-	{
-		if (main_circuit.gates[j].type == "NOT")
-		{
-			fBristol << "1 1 "
-			<< main_circuit.gates[j].left_wire << " "
-					   << main_circuit.gates[j].out_wire << " "
-			<< main_circuit.gates[j].type << "\n";
-		}
-		else
-		{
-			fBristol << "2 1 "
+			for (int j = 0; j < main_circuit.gates.size(); j++)
+			{
+				if (main_circuit.gates[j].type == "NOT")
+				{
+					fBirstolDup << "1 1 "
 					<< main_circuit.gates[j].left_wire << " "
-					   << main_circuit.gates[j].right_wire << " "
-					   << main_circuit.gates[j].out_wire << " "
-			<< main_circuit.gates[j].type << "\n";
-		}
+							   << main_circuit.gates[j].out_wire << " "
+				<< main_circuit.gates[j].type << "\n";
+				}
+				else
+				{
+					fBirstolDup << "2 1 "
+							<< main_circuit.gates[j].left_wire << " "
+							   << main_circuit.gates[j].right_wire << " "
+							   << main_circuit.gates[j].out_wire << " "
+				<< main_circuit.gates[j].type << "\n";
+				}
 			
+			}
+			fBirstolDup.close();
+			cout << "fBirstolDup.close()\n";
+
+		 }
+		 //////////
+		///Bristol format for Lego+RR16
+		/////////	
+		if (isBristol)
+		{			
+		
+			string strBristol = "";
+			int num_gate_bristol = main_circuit.gates.size();
+			int num_wire_bristol = main_circuit.num_wires;
+
+			for (int j = 0; j < main_circuit.gates.size(); j++)
+			{
+				if (main_circuit.gates[j].type == "NOT")
+				{
+					strBristol += "1 1 "
+					+ to_string(main_circuit.gates[j].left_wire) + " "
+					+ to_string(main_circuit.gates[j].out_wire) + " INV\n";
+				}
+				else if (main_circuit.gates[j].type == "NXOR")
+				{
+					strBristol += "2 1 "
+					+ to_string(main_circuit.gates[j].left_wire) + " "
+					+ to_string(main_circuit.gates[j].right_wire) + " "
+					+ to_string(num_wire_bristol) + " XOR\n";
+
+					strBristol += "1 1 "
+					+ to_string(num_wire_bristol) + " "
+					+ to_string(main_circuit.gates[j].out_wire) + " INV\n";
+
+					num_gate_bristol++;
+					num_wire_bristol++;
+				}
+				else
+				{
+					strBristol += "2 1 "
+							+ to_string(main_circuit.gates[j].left_wire) + " "
+							 + to_string(main_circuit.gates[j].right_wire) + " "
+							 + to_string(main_circuit.gates[j].out_wire) + " "
+		+ main_circuit.gates[j].type + "\n";
+				}
+			
+			}
+			fBirstol.open(dir + "_bristolXORAND");
+
+			fBirstol << num_gate_bristol << " " 
+			<< num_wire_bristol << " \n"; 
+
+			fBirstol << num_const_inp_wires << " " 
+					<< num_eval_inp_wires << " " 
+					  << num_eval_out_wires << "\n\n";	 //#input_eval #input_const #output_eval
+			fBirstol << strBristol;
+			fBirstol.close();
+			cout << "fBirstol.close()\n";
+
+		}
+
 	}
-	fBristol.close();
-	cout << "fBristol.close()\n"; 
 }
 
 
-void frigate_read_text_circuit(const char* circuit_file)
+void frigate_read_text_circuit(const char* circuit_file, bool isBDup, bool isB)
 {
+	isBristol = isB;
+	isBristolDup = isBDup;
+
 	FILE* file;
 	size_t file_size;
 	file = fopen(circuit_file, "r");
@@ -645,7 +719,7 @@ void frigate_read_text_circuit(const char* circuit_file)
 		isAES = true;
 
 	fDuplo.open(str + "_duplo");
-	fBristol.open(str + "_bristol");
+	
 	if (file == NULL) {
 		printf("ERROR: Could not open text circuit: %s\n", circuit_file);
 		exit(EXIT_FAILURE);
@@ -668,7 +742,7 @@ void frigate_read_text_circuit(const char* circuit_file)
 	fclose(file);
 	frigate_ParseComposedCircuit(data.get());
 	
-	
+
 }
 
 void print_wires(std::unordered_map<string, uint32_t> wires)

@@ -45,6 +45,9 @@ bool printInterpreterHeader = false;
 bool useInterpreterValidationOption = false;
 bool printFullGateList = false;
 bool useTinyInstructions = false;
+
+bool isBirstolDuplo = false;
+bool isBristolFile=false;
 string gatelistfilename;
 
 //duplo
@@ -131,6 +134,13 @@ void processArgs(int argc, char *argv[])
 	    {
 	        //see output
 		    printDuploGC(true);
+	    } else if(s == "-bdp")
+	    {
+		    isBirstolDuplo=true;
+	    } else if(s == "-b")
+	    {
+	        //see output
+		    isBristolFile = true;
 	    }
         else
         {
@@ -204,7 +214,7 @@ int main(int argc, char *argv[])
 	char * S = new char[fileGC.length() + 1];
 	strcpy(S, fileGC.c_str());
 	
-	frigate_read_text_circuit(S);
+	frigate_read_text_circuit(S, isBirstolDuplo, isBristolFile);
 
     if(runInterpreter)
     {
