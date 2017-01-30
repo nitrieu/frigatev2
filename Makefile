@@ -4,6 +4,7 @@ COMPILERO = parse_driver.o scanner.o parser.o types.o error.o ast.o defines.o in
 OP =  -std=c++11 -g -O3      
 GPP = g++
 
+
 all: $(COMPILERO)
 	$(GPP)  $(OP) -o frigate main.cpp $(COMPILERO)
 #	make interp
