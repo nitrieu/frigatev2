@@ -686,6 +686,32 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 				}
 			
 			}
+			
+			//add zero gate
+			int zero_wire = num_wire_bristol;
+				strBristol += "2 1 "
+				+ to_string(0) + " "
+				+ to_string(0) + " "
+				+ to_string(zero_wire) + " XOR\n";
+			
+				num_gate_bristol++;
+				num_wire_bristol++;
+			
+			cout << num_eval_out_wires << "\n";
+			cout << num_const_out_wires << "\n";
+			int start_out_wire = num_const_inp_wires + num_eval_inp_wires;
+			cout << start_out_wire << "\n";
+			for (int j = 0; j < num_const_out_wires; j++) //shift output to end
+			{
+				strBristol += "2 1 "
+				+ to_string(start_out_wire + j) + " "
+				+ to_string(zero_wire) + " "
+				+ to_string(num_wire_bristol) + " XOR\n";
+			
+				num_gate_bristol++;
+				num_wire_bristol++;
+			}
+			
 			fBirstol.open(dir + "_bristolXORAND");
 
 			fBirstol << num_gate_bristol << " " 
@@ -693,7 +719,7 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 
 			fBirstol << num_const_inp_wires << " " 
 					<< num_eval_inp_wires << " " 
-					  << num_eval_out_wires << "\n\n";	 //#input_eval #input_const #output_eval
+					  << num_const_out_wires << "\n\n";	 //#input_eval #input_const #output_eval
 			fBirstol << strBristol;
 			fBirstol.close();
 			cout << "fBirstol.close()\n";
