@@ -1,2 +1,0 @@
-/usr/bin/ar qc ../build/obj/libCIRCUIT.a  CMakeFiles/CIRCUIT.dir/circuit/circuit-parser.cpp.o
-/usr/bin/ranlib ../build/obj/libCIRCUIT.a

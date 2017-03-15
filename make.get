@@ -1,0 +1,23 @@
+
+#!/bin/bash
+
+flex --yylineno scanner.ll 
+mv lex.Example.cc scanner.cc
+bison parser.yy -o  parser.cc
+g++  -std=c++11 -g -O3       -c -o parser.o parser.cc 
+g++  -std=c++11 -g -O3       -c -o parse_driver.o parse_driver.cc
+g++  -std=c++11 -g -O3       -c -o scanner.o scanner.cc -Wno-deprecated
+g++  -std=c++11 -g -O3       -c -o error.o error.cpp
+g++  -std=c++11 -g -O3       -c -o types.o types.cpp	
+g++  -std=c++11 -g -O3       -c -o ast.o ast.cpp
+g++  -std=c++11 -g -O3       -c -o defines.o defines.cpp
+g++  -std=c++11 -g -O3       -c -o includes.o includes.cpp
+g++  -std=c++11 -g -O3       -c -o exprtest.o exprtest.cpp
+g++  -std=c++11 -g -O3       -c -o wire.o wire.cpp
+g++  -std=c++11 -g -O3       -c -o wirepool.o wirepool.cpp
+g++  -std=c++11 -g -O3       -c -o circuito.o circuitoutput.cpp
+g++  -std=c++11 -g -O3       -c -o variable.o variable.cpp
+g++  -std=c++11 -g -O3       -c -o typegenerate.o typegenerate.cpp
+g++  -std=c++11 -g -O3       -c -o interpreter.o interpreter.cpp
+g++  -std=c++11 -g -O3       -c -o circuit.o circuit-parser.cpp
+g++  -std=c++11 -g -O3       -o frigate main.cpp parse_driver.o scanner.o parser.o types.o error.o ast.o defines.o includes.o exprtest.o circuito.o wire.o variable.o wirepool.o typegenerate.o interpreter.o circuit.o

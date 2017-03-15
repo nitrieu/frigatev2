@@ -1,2 +1,0 @@
-/usr/bin/ar qc ../build/obj/libCOMMON_TOOLS.a  CMakeFiles/COMMON_TOOLS.dir/util/common-tools.cpp.o
-/usr/bin/ranlib ../build/obj/libCOMMON_TOOLS.a

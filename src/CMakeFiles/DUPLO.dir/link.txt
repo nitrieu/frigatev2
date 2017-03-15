@@ -1,2 +1,0 @@
-/usr/bin/ar qc ../build/obj/libDUPLO.a  CMakeFiles/DUPLO.dir/duplo/duplo-evaluator.cpp.o CMakeFiles/DUPLO.dir/duplo/duplo-constructor.cpp.o CMakeFiles/DUPLO.dir/duplo/duplo.cpp.o
-/usr/bin/ranlib ../build/obj/libDUPLO.a

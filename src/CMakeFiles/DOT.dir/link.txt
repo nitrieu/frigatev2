@@ -1,2 +1,0 @@
-/usr/bin/ar qc ../build/obj/libDOT.a  CMakeFiles/DOT.dir/dot/alsz-dot-ext-rec.cpp.o CMakeFiles/DOT.dir/dot/alsz-dot-ext-snd.cpp.o CMakeFiles/DOT.dir/dot/alsz-dot-ext.cpp.o
-/usr/bin/ranlib ../build/obj/libDOT.a

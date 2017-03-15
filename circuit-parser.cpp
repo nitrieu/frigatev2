@@ -1182,7 +1182,7 @@ Circuit generate_random_circuit(int num_nonXOR_gate)
 		cRandom.gates[curr_gate_num].out_wire = cRandom.out_wires_start + i;
 		++curr_gate_num;
 	}
-
+cRandom.num_gates = curr_gate_num; 
 	fRandom << "FN " <<  cRandom.gates.size() << " " << cRandom.num_wires << " //#gate #wires \n";
 	for (int i = 0; i < cRandom.gates.size(); i++)
 	{

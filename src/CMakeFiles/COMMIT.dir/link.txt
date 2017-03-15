@@ -1,2 +1,0 @@
-/usr/bin/ar qc ../build/obj/libCOMMIT.a  CMakeFiles/COMMIT.dir/commit/commit-scheme-rec.cpp.o CMakeFiles/COMMIT.dir/commit/commit-scheme-snd.cpp.o CMakeFiles/COMMIT.dir/commit/commit-scheme.cpp.o CMakeFiles/COMMIT.dir/commit/ecc.cpp.o
-/usr/bin/ranlib ../build/obj/libCOMMIT.a

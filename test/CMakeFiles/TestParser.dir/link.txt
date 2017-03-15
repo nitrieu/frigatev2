@@ -1,1 +1,0 @@
-/usr/bin/c++   -march=native -std=c++14 -pthread -g -DDEBUG -g3 -O0 -Wall -pg   CMakeFiles/TestParser.dir/test-circuit-parser.cpp.o  -o ../build/debug/TestParser -rdynamic ../build/obj/libCIRCUIT.a ../build/obj/libgtest_main.a ../build/obj/libgtest.a -lpthread 

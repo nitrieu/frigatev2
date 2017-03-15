@@ -1,2 +1,0 @@
-/usr/bin/ar qc ../build/obj/libBYTEARRAYVEC.a  CMakeFiles/BYTEARRAYVEC.dir/util/byte-array-vec.cpp.o
-/usr/bin/ranlib ../build/obj/libBYTEARRAYVEC.a
