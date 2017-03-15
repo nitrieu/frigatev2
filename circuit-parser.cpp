@@ -48,10 +48,17 @@ Circuit duploParseCircuit(char raw_circuit[]) {
 	circuit.num_wires = (uint32_t) atoi(raw_circuit);
 	
 	raw_circuit = strchr(raw_circuit, ' ') + 1; // #name
+	
+	int r1 = 0; 
+	while (raw_circuit[r1] != '\n')
+	{
+		circuit.circuit_name.append(1, raw_circuit[r1]);
+		r1++;
+	}
 	char type[4];
-	memcpy(type, raw_circuit, 4 * sizeof(char));
-	std::string type_string(type);
-	circuit.circuit_name = type_string;
+	//memcpy(type, raw_circuit, 4 * sizeof(char));
+	//std::string type_string(type);
+	//circuit.circuit_name = type_string;
 	
 	raw_circuit = strchr(raw_circuit, '\n') + 1; //Skip this line
 
@@ -456,12 +463,12 @@ bool frigate_ParseComposedCircuit(char raw_circuit[]) {
 			fDuplo << "--end FN " << it->second << " -- \n\n";
 
 			auto aa = to_string(it->second);		
-			fFuncs.open(dir + "_duplo_function_" + to_string(it->second));
+			fFuncs.open(dir +"."+  circuits[it->first - 1].circuit_name);
 			//fFuncs << circuits[it->first - 1].circuit_name << " " << circuits[it->first - 1].num_non_free_gates <<  endl;
 			fFuncs << head_func;
 			fFuncs << strFunction[it->first - 1];
 			fFuncs.close();
-			cout << "fFuncs(" << it->second << ").close()\n";
+			cout << circuits[it->first - 1].circuit_name << ".close()\n";
 			id++;
 		}
 
@@ -799,7 +806,7 @@ void frigate_read_text_circuit(const char* circuit_file, bool isBDup, bool isB)
 	fclose(file);
 	bool isDuploFormat=frigate_ParseComposedCircuit(data.get());
 	if (!isDuploFormat)
-	remove(circuit_file);
+		remove(circuit_file);
 	
 }
 
