@@ -1,5 +1,5 @@
 # Batched Oblivious PRF
-This is the implementation of our xxx paper: **DUPLO: Unifying Cut-and-Choose for Garbled Circuits**[[ePrint](https://eprint.iacr.org/2017/xxx)].  We extend the [`Frigate compiler`] (https://bitbucket.org/bmood/frigaterelease) that allows to transform a high-level C-style program into a
+This is the implementation of our xxx paper: **DUPLO: Unifying Cut-and-Choose for Garbled Circuits**[[ePrint](https://eprint.iacr.org/2017/xxx)].  We extend the [`Frigate` (https://bitbucket.org/bmood/frigaterelease)] compiler that allows to transform a high-level C-style program into a
 set of boolean circuit components that can be fed to
 the DUPLO system for secure computation
 
@@ -9,7 +9,7 @@ the DUPLO system for secure computation
 
 ## Installations
 ---
-###Required libraries
+### Required libraries
   * [`bison  2.7.12-4996`](http://launchpadlibrarian.net/140087283/libbison-dev_2.7.1.dfsg-1_amd64.deb)
   * [`flex  2.5.37`](http://launchpadlibrarian.net/140087282/bison_2.7.1.dfsg-1_amd64.deb)
   
@@ -21,10 +21,12 @@ After cloning project from git,
 2. Run:
 	frigate <program> flag1 … flag n
 	
-#### Example
+#### Example:
+	./frigate ./circuits/test.wir -dp
+#### Generate AES 
+	./frigate ./circuits/aes/p1_aes.wir -dp -aes
 
-#### for AES
-
-### for random circuits
-
+#### Generate random circuits
+	./frigate ./circuits/randomcCircuits/p12_1_test.wir -dp -rand
 	
+### Output description 
