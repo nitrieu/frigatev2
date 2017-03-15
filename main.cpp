@@ -47,6 +47,7 @@ bool printFullGateList = false;
 bool useTinyInstructions = false;
 
 bool isBirstolDuplo = false;
+bool is_AES = false;
 bool isBristolFile=false;
 bool isPrintDuploFile = false;
 string gatelistfilename;
@@ -144,6 +145,11 @@ void processArgs(int argc, char *argv[])
 	        //see output
 		    isBristolFile = true;
 	    }
+	    else if(s == "-aes")
+	    {
+	        //see output
+		    is_AES = true;
+	    }
         else
         {
             cout << "Undefined Arguement \""<< s <<"\"\n";
@@ -217,7 +223,7 @@ int main(int argc, char *argv[])
 	string fileGC = file + ".GC";
 	char * S = new char[fileGC.length() + 1];
 	strcpy(S, fileGC.c_str());
-		 frigate_read_text_circuit(S, isBirstolDuplo, isBristolFile);
+		 frigate_read_text_circuit(S, isBirstolDuplo, isBristolFile, is_AES);
 		
 }
 

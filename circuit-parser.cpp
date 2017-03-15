@@ -768,7 +768,7 @@ bool frigate_ParseComposedCircuit(char raw_circuit[]) {
 }
 
 #include <stdio.h>
-void frigate_read_text_circuit(const char* circuit_file, bool isBDup, bool isB)
+void frigate_read_text_circuit(const char* circuit_file, bool isBDup, bool isB, bool is_AES)
 {
 	isBristol = isB;
 	isBristolDup = isBDup;
@@ -779,8 +779,10 @@ void frigate_read_text_circuit(const char* circuit_file, bool isBDup, bool isB)
 
 	std::string str(circuit_file);
 	dir = str;
-	if (strstr(str.c_str(), "aes"))
-		isAES = true;
+	//if (strstr(str.c_str(), "aes"))
+	//	isAES = true;
+
+	isAES = is_AES;
 
 	fDuplo.open(str + "_duplo");
 	
@@ -940,6 +942,7 @@ Circuit sBoxYale113_parse(char raw_circuit[]) {
 	sBox.num_out_wires = 8;
 	sBox.inp_wires_start = 0;
 	sBox.out_wires_start = 8;
+	sBox.circuit_name = "AES";
 
 	for (int i = 0; i < sBox.num_inp_wires; i++)
 	{
