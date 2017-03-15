@@ -1,55 +1,30 @@
-# frigate-duplo
-##I. copy from the original frigate code https://bitbucket.org/bmood/frigaterelease
-##II. modify the frigate code to output the GC format that we want for the duplo 
-### to run:
-./frigate program -dp
+# Batched Oblivious PRF
+This is the implementation of our xxx paper: **DUPLO: Unifying Cut-and-Choose for Garbled Circuits**[[ePrint](https://eprint.iacr.org/2017/xxx)].  We extend the [`Frigate compiler`] (https://bitbucket.org/bmood/frigaterelease) that allows to transform a high-level C-style program into a
+set of boolean circuit components that can be fed to
+the DUPLO system for secure computation
 
-for example:  ./frigate ./tests/temp.wir -dp
+## Abstract
+---
 
-### output:
-outputs in file program.duplo (tests/temp.wir.duplo)
-### our format:
 
-cntGate cntFunction
+## Installations
+---
+###Required libraries
+  * [`bison  2.7.12-4996`](http://launchpadlibrarian.net/140087283/libbison-dev_2.7.1.dfsg-1_amd64.deb)
+  * [`flex  2.5.37`](http://launchpadlibrarian.net/140087282/bison_2.7.1.dfsg-1_amd64.deb)
+  
+Please read [`Frigate`](https://bitbucket.org/bmood/frigaterelease) for more detail about how to install the required libraries
+### Building the Project
+After cloning project from git,
 
-cntInput1 cntInput2 cntOutput
+1. make
+2. Run:
+	frigate <program> flag1 … flag n
+	
+#### Example
 
-6 onegate
+#### for AES
 
-7 zerogate
+### for random circuits
 
-FN 0 4 18 2 16 10->indicate for function 0, #inputwire 4, startInputWire 18, #outputwire 4, startOutwire 16, #wire 10
-
-2 1 0 1 2 AND  -> AND(w0,w1)=w2
-
-......
-
-......
-
-F 2-> indicate for function 2
-
-....
-
-....
-
-F 0 -> indicate for main function
-
-....
-
-....
-
-F1 -> call function F1
-
-F2 -> call function F2
-
-...
-
-##III. generate the GC for the functions: 
-1. matrix multiplication
-2. hamming distance
-3. multiplication of 2 numbers
-4. AES, RSA....
-
-###IV. Interpreter (real value test file)
- ./frigate ./tests/temp.wir -dp -dpTest realValue.txt
-
+	
