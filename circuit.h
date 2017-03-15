@@ -52,9 +52,10 @@ public:
 Circuit duploParseCircuit(char raw_circuit[]);
 bool frigate_ParseComposedCircuit(char* data);
 
-void frigate_read_text_circuit(const char* circuit_file, bool isBristolDup, bool isBristol,bool isAES); //each circuit contains each function of the program
+void frigate_read_text_circuit(const char* circuit_file, bool isBristolDup, bool isBristol,bool isAES, bool is_random); //each circuit contains each function of the program
 
 Circuit sBoxYale_parse(char raw_circuit[]);
 Circuit read_text_sBoxYale();
 
-
+Circuit generate_random_circuit(int num_nonXOR_gate);
+Circuit generate_text_RandomCircuit();

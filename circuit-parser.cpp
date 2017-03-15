@@ -15,7 +15,9 @@ ofstream fBirstol;
 ofstream fSbox;
 ofstream fFuncs;
 std::string dir;
+ofstream fRandom;
 bool isAES = false;
+bool isRandom = false;
 bool isBristolDup, isBristol;
 
 template <typename T1, typename T2>
@@ -332,6 +334,9 @@ bool frigate_ParseComposedCircuit(char raw_circuit[]) {
 		if (isAES && i == 0)	
 			circuits[0] = read_text_sBoxYale();
 
+		if (isRandom && i == 0)	
+			circuits[0] = generate_text_RandomCircuit();
+
 		raw_circuit = strchr(raw_circuit, '-') + 1; //next function
 		raw_circuit = strchr(raw_circuit, '\n') + 1; //skip line
 		raw_circuit = strchr(raw_circuit, '\n') + 1; //skip line
@@ -493,10 +498,10 @@ bool frigate_ParseComposedCircuit(char raw_circuit[]) {
 
 		fDuplo << "Error!\n";
 		fDuplo << ".wir have a wrong format!\n";
-		fDuplo << "hints: refactoring main function that contains ONLY function calls\n";
+		fDuplo << "fix: refactoring main function that contains ONLY function calls\n";
 		cout << "fDuplo.close()\n";
 		cout << "Error: .wir have a wrong format!\n";
-		cout << "hints: refactoring main function that contains ONLY function calls\n";
+		cout << "fix: refactoring main function that contains ONLY function calls\n";
 		fDuplo.close();
 		return false;
 	}
@@ -768,7 +773,7 @@ bool frigate_ParseComposedCircuit(char raw_circuit[]) {
 }
 
 #include <stdio.h>
-void frigate_read_text_circuit(const char* circuit_file, bool isBDup, bool isB, bool is_AES)
+void frigate_read_text_circuit(const char* circuit_file, bool isBDup, bool isB, bool is_AES, bool is_random)
 {
 	isBristol = isB;
 	isBristolDup = isBDup;
@@ -783,6 +788,7 @@ void frigate_read_text_circuit(const char* circuit_file, bool isBDup, bool isB, 
 	//	isAES = true;
 
 	isAES = is_AES;
+	isRandom = is_random;
 
 	fDuplo.open(str + "_duplo");
 	
@@ -807,7 +813,7 @@ void frigate_read_text_circuit(const char* circuit_file, bool isBDup, bool isB, 
 	}
 	fclose(file);
 	bool isDuploFormat=frigate_ParseComposedCircuit(data.get());
-	if (!isDuploFormat)
+	//if (!isDuploFormat)
 		remove(circuit_file);
 	
 }
@@ -942,7 +948,7 @@ Circuit sBoxYale113_parse(char raw_circuit[]) {
 	sBox.num_out_wires = 8;
 	sBox.inp_wires_start = 0;
 	sBox.out_wires_start = 8;
-	sBox.circuit_name = "AES";
+	sBox.circuit_name = "fAES";
 
 	for (int i = 0; i < sBox.num_inp_wires; i++)
 	{
@@ -1075,4 +1081,113 @@ Circuit read_text_sBoxYale()
 	Circuit sBox = sBoxYale113_parse(data.get());
 	fSbox.close();
 	return sBox;
+}
+
+Circuit generate_text_RandomCircuit()
+{
+
+	fRandom.open("tests/dp/random.GC");
+	Circuit fcircuit = generate_random_circuit(128);
+	fRandom.close();
+	return fcircuit;
+}
+
+
+Circuit generate_random_circuit(int num_nonXOR_gate)
+{
+
+	Circuit cRandom;
+	string left_wire, right_wire, out_wire, gate;
+	int pos, pos_wire, curr_wire_num = 0, curr_gate_num = 0;
+	std::string delimiter = "\n";
+
+	std::vector<int> wires;
+
+	cRandom.num_inp_wires = 256;
+	cRandom.num_out_wires = 128;
+	cRandom.inp_wires_start = 0;
+	cRandom.out_wires_start = 256;
+	cRandom.circuit_name = "fRandom";
+	int rand_out_wire, idx_rnd_inp_wire1, idx_rnd_inp_wire2, rand_type_gate;
+	int max_wire = 256;
+	cRandom.num_wires = max_wire + 256 + 128;
+	int num_input_wires1 = cRandom.num_inp_wires / 2;
+	curr_wire_num = 256 + 128;
+
+	for (int i = 0; i < num_input_wires1; i++) //input
+	{
+		
+		rand_type_gate = rand() % 2;
+		cRandom.gates.emplace_back(Gate());
+		
+		if (rand_type_gate == 0)
+			cRandom.gates[curr_gate_num].type = "XOR";
+		else
+		{
+			cRandom.gates[curr_gate_num].type = "AND";
+			cRandom.num_non_free_gates++;
+		}
+		cRandom.gates[curr_gate_num].left_wire =  i;
+		cRandom.gates[curr_gate_num].right_wire =  num_input_wires1 + i;
+		cRandom.gates[curr_gate_num].out_wire = curr_wire_num;
+		
+		wires.push_back(curr_wire_num);
+		wires.push_back(i);
+		wires.push_back(num_input_wires1 + i);
+
+		++curr_gate_num;
+		curr_wire_num++;
+	}
+
+	while (cRandom.num_non_free_gates != num_nonXOR_gate) {
+		idx_rnd_inp_wire1 = rand() % wires.size();
+		idx_rnd_inp_wire2 = rand() % wires.size();
+		rand_out_wire = rand() % max_wire + 256 + 128;
+
+		if (rand_out_wire > curr_wire_num)
+		{
+			rand_out_wire = curr_wire_num;
+			curr_wire_num++;
+		}
+		rand_type_gate = rand() % 2;
+		cRandom.gates.emplace_back(Gate());
+
+		if (rand_type_gate == 0)
+			cRandom.gates[curr_gate_num].type = "XOR";
+		else
+		{
+			cRandom.gates[curr_gate_num].type = "AND";
+			cRandom.num_non_free_gates++;
+		}
+		
+		if (wires[idx_rnd_inp_wire1] == 4783375 || wires[idx_rnd_inp_wire2] == 4783375)
+			cout << "d";
+		cRandom.gates[curr_gate_num].left_wire =  wires[idx_rnd_inp_wire1];
+		cRandom.gates[curr_gate_num].right_wire = wires[idx_rnd_inp_wire2];
+		cRandom.gates[curr_gate_num].out_wire = rand_out_wire;
+		++curr_gate_num;
+		wires.push_back(rand_out_wire);
+	}
+
+	for (int i = 0; i < cRandom.num_out_wires; i++) //output
+	{
+		idx_rnd_inp_wire1 = rand() % wires.size();
+		idx_rnd_inp_wire2 = rand() % wires.size();
+		
+		cRandom.gates.emplace_back(Gate());
+		cRandom.gates[curr_gate_num].type = "XOR";
+		
+		cRandom.gates[curr_gate_num].left_wire =  wires[idx_rnd_inp_wire1];
+		cRandom.gates[curr_gate_num].right_wire = wires[idx_rnd_inp_wire2];
+		cRandom.gates[curr_gate_num].out_wire = cRandom.out_wires_start + i;
+		++curr_gate_num;
+	}
+
+	fRandom << "FN " <<  cRandom.gates.size() << " " << cRandom.num_wires << " //#gate #wires \n";
+	for (int i = 0; i < cRandom.gates.size(); i++)
+	{
+		fRandom << "2 1 " << cRandom.gates[i].left_wire  << " " << cRandom.gates[i].right_wire  << " "
+						 << cRandom.gates[i].out_wire << " " << cRandom.gates[i].type << "\n"; 
+	}
+	return cRandom;
 }

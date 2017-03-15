@@ -28,8 +28,8 @@ return a;
 
 function void main()
 {
-
-int b=f1(input1,input1);
+int c=input1^input2;
+int b=f1(c,input1);
 output1 = f0(b,input2);
 
 
