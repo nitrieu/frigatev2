@@ -1,5 +1,5 @@
 # Batched Oblivious PRF
-This is the implementation of our xxx paper: **DUPLO: Unifying Cut-and-Choose for Garbled Circuits**[[ePrint](https://eprint.iacr.org/2017/xxx)].  We extend the [`Frigate`] (https://bitbucket.org/bmood/frigaterelease) compiler that allows to transform a high-level C-style program into a
+This is the implementation of our xxx paper: **DUPLO: Unifying Cut-and-Choose for Garbled Circuits**[[ePrint](https://eprint.iacr.org/2017/xxx)].  We extend the [`Frigate`](https://bitbucket.org/bmood/frigaterelease) compiler that allows to transform a high-level C-style program into a
 set of boolean circuit components that can be fed to
 the DUPLO system for secure computation
 
@@ -21,12 +21,18 @@ After cloning project from git,
 2. Run:
 	frigate <program> flag1 … flag n
 	
+#### Additional Flags:
+	-dp			output circuit file in DUPLO format
+	-b			output circuit file in [`Bristol`](https://www.cs.bris.ac.uk/Research/CryptographySecurity/MPC/) format
+	-aes 		embed the [`S-Box`](http://www.cs.yale.edu/homes/peralta/CircuitStuff/CMT.html) circuit to generate AES circuits efficiently
+	-rand		generate a random component subcircuit to finding "sweet spot" for DUPLO
 #### Example:
 	./frigate ./circuits/test.wir -dp
-#### Generate AES 
+##### Generate AES 
 	./frigate ./circuits/aes/p1_aes.wir -dp -aes
 
-#### Generate random circuits
+##### Generate random circuits
 	./frigate ./circuits/randomcCircuits/p12_1_test.wir -dp -rand
 	
-### Output description 
+### DUPLO circuit format: 
+Each file consists of:
