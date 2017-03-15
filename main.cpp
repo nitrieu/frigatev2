@@ -48,6 +48,7 @@ bool useTinyInstructions = false;
 
 bool isBirstolDuplo = false;
 bool isBristolFile=false;
+bool isPrintDuploFile = false;
 string gatelistfilename;
 
 //duplo
@@ -134,6 +135,7 @@ void processArgs(int argc, char *argv[])
 	    {
 	        //see output
 		    printDuploGC(true);
+		    isPrintDuploFile = true;
 	    } else if(s == "-bdp")
 	    {
 		    isBirstolDuplo=true;
@@ -156,65 +158,68 @@ int main(int argc, char *argv[])
     
 	
     ///process args
-    processArgs(argc,argv);
+	processArgs(argc, argv);
     
-    struct timeval t0,t1;
-    gettimeofday(&t0, 0);
+	struct timeval t0, t1;
+	gettimeofday(&t0, 0);
     
-    string file = argv[1];
+	string file = argv[1];
 
 	Node * topnode = generateAst(file);
     
-    if(topnode==0)
-    {
-        std::cerr << "Could not open file: \"" << file << "\""<<std::endl;
-        exit(0);
-    }
+	if (topnode == 0)
+	{
+		std::cerr << "Could not open file: \"" << file << "\"" << std::endl;
+		exit(0);
+	}
 
-    includeIncludes(topnode, file);
-    expandDefines(topnode);
+	includeIncludes(topnode, file);
+	expandDefines(topnode);
     
     
     
-    generateTypes(topnode);
+	generateTypes(topnode);
     
-    //cout << "starting output\n";
+	//cout << "starting output\n";
     
-    outputCircuit(isProgramListNode(topnode),file);
-    
-    
-    
-    if(hasWarning() && printWarnings)
-    {
-        printErrors(std::cout);
-    }
-    else if(hasWarning())
-    {
-        cout << "\nWarnings hidden by -nowarn.\n\n";
-    }
-    
-    if(printGates)
-    {
-        cout <<"\n\n\t program and gatecount map: \n\n";
-        topnode->print(std::cout, 0);
-    }
-    
-    delete topnode;
+	outputCircuit(isProgramListNode(topnode), file);
     
     
-    gettimeofday(&t1, 0);
-    long long elapsed = (t1.tv_sec-t0.tv_sec)*1000000LL + t1.tv_usec-t0.tv_usec;
-    if(printCompileTime) cout << "compiler:\ttime(s): "<< (elapsed*1.0)/1000000 <<"\n";
+    
+	if (hasWarning() && printWarnings)
+	{
+		printErrors(std::cout);
+	}
+	else if (hasWarning())
+	{
+		cout << "\nWarnings hidden by -nowarn.\n\n";
+	}
+    
+	if (printGates)
+	{
+		cout << "\n\n\t program and gatecount map: \n\n";
+		topnode->print(std::cout, 0);
+	}
+    
+	delete topnode;
+    
+    
+	gettimeofday(&t1, 0);
+	long long elapsed = (t1.tv_sec - t0.tv_sec) * 1000000LL + t1.tv_usec - t0.tv_usec;
+	if (printCompileTime) cout << "compiler:\ttime(s): " << (elapsed * 1.0) / 1000000 << "\n";
 	
 	
 	//ofstream fDuploGC;
 	//read_text_sBoxYale();
+	if (isPrintDuploFile)
+	{		
 	
 	string fileGC = file + ".GC";
 	char * S = new char[fileGC.length() + 1];
 	strcpy(S, fileGC.c_str());
-	
-	frigate_read_text_circuit(S, isBirstolDuplo, isBristolFile);
+		 frigate_read_text_circuit(S, isBirstolDuplo, isBristolFile);
+		
+}
 
     if(runInterpreter)
     {

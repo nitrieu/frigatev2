@@ -5076,7 +5076,10 @@ void outputCircuit(ProgramListNode * topNode, string outputFilePrefix)
 			           // strDuploGC.append(strDuploZeroOne + "\n");
 		            }		           
 	            }
-	           // makeONEandZERO(mos, idxFunc);
+	            //makeONEandZERO(mos, idxFunc);
+//	            if (isPrintDuploGC) {
+//		            strDuploGC.append(strDuploZeroOne[idxFunc]);		            
+//	            }
 	            selectedNode->circuitOutput(vc, tm, idxFunc);
                 if(seeoutput) cout << "printing output\n";
                 

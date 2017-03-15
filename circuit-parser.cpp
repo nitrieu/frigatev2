@@ -284,7 +284,7 @@ Circuit duploParseCircuit(char raw_circuit[]) {
 }
 
 
-void frigate_ParseComposedCircuit(char raw_circuit[]) {	
+bool frigate_ParseComposedCircuit(char raw_circuit[]) {	
 	
 
 	uint32_t num_functions = (uint32_t) atoi(raw_circuit); //get number functions 
@@ -395,76 +395,105 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 	string input_func, output_func;
 	int idx_func=1;
 
-	while (getline(type_string, line) && !type_string.eof()) {
+	bool isFunctionWrap = true;
+	while (getline(type_string, line) && !type_string.eof() && isFunctionWrap) {
 		
-		if (!line.empty() && line.at(0) == 'F') //FN 2
+		if (!line.empty()) //FN 2
 		{
-			pos = line.find("\n"); //out_wire
-			line.erase(0, 3); // 'FN '
-			num_function = std::stoi(line.substr(0, pos)); //2		
+			if (line.at(0) == 'F')
+			{
+				pos = line.find("\n"); //out_wire
+				line.erase(0, 3); // 'FN '
+				num_function = std::stoi(line.substr(0, pos)); //2		
 			
-			getline(type_string, input_func);
-			getline(type_string, output_func);	
+				getline(type_string, input_func);
+				getline(type_string, output_func);	
 
-			if (real_functions.find(num_function) == real_functions.end()) {
-				real_functions.emplace(num_function, idx_func);
-				idx_func++;
+				if (real_functions.find(num_function) == real_functions.end())
+				{
+					real_functions.emplace(num_function, idx_func);
+					idx_func++;
+				}
+				functions_duplo.push_back(std::make_tuple(real_functions[num_function], input_func, output_func));	
 			}
-			functions_duplo.push_back(std::make_tuple(real_functions[num_function], input_func, output_func));	
-	
+			else
+			{
+				isFunctionWrap = false;
+				
+			}
 		}
 	}
 
 	
-	fDuplo << real_functions.size() << " " << functions_duplo.size() << " " << functions_duplo.size() << "\n";//" // #numberfunction #layer  #numberComponent\n";
-	fDuplo << num_const_inp_wires << " " << num_eval_inp_wires << " " << num_const_out_wires << " " << num_const_out_wires << " " << num_eval_out_wires << "\n\n";// " //#input_eval #input_const #output_eval #output_const\n\n";
+	
+		fDuplo << real_functions.size() << " " << functions_duplo.size() << " " << functions_duplo.size() << "\n";//" // #numberfunction #layer  #numberComponent\n";
+		fDuplo << num_const_inp_wires << " " << num_eval_inp_wires << " " << num_const_out_wires << " " << num_const_out_wires << " " << num_eval_out_wires << "\n\n";// " //#input_eval #input_const #output_eval #output_const\n\n";
 	
 
-	int id = 1;
+		int id = 1;
 
-	//sort by value
-	vector<pair<uint32_t, uint32_t> > mapcopy(real_functions.begin(), real_functions.end());
-	sort(mapcopy.begin(), mapcopy.end(), less_second<uint32_t, uint32_t>());
+			//sort by value
+		vector<pair<uint32_t, uint32_t> > mapcopy(real_functions.begin(), real_functions.end());
+		sort(mapcopy.begin(), mapcopy.end(), less_second<uint32_t, uint32_t>());
 
 	
-	for (auto it = mapcopy.begin(); it != mapcopy.end(); ++it)
-	{
+		for (auto it = mapcopy.begin(); it != mapcopy.end(); ++it)
+		{
 		
-		//std::cout << " " << it->first << ":" << it->second;
-		string head_func;
+			//std::cout << " " << it->first << ":" << it->second;
+			string head_func;
 
-		head_func.append("FN " + to_string(it->second)  + " "  
-					+ to_string(circuits[it->first - 1].num_inp_wires) + " " 
-					+ to_string(circuits[it->first - 1].num_out_wires) + " " 
-					+ to_string(circuits[it->first - 1].num_wires) + " " 
-					+ to_string(circuits[it->first - 1].num_non_free_gates) + " " 
-					+ to_string(circuits[it->first - 1].num_gates) + " " 
-					+ "\n"); //# FN id num_inp_wires num_out_wires num_wires \n";
+			head_func.append("FN " + to_string(it->second)  + " "  
+						+ to_string(circuits[it->first - 1].num_inp_wires) + " " 
+						+ to_string(circuits[it->first - 1].num_out_wires) + " " 
+						+ to_string(circuits[it->first - 1].num_wires) + " " 
+						+ to_string(circuits[it->first - 1].num_non_free_gates) + " " 
+						+ to_string(circuits[it->first - 1].num_gates) + " " 
+						+ "\n"); //# FN id num_inp_wires num_out_wires num_wires \n";
 		
-		fDuplo << head_func;
-		fDuplo << strFunction[it->first - 1];
-		fDuplo << "--end FN " << it->second << " -- \n\n";
+			fDuplo << head_func;
+			fDuplo << strFunction[it->first - 1];
+			fDuplo << "--end FN " << it->second << " -- \n\n";
 
-		auto aa = to_string(it->second);		
-		fFuncs.open(dir + "_duplo_function_" + to_string(it->second));
-		//fFuncs << circuits[it->first - 1].circuit_name << " " << circuits[it->first - 1].num_non_free_gates <<  endl;
-		fFuncs << head_func;
-		fFuncs << strFunction[it->first - 1];
-		fFuncs.close();
-		cout << "fFuncs("<< it->second <<").close()\n";
-		id++;
-	}
+			auto aa = to_string(it->second);		
+			fFuncs.open(dir + "_duplo_function_" + to_string(it->second));
+			//fFuncs << circuits[it->first - 1].circuit_name << " " << circuits[it->first - 1].num_non_free_gates <<  endl;
+			fFuncs << head_func;
+			fFuncs << strFunction[it->first - 1];
+			fFuncs.close();
+			cout << "fFuncs(" << it->second << ").close()\n";
+			id++;
+		}
 
-	fDuplo << "FN " << real_functions.size() + 1 << "\n\n"; 
-	
-	for (int i = 0; i <  functions_duplo.size(); i++)
+	if (isFunctionWrap)
 	{
-		fDuplo << "FN " << std::get<0>(functions_duplo[i]) << "\n";
-		fDuplo << std::get<1>(functions_duplo[i]) << "\n";
-		fDuplo << std::get<2>(functions_duplo[i]) << "\n\n";
+		fDuplo << "FN " << real_functions.size() + 1 << "\n\n"; 
+	
+	
+		for (int i = 0; i <  functions_duplo.size(); i++)
+		{
+			fDuplo << "FN " << std::get<0>(functions_duplo[i]) << "\n";
+			fDuplo << std::get<1>(functions_duplo[i]) << "\n";
+			fDuplo << std::get<2>(functions_duplo[i]) << "\n\n";
+		}
+	
+		fDuplo.close(); 
 	}
-	fDuplo.close();
-	cout << "fDuplo.close()\n";
+	else
+	{
+		fDuplo.close();
+		fDuplo.open(dir + "_duplo" ,std::ios::out | std::ios::trunc);
+
+		fDuplo << "Error!\n";
+		fDuplo << ".wir have a wrong format!\n";
+		fDuplo << "hints: refactoring main function that contains ONLY function calls\n";
+		cout << "fDuplo.close()\n";
+		cout << "Error: .wir have a wrong format!\n";
+		cout << "hints: refactoring main function that contains ONLY function calls\n";
+		fDuplo.close();
+		return false;
+	}
+	
 
 //////////
 ///Bristol format 
@@ -727,9 +756,11 @@ void frigate_ParseComposedCircuit(char raw_circuit[]) {
 		}
 
 	}
+	return true;
+
 }
 
-
+#include <stdio.h>
 void frigate_read_text_circuit(const char* circuit_file, bool isBDup, bool isB)
 {
 	isBristol = isB;
@@ -766,9 +797,10 @@ void frigate_read_text_circuit(const char* circuit_file, bool isBDup, bool isB)
 		exit(EXIT_FAILURE);
 	}
 	fclose(file);
-	frigate_ParseComposedCircuit(data.get());
+	bool isDuploFormat=frigate_ParseComposedCircuit(data.get());
+	if (!isDuploFormat)
+	remove(circuit_file);
 	
-
 }
 
 void print_wires(std::unordered_map<string, uint32_t> wires)

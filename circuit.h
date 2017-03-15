@@ -50,7 +50,7 @@ public:
 //read circuit from frigate format
 //The wires are ordered so that the first n1 wires correspond to the first input value, the next n2 wires correspond to the second input value. The next n3 wires correspond to the output of the circuit.
 Circuit duploParseCircuit(char raw_circuit[]);
-void frigate_ParseComposedCircuit(char* data);
+bool frigate_ParseComposedCircuit(char* data);
 
 void frigate_read_text_circuit(const char* circuit_file, bool isBristolDup, bool isBristol); //each circuit contains each function of the program
 
