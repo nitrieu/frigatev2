@@ -4190,27 +4190,10 @@ void writeGate(short table, int d, int x, int y, int idxF)
 	}
 	
 	if (isPrintDuploGC) 
-		if (table == 3)//(invert passthrough a)
+		if (table == 0 || table == 15)
 		{
-			strDuploGC.append("1 1 " + to_string(x) + " " + to_string(d) + " " + toStrGate(table) + "\n");
-			strDuploFn[idxF].append("1 1 " + to_string(x) + " " + to_string(d) + " " + toStrGate(table) + "\n");
-
-		}
-		else if (table == 5)//(invert passthrough b)
-		{
-			strDuploGC.append("1 1 " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
-			strDuploFn[idxF].append("1 1 " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
-
-		}
-		else if (table == 0)
-		{
-			strDuploZeroOne[idxF].append("2 1 0 0 " + to_string(d) + " XOR\n");
-		}
-		else if (table == 15)
-		{
-			strDuploZeroOne[idxF].append("2 1 0 0 " + to_string(d) + " NXOR\n");
-		}
-		//else if(table==4)
+			strDuploZeroOne[idxF].append("2 1 " + to_string(x) + " " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
+		}	
 		else
 		{
 			strDuploGC.append("2 1 " + to_string(x) + " " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
@@ -4239,25 +4222,10 @@ void writeGate(short table, int d, int x, int y, ostream * os, int idxF)
 	}
 	
 	if (isPrintDuploGC) 
-		if (table == 3)//(invert passthrough a)
+		if (table == 0 || table == 15)
 		{
-			strDuploGC.append("1 1 " + to_string(x) + " " + to_string(d) + " " + toStrGate(table) + "\n");
-			strDuploFn[idxF].append("1 1 " + to_string(x) + " " + to_string(d) + " " + toStrGate(table) + "\n");
-		}
-		else if (table == 5)//(invert passthrough b)
-		{
-			strDuploGC.append("1 1 " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
-			strDuploFn[idxF].append("1 1 " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
-		
-		}
-		else if (table == 0)
-		{
-			strDuploZeroOne[idxF].append("2 1 0 0 " + to_string(d) + " XOR\n");
-		}
-		else if (table == 15)
-		{
-			strDuploZeroOne[idxF].append("2 1 0 0 " + to_string(d) + " NXOR\n");
-		}
+			strDuploZeroOne[idxF].append("2 1 " + to_string(x) + " " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
+		}	
 		else
 		{
 			strDuploGC.append("2 1 " + to_string(x) + " " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
@@ -4278,13 +4246,9 @@ void writeCopy(int to, int from, int idxF)
 	//duplo
 	if (isPrintDuploGC && !isMainFunc)
 	{
-		strDuploGC.append("2 1 " + to_string(from) + " " + to_string(zero_wire_l[idxF]) + " " + to_string(to) + " XOR \n");
-		strDuploFn[idxF].append("2 1 " + to_string(from) + " " + to_string(zero_wire_l[idxF]) + " " + to_string(to) + " XOR \n");
-	}
-	//if (isPrintDuploGC && isMainFunc)
-	//	strDuploGC.append("CP " + to_string(from) + " " + to_string(to) + "\n");
-	
-	
+		strDuploGC.append("2 1 " + to_string(from) + " " + to_string(zero_wire_l[idxF]) + " " + to_string(to) + " 0110 \n");
+		strDuploFn[idxF].append("2 1 " + to_string(from) + " " + to_string(zero_wire_l[idxF]) + " " + to_string(to) + " 0110 \n");
+	}	
 }
 
 void writeFunctionCall(int function, ostream * os)

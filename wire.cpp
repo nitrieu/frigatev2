@@ -1909,35 +1909,61 @@ bool shortCutNoInvertOutput(Wire * a, Wire * b, short table, Wire * dest)
 
 
 //duplo
+//tables
+// 0 - 0000 (0)
+// 1 - 0001 (nor)
+// 2 - 0010
+// 3 - 0011 (invert passthrough a)
+// 4 - 0100
+// 5 - 0101 (invert passthorugh b)
+// 6 - 0110 (xor)
+// 7 - 0111 (nand)
+// 8 - 1000 (and)
+// 9 - 1001 (reverse xor)
+// 10 - 1010 (passthrough b)
+// 11 - 1011
+// 12 - 1100 (passthrough a)
+// 13 - 1101
+// 14 - 1110 (or)
+// 15 - 1111 (1)
 string toStrGate(short table)
 {
 	switch (table)
 	{
 	case 0:
-		return "zerogate"; //represent 0
+		return "0000"; //represent 0
 	case 1:
-		return "NOR";
+		return "0001";
+	case 2:
+		return "0010";
 	case 3:
-		return "INV"; //(invert passthrough a) //will transform into 1 1 a dest INV in WriteGate()
+		return "0011"; 
+	case 4:
+		return "0100"; 
 	case 5:
-		return "INV"; //(invert passthrough b)//will transform into 1 1 b dest INV in WriteGate() 
+		return "0101"; 
 	case 6:
-		return "XOR";
+		return "0110";
 	case 7:
-		return "NAND";
+		return "0111";
 	case 8:
-		return "AND";
+		return "1000";
 	case 9:
-		return "NXOR";
-	//case 10:  //will update later in WriteGate() 
-	//	return "passthrough b";
-	//case 12:
-	//	return "passthrough a";
+		return "1001";
+	case 10:
+		return "1010";
+	case 11:
+		return "1011";
+	case 12:
+		return "1100";
+	case 13:
+		return "1101";	
 	case 14:
-		return "OR";
+		return "1110";
 	case 15:
-		return "onegate"; //represent 1
+		return "1111"; //represent 1
 	}
+
 	return "Error " + to_string(table);
 }
 void printWire(Wire * a)

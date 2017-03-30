@@ -183,19 +183,7 @@ Circuit duploParseCircuit(char raw_circuit[]) {
 			raw_circuit = strchr(raw_circuit, ' ') + 1;
 			raw_circuit = strchr(raw_circuit, ' ') + 1; //We skip num_output wires as they all have 1.
 
-			if (num_inputs == 1) {
-				left_wire_idx = (uint32_t) atoi(raw_circuit);
-				raw_circuit = strchr(raw_circuit, ' ') + 1;
-				out_wire_idx = (uint32_t) atoi(raw_circuit);
-				raw_circuit = strchr(raw_circuit, ' ') + 1;
-				raw_circuit = strchr(raw_circuit, '\n') + 1;
-				circuit.gates.emplace_back(Gate());
-				circuit.gates[curr_gate_num].type = "NOT";
-				circuit.gates[curr_gate_num].left_wire = left_wire_idx;
-				circuit.gates[curr_gate_num].out_wire = out_wire_idx;
-				++curr_gate_num;
-			}
-			else {
+		
 				left_wire_idx = (uint32_t) atoi(raw_circuit);
 				raw_circuit = strchr(raw_circuit, ' ') + 1;
 				right_wire_idx = (uint32_t) atoi(raw_circuit);
@@ -206,83 +194,28 @@ Circuit duploParseCircuit(char raw_circuit[]) {
 
 				memcpy(type, raw_circuit, 4 * sizeof(char));
 				std::string type_string(type);
-				if (type_string.find("NXOR") != std::string::npos) {
+			if (type_string.find("0001") != std::string::npos //NOR gate
+				||type_string.find("0111") != std::string::npos //nand
+				||type_string.find("1000") != std::string::npos //and
+				||type_string.find("1110") != std::string::npos //or
+				) {
 					circuit.gates.emplace_back(Gate());
-					circuit.gates[curr_gate_num].type = "NXOR";
+					circuit.gates[curr_gate_num].type = type_string;
 					circuit.gates[curr_gate_num].left_wire = left_wire_idx;
 					circuit.gates[curr_gate_num].right_wire = right_wire_idx;
 					circuit.gates[curr_gate_num].out_wire = out_wire_idx;
 					++curr_gate_num;
-					
+					++circuit.num_non_free_gates;					
 				}
-				else if (type_string.find("XOR") != std::string::npos) {
+				else {
 					circuit.gates.emplace_back(Gate());
-					circuit.gates[curr_gate_num].type = "XOR";
+					circuit.gates[curr_gate_num].type = type_string;
 					circuit.gates[curr_gate_num].left_wire = left_wire_idx;
 					circuit.gates[curr_gate_num].right_wire = right_wire_idx;
 					circuit.gates[curr_gate_num].out_wire = out_wire_idx;
 					++curr_gate_num;
-				}
-				else if (type_string.find("NAND") != std::string::npos) {
-					circuit.gates.emplace_back(Gate());
-					circuit.gates[curr_gate_num].type = "NAND";
-					circuit.gates[curr_gate_num].left_wire = left_wire_idx;
-					circuit.gates[curr_gate_num].right_wire = right_wire_idx;
-					circuit.gates[curr_gate_num].out_wire = out_wire_idx;
-					++circuit.num_non_free_gates;
-					++curr_gate_num;
-				}
-				else if (type_string.find("NOR") != std::string::npos) {
-					circuit.gates.emplace_back(Gate());
-					circuit.gates[curr_gate_num].type = "NOR";
-					circuit.gates[curr_gate_num].left_wire = left_wire_idx;
-					circuit.gates[curr_gate_num].right_wire = right_wire_idx;
-					circuit.gates[curr_gate_num].out_wire = out_wire_idx;
-					++circuit.num_non_free_gates;
-					++curr_gate_num;
-				}
-				else if (type_string.find("OR") != std::string::npos) {
-					circuit.gates.emplace_back(Gate());
-					circuit.gates[curr_gate_num].type = "OR";
-					circuit.gates[curr_gate_num].left_wire = left_wire_idx;
-					circuit.gates[curr_gate_num].right_wire = right_wire_idx;
-					circuit.gates[curr_gate_num].out_wire = out_wire_idx;
-					++circuit.num_non_free_gates;
-					++curr_gate_num;
-				}
-				else if (type_string.find("AND") != std::string::npos) {
-					circuit.gates.emplace_back(Gate());
-					circuit.gates[curr_gate_num].type = "AND";
-					circuit.gates[curr_gate_num].left_wire = left_wire_idx;
-					circuit.gates[curr_gate_num].right_wire = right_wire_idx;
-					circuit.gates[curr_gate_num].out_wire = out_wire_idx;
-					++circuit.num_non_free_gates;
-					++curr_gate_num;
-				}
-				else if (type_string.find("Erro") != std::string::npos) {
-					raw_circuit = strchr(raw_circuit, ' ') + 1;
-					uint32_t type_gate = (uint32_t) atoi(raw_circuit);
-					if (type_gate == 4) //x&!y
-					{
-						circuit.gates.emplace_back(Gate());
-						circuit.gates[curr_gate_num].type = "NOT";
-						circuit.gates[curr_gate_num].left_wire = right_wire_idx;
-						circuit.gates[curr_gate_num].out_wire = circuit.num_wires + 1;
-						++curr_gate_num;
-						
-
-						circuit.gates.emplace_back(Gate());
-						circuit.gates[curr_gate_num].type = "AND";
-						circuit.gates[curr_gate_num].left_wire = left_wire_idx;
-						circuit.gates[curr_gate_num].right_wire = circuit.num_wires + 1;
-						circuit.gates[curr_gate_num].out_wire = out_wire_idx;
-						++curr_gate_num;
-						++circuit.num_wires;
-						++circuit.num_non_free_gates;
-					}
-				}
-				raw_circuit = strchr(raw_circuit, '\n') + 1;
-			}
+				}				
+				raw_circuit = strchr(raw_circuit, '\n') + 1;			
 		}
 	}
 
@@ -362,21 +295,13 @@ bool frigate_ParseComposedCircuit(char raw_circuit[]) {
 
 		for (int j = 0; j < circuits[i].gates.size(); j++)
 		{
-			if (circuits[i].gates[j].type == "NOT")
-			{
-				strFunction[i].append("1 1 " 
-				 + to_string(circuits[i].gates[j].left_wire) + " "
-					 + to_string(circuits[i].gates[j].out_wire) + " "
-					 + circuits[i].gates[j].type + "\n");
-			}
-			else
-			{
+		
 				strFunction[i].append("2 1 "
 						+ to_string(circuits[i].gates[j].left_wire) + " "
 						  + to_string(circuits[i].gates[j].right_wire) + " "
 						   + to_string(circuits[i].gates[j].out_wire) + " "
 					+ circuits[i].gates[j].type + "\n");
-			}
+			
 			
 		}	
 		//fDuplo << strFunction[i];

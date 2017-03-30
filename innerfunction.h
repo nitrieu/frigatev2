@@ -48,8 +48,6 @@ public:
 	void outputCircuit(VariableContext * vc, TypeMap * tm, Node * selectedNode, string odir);
 	string toFullEntry(string s);
 	string toTable(int i);
-	void printDuploGC(bool value);
-	void appendDuploGC(string value, bool cond);
 	bool isMainFunction();
 	void messyUnlock(Variable * cvar);
 	void outputEquals(vector<Wire *> * leftv, vector<Wire *> * rightv, vector<Wire *> & destv);
@@ -82,7 +80,6 @@ public:
 	Wire * clearWireForReuse(Wire * w);
 
 	void outputFunctionCall(int num);
-	void outputFunctionCallDP(int num, string localInp, string globalInp);
 
 	void openOutputFile(string s);
 	void closeOutputFile();

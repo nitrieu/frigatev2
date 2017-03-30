@@ -6,24 +6,8 @@
 
 bool useTinyOutput = false;
 
-//duplo
-bool isPrintDuploGC = false;
-string strDuploGC;
-ofstream fDuploGC;
-string strDuploZeroOne;
 bool isMainFunc = false;
 
-void printDuploGC(bool value)
-{
-	isPrintDuploGC = value;
-}
-
-void appendDuploGC(string value, bool cond)
-{
-	if (isPrintDuploGC && cond)
-		strDuploGC.append(value);
-	
-}
 
 bool isMainFunction()
 {
@@ -573,13 +557,7 @@ void InnerFunction::clearReffedWire(Wire * w)
     
 	Wire * newwire = pool.getWire();
 	writeCopy(newwire->wireNumber, w->wireNumber);
-	
-	if (isPrintDuploGC)
-	{
-		newwire->prevWireNumber[0] = w->wireNumber;
-		newwire->prevWireNumber[1] = w->prevWireNumber[0];
-		
-	}
+
     
 	for (int i = w->refsToMeSize - 1; i >= 0; i--)
 	{
@@ -3163,12 +3141,7 @@ void InnerFunction::makeWireContainValueNoONEZEROcopy(Wire * w)
 	}
     
 	writeCopy(w->wireNumber, w->other->wireNumber);
-	if (isPrintDuploGC)
-	{
-		w->prevWireNumber[0] = w->other->wireNumber;
-		w->prevWireNumber[1] = w->other->prevWireNumber[0];
-		
-	}
+
     
     //if(seeoutput) cout << "CP MWCOa "<< w->wireNumber<<" "<<w->other->wireNumber<<"\n";
     
@@ -3321,18 +3294,12 @@ void InnerFunction::makeWireContainValue(Wire * w)
 	if (w->state == ONE)
 	{
 		writeCopy(w->wireNumber, one_wire_l);
-		if (isPrintDuploGC)
-		{
-			w->prevWireNumber[0] = one_wire_l;		
-		}
+		
 	}
 	if (w->state == ZERO)
 	{
 		writeCopy(w->wireNumber, zero_wire_l);
-		if (isPrintDuploGC)
-		{
-			w->prevWireNumber[0] = zero_wire_l;		
-		}
+	
 	}
     
     
@@ -3343,12 +3310,7 @@ void InnerFunction::makeWireContainValue(Wire * w)
     
 	writeCopy(w->wireNumber, w->other->wireNumber);
 	
-	if (isPrintDuploGC)
-	{
-		w->prevWireNumber[0] = w->other->wireNumber;
-		w->prevWireNumber[1] = w->other->prevWireNumber[0];
-		
-	}
+
 	
     //if(seeoutput) cout << "CP MWCOb "<< w->wireNumber<<" "<<w->other->wireNumber<<"\n";
     
@@ -3381,12 +3343,6 @@ void InnerFunction::makeWireNotOther(Wire * w)
 	{
 		writeCopy(w->wireNumber, w->other->wireNumber);
 	    
-		if (isPrintDuploGC)
-		{
-			w->prevWireNumber[0] = w->other->wireNumber;
-			w->prevWireNumber[1] = w->other->prevWireNumber[0];
-		
-		}
         
 		if (w->state == UNKNOWN_INVERT_OTHER_WIRE)
 		{
@@ -3496,17 +3452,6 @@ void InnerFunction::outputGateNoInvertOutput(short table, Wire * a, Wire * b, Wi
 void InnerFunction::outputFunctionCall(int num)
 {
 	writeFunctionCall(num, os);
-}
-
-void InnerFunction::outputFunctionCallDP(int num, string localInp, string globalInp)
-{
-	//duplo
-	if (isPrintDuploGC && isMainFunc)
-	{
-		//strDuploGC.append("Local Inp: " + localInp + "\n");			
-		strDuploGC.append("Global Inp: " + globalInp + "\n");	
-		strDuploGC.append("FN " + to_string(num) + "\n");	
-	}
 }
 
 
@@ -3628,30 +3573,6 @@ void InnerFunction::addComplexOpSingleDestBit(short op, int length, int starta, 
 		isend);
 }
 
-//void InnerFunction::writeComplexGate(ostream & mos, short op, int dest, int x, int y, int length, int carryadd, int isend)
-//{
-//	outbuffer[0] = dest;
-//	outbuffer[1] = 5 << 8;
-//	outbuffer[2] = x;
-//	outbuffer[3] = y;
-//	mos.write((char *)(&outbuffer[0]), 16);
-//    
-//	outbuffer[0] = carryadd;
-//	outbuffer[1] = isend;
-//	outbuffer[2] = length - 1;
-//	outbuffer[3] = op;
-//	mos.write((char *)(&outbuffer[0]), 16);
-//    
-//	if (seeoutput) cout << os << " Complex op: " << op << " " << dest << " " << x << " " << y << " " << length << " " << "\n";
-//	
-//	//duplo
-//	if (isPrintDuploGC) 
-//	{
-//		strDuploGC.append(" Complex op: " + to_string(x) + " " + to_string(y) + " " + to_string(dest) + " " + to_string(op) + " " + to_string(length) + "\n");
-//		strDuploGC.append("todo\n");
-//	}  
-//}
-
 void InnerFunction::writeComplexGate(short op, int dest, int x, int y, int length, int carryadd, int isend)
 {
 	outbuffer[0] = dest;
@@ -3716,12 +3637,6 @@ void InnerFunction::writeComplexGate(short op, int dest, int x, int y, int lengt
 		co_xorgates++;
 	}
 	
-	//duplo
-	if (isPrintDuploGC) 
-	{
-		strDuploGC.append(" Complex op: " + to_string(x) + " " + to_string(y) + " " + to_string(dest) + " " + to_string(op) + " " + to_string(length) + "\n");
-		strDuploGC.append("todo\n");
-	}  
 }
 
 void InnerFunction::writeGate(short table, int d, int x, int y)
@@ -3742,24 +3657,6 @@ void InnerFunction::writeGate(short table, int d, int x, int y)
 	{
 		co_nonxorgates++;
 	}
-	
-	if (isPrintDuploGC) 
-		if (table == 3)//(invert passthrough a)
-			strDuploGC.append("1 1 " + to_string(x) + " " + to_string(d) + " " + toStrGate(table) + "\n");
-		else if (table == 5)//(invert passthrough b)
-			strDuploGC.append("1 1 " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
-		else if (table == 0)
-		{
-			strDuploZeroOne.append("2 1 0 0 " + to_string(d) + " XOR\n");
-		}
-		else if (table == 15)
-		{
-			strDuploZeroOne.append("2 1 0 0 " + to_string(d) + " NXOR\n");
-		}
-		//else if(table==4)
-			
-		else
-			strDuploGC.append("2 1 " + to_string(x) + " " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
 }
 
 
@@ -3781,22 +3678,6 @@ void InnerFunction::writeGate(short table, int d, int x, int y, ostream * os)
 	{
 		co_nonxorgates++;
 	}
-	
-	if (isPrintDuploGC) 
-		if (table == 3)//(invert passthrough a)
-			strDuploGC.append("1 1 " + to_string(x) + " " + to_string(d) + " " + toStrGate(table) + "\n");
-		else if (table == 5)//(invert passthrough b)
-			strDuploGC.append("1 1 " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
-		else if (table == 0)
-		{
-			strDuploZeroOne.append("2 1 0 0 " + to_string(d) + " XOR\n");
-		}
-		else if (table == 15)
-		{
-			strDuploZeroOne.append("2 1 0 0 " + to_string(d) + " NXOR\n");
-		}
-		else
-			strDuploGC.append("2 1 " + to_string(x) + " " + to_string(y) + " " + to_string(d) + " " + toStrGate(table) + "\n");
 }
 
 void InnerFunction::writeCopy(int to, int from)
@@ -3809,14 +3690,6 @@ void InnerFunction::writeCopy(int to, int from)
 	if (seeoutput) cout << os << " CP " << to << " " << from << "\n";
 	co_xorgates++;
 	
-	//duplo
-	if (isPrintDuploGC && !isMainFunc)
-		strDuploGC.append("2 1 " + to_string(from) + " " + to_string(zero_wire_l) + " " + to_string(to) + " XOR \n");
-	
-	//if (isPrintDuploGC && isMainFunc)
-	//	strDuploGC.append("CP " + to_string(from) + " " + to_string(to) + "\n");
-	
-	
 }
 
 void InnerFunction::writeFunctionCall(int function, ostream * os)
@@ -3827,12 +3700,7 @@ void InnerFunction::writeFunctionCall(int function, ostream * os)
 	outbuffer[3] = 0;
 	os->write((char *)(&outbuffer[0]), 16);
 	if (seeoutput) cout << os << " FN " << function << "\n";
-	co_xorgates++;
-	
-//duplo
-	if (isPrintDuploGC && !isMainFunc)
-		strDuploGC.append("FN " + to_string(function) + "\n");	
-	
+	co_xorgates++;	
 }
 
 
