@@ -1963,9 +1963,9 @@ string toStrGate(short table)
 	case 15:
 		return "1111"; //represent 1
 	}
-
 	return "Error " + to_string(table);
 }
+
 void printWire(Wire * a)
 {
     cout << "Wire: " <<a->wireNumber<<"\n";

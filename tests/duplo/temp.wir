@@ -7,10 +7,18 @@ typedef uint_t wiresize int
 #input 2 int
 #output 1 int
 
+function int f2(int in1,int in2)
+{
+int a;
+a=in1&in2;
+return a;
+}
+
 function int f1(int in1,int in2)
 {
 int a;
 a=in1&in2;
+a=f2(in1,in2);
 return a;
 }
 
