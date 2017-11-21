@@ -1,10 +1,10 @@
-# Batched Oblivious PRF
 This is the implementation of our xxx paper: **DUPLO: Unifying Cut-and-Choose for Garbled Circuits**[[ePrint](https://eprint.iacr.org/2017/xxx)].  We extend the [`Frigate`](https://bitbucket.org/bmood/frigaterelease) compiler that allows to transform a high-level C-style program into a
 set of boolean circuit components that can be fed to
 the DUPLO system for secure computation
 
-## Abstract
+## WARMING
 ---
+This repo is for developing the compiler. Please refer to https://github.com/AarhusCrypto/DUPLO for full utilize. 
 
 
 ## Installations
